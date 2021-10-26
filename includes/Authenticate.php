@@ -348,10 +348,8 @@ class Authenticate
 
     public function wpLogout()
     {
-        wp_destroy_other_sessions();
-        if ($this->simplesaml->isAuthenticated()) {
-            $this->simplesaml->logout(site_url('', 'https'));
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-        }
+        $this->simplesaml->logout(site_url('', 'https'));
+        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+        wp_logout();
     }
 }

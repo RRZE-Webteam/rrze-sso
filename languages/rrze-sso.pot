@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-10-26T12:59:27+00:00\n"
+"POT-Creation-Date: 2021-10-26T14:21:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.5.0\n"
 "X-Domain: rrze-sso\n"
@@ -34,73 +34,73 @@ msgstr ""
 msgid "https://blogs.fau.de/webworking/"
 msgstr ""
 
-#: includes/Authenticate.php:95
+#: includes/Authenticate.php:100
 msgid "The IdM Username is not valid."
 msgstr ""
 
-#: includes/Authenticate.php:101
+#: includes/Authenticate.php:106
 msgid "The IdM Username entered is not valid."
 msgstr ""
 
-#: includes/Authenticate.php:132
+#: includes/Authenticate.php:137
 msgid "The user data could not be updated."
 msgstr ""
 
-#: includes/Authenticate.php:152
+#: includes/Authenticate.php:158
 msgid "The username \"%s\" is not registered on this website."
 msgstr ""
 
-#: includes/Authenticate.php:178
+#: includes/Authenticate.php:184
 #: includes/Users.php:31
 msgid "The user could not be added."
 msgstr ""
 
-#: includes/Authenticate.php:227
+#: includes/Authenticate.php:234
 msgid "ERROR:"
 msgstr ""
 
-#: includes/Authenticate.php:233
+#: includes/Authenticate.php:240
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr ""
 
-#: includes/Authenticate.php:239
+#: includes/Authenticate.php:246
 msgid "However, if no login is possible, please contact the contact person of the website."
 msgstr ""
 
-#: includes/Authenticate.php:248
-#: includes/Authenticate.php:286
+#: includes/Authenticate.php:255
+#: includes/Authenticate.php:293
 msgid "Single Sign-On Log Out"
 msgstr ""
 
-#: includes/Authenticate.php:260
+#: includes/Authenticate.php:267
 msgid "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not currently have privileges on this website. If you believe you should be able to access the &ldquo;%1$s&rdquo; dashboard, please contact the contact person of the website."
 msgstr ""
 
-#: includes/Authenticate.php:265
+#: includes/Authenticate.php:272
 msgid "If you reached this screen by accident and meant to visit one of your own websites, here are some shortcuts to help you find your way."
 msgstr ""
 
-#: includes/Authenticate.php:267
+#: includes/Authenticate.php:274
 msgid "Your Websites"
 msgstr ""
 
-#: includes/Authenticate.php:273
+#: includes/Authenticate.php:280
 msgid "Visit the Dashboard"
 msgstr ""
 
-#: includes/Authenticate.php:274
+#: includes/Authenticate.php:281
 msgid "View the website"
 msgstr ""
 
-#: includes/Authenticate.php:311
+#: includes/Authenticate.php:318
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr ""
 
-#: includes/Authenticate.php:322
+#: includes/Authenticate.php:329
 msgid "Email Address:"
 msgstr ""
 
-#: includes/Main.php:134
+#: includes/Main.php:122
 msgid "Disabled function."
 msgstr ""
 
@@ -446,7 +446,11 @@ msgstr ""
 msgid "The email address is already used!"
 msgstr ""
 
-#: includes/UsersList.php:19
+#: includes/UsersList.php:21
+msgid "IdP"
+msgstr ""
+
+#: includes/UsersList.php:22
 msgid "Attributes"
 msgstr ""
 

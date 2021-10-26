@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2021-10-26T12:59:27+00:00\n"
-"PO-Revision-Date: 2021-10-26 15:01+0200\n"
+"POT-Creation-Date: 2021-10-26T14:21:27+00:00\n"
+"PO-Revision-Date: 2021-10-26 16:22+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -38,35 +38,35 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:95
+#: includes/Authenticate.php:100
 msgid "The IdM Username is not valid."
 msgstr "Die IdM-Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:101
+#: includes/Authenticate.php:106
 msgid "The IdM Username entered is not valid."
 msgstr "Die eingegebene IdM-Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:132
+#: includes/Authenticate.php:137
 msgid "The user data could not be updated."
 msgstr "Die Benutzerdaten konnten nicht aktualisiert werden."
 
-#: includes/Authenticate.php:152
+#: includes/Authenticate.php:158
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:178 includes/Users.php:31
+#: includes/Authenticate.php:184 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
-#: includes/Authenticate.php:227
+#: includes/Authenticate.php:234
 msgid "ERROR:"
 msgstr "Fehler:"
 
-#: includes/Authenticate.php:233
+#: includes/Authenticate.php:240
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:239
+#: includes/Authenticate.php:246
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -74,11 +74,11 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:248 includes/Authenticate.php:286
+#: includes/Authenticate.php:255 includes/Authenticate.php:293
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
-#: includes/Authenticate.php:260
+#: includes/Authenticate.php:267
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -90,7 +90,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:265
+#: includes/Authenticate.php:272
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -99,27 +99,27 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:267
+#: includes/Authenticate.php:274
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:273
+#: includes/Authenticate.php:280
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:274
+#: includes/Authenticate.php:281
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
-#: includes/Authenticate.php:311
+#: includes/Authenticate.php:318
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:322
+#: includes/Authenticate.php:329
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:134
+#: includes/Main.php:122
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
@@ -530,7 +530,11 @@ msgstr "Der Benutzername existiert bereits!"
 msgid "The email address is already used!"
 msgstr "Die E-Mail-Adresse wird bereits verwendet!"
 
-#: includes/UsersList.php:19
+#: includes/UsersList.php:21
+msgid "IdP"
+msgstr "IdP"
+
+#: includes/UsersList.php:22
 msgid "Attributes"
 msgstr "Attribute"
 

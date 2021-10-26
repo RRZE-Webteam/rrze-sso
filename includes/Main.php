@@ -13,18 +13,6 @@ class Main
     protected $options;
 
     /**
-     * [public description]
-     * @var boolean
-     */
-    public $currentUserCanBoth;
-
-    /**
-     * [public description]
-     * @var boolean
-     */
-    public $registration;
-
-    /**
      * [__construct description]
      * @param string $pluginFile [description]
      */

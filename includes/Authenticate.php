@@ -18,6 +18,12 @@ class Authenticate
      */
     protected $simplesaml;
 
+    /**
+     * [public description]
+     * @var boolean
+     */
+    public $registration;
+
     public function __construct($simplesaml)
     {
         if ($simplesaml === false) {
@@ -67,8 +73,7 @@ class Authenticate
             \SimpleSAML\Session::getSessionFromRequest()->cleanup();
         }
 
-        $idp = $this->simplesaml->getAuthData('saml:sp:IdP');
-        $nameID = $this->simplesaml->getAuthData('saml:sp:NameID')->getValue();
+        $samlSpIdp = $this->simplesaml->getAuthData('saml:sp:IdP');
 
         $atts = [];
 
@@ -137,6 +142,7 @@ class Authenticate
             }
 
             $user = new \WP_User($userdata->ID);
+            update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
             update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
             update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
 
@@ -179,6 +185,7 @@ class Authenticate
             }
 
             $user = new \WP_User($userId);
+            update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
             update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
             update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 

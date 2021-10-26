@@ -1,0 +1,15 @@
+{
+    "name": "rrze/rrze-sso",
+    "description": "RRZE WordPress Plugin",
+    "version": "1.0.0",
+    "type": "wordpress-plugin",
+    "license": "GPL",
+    "require": {
+        "php": "^7.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "RRZE\\SSO\\": "includes/"
+        }
+    }
+}

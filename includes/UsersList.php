@@ -8,19 +8,32 @@ class UsersList
 {
     public function onLoaded()
     {
-        add_filter('manage_users_columns', [$this, 'attributes']);
-        add_action('manage_users_custom_column', [$this, 'attributesColumns'], 10, 3);
-        add_filter('wpmu_users_columns', [$this, 'attributes']);
-        add_action('wpmu_users_custom_column', [$this, 'attributesColumns'], 10, 3);
+        add_filter('manage_users_columns', [$this, 'columns']);
+        add_action('manage_users_custom_column', [$this, 'idpColumn'], 10, 3);
+        add_action('manage_users_custom_column', [$this, 'attributesColumn'], 10, 3);
+        add_filter('wpmu_users_columns', [$this, 'columns']);
+        add_action('wpmu_users_custom_column', [$this, 'idpColumn'], 10, 3);
+        add_action('wpmu_users_custom_column', [$this, 'attributesColumn'], 10, 3);
     }
 
-    public function attributes($columns)
+    public function columns($columns)
     {
+        $columns['idp'] = __('IdP', 'rrze-sso');
         $columns['attributes'] = __('Attributes', 'rrze-sso');
         return $columns;
     }
 
-    public function attributesColumns($value, $columnName, $userId)
+    public function idpColumn($value, $columnName, $userId)
+    {
+        if ('idp' != $columnName) {
+            return $value;
+        }
+
+        $samlSpIdp = get_user_meta($userId, 'saml_sp_idp', true);
+        return $samlSpIdp ? $samlSpIdp : '&mdash;';
+    }
+
+    public function attributesColumn($value, $columnName, $userId)
     {
         if ('attributes' != $columnName) {
             return $value;
@@ -38,6 +51,6 @@ class UsersList
             $attributes[] = is_array($eduPersonEntitlement) ? implode('<br>', $eduPersonEntitlement) : $eduPersonEntitlement;
         }
 
-        return implode('<br>', $attributes);
+        return $attributes ? implode('<br>', $attributes) : '&mdash;';
     }
 }

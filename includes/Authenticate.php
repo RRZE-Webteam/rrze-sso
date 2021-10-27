@@ -350,6 +350,5 @@ class Authenticate
     {
         $this->simplesaml->logout(site_url('', 'https'));
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-        wp_logout();
     }
 }

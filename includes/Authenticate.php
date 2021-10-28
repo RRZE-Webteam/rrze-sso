@@ -83,9 +83,10 @@ class Authenticate
             do_action(
                 'rrze.log.info',
                 [
-                    'plugin' => 'rrze-sso',
+                    'plugin' => plugin()->getBaseName(),
                     'method' => __METHOD__,
                     'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+                    'saml_sp_idp' => $samlSpIdp,
                     'person_attributes' => $_atts
                 ]
             );

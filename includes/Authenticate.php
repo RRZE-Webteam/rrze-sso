@@ -55,6 +55,8 @@ class Authenticate
         }
 
         $this->registration = apply_filters('rrze_sso_registration', $this->registration);
+        // Backward compatibility
+        $this->registration = apply_filters('fau_websso_registration', $this->registration);
 
         if (!$this->registration) {
             add_action('before_signup_header', [$this, 'beforeSignupHeader']);

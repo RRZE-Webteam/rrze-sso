@@ -77,6 +77,8 @@ class Main
         add_action('admin_init', [__NAMESPACE__ . '\Users', 'userNewAction']);
 
         add_filter('is_rrze_sso_active', '__return_true');
+        // Backward compatibility
+        add_filter('is_fau_websso_active', '__return_true');
     }
 
     public function beforeSignupHeader()

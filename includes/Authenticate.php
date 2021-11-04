@@ -126,14 +126,22 @@ class Authenticate
         }
 
         $userdata = get_user_by('login', $userLogin);
-
         if ($userdata) {
+            $_samlSpIdp = get_user_meta($userdata->ID, 'saml_sp_idp', true);
+        } else {
+            $_samlSpIdp = '';
+        }
+
+        if (
+            $userdata
+            && ($_samlSpIdp === $samlSpIdp || empty($_samlSpIdp))
+        ) {
             if ((!empty($displayName) && $userdata->data->display_name == $userLogin)) {
                 $userId = wp_update_user(
-                    array(
+                    [
                         'ID' => $userdata->ID,
                         'display_name' => $displayName
-                    )
+                    ]
                 );
 
                 if (is_wp_error($userId)) {
@@ -169,7 +177,7 @@ class Authenticate
             }
 
             $userId = wp_insert_user(
-                array(
+                [
                     'user_pass' => wp_generate_password(12, false),
                     'user_login' => $userLogin,
                     'user_email' => $userEmail,
@@ -177,7 +185,7 @@ class Authenticate
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'role' => 'subscriber'
-                )
+                ]
             );
 
             if (is_wp_error($userId)) {
@@ -221,7 +229,7 @@ class Authenticate
             return true;
         }
 
-        if (wp_list_filter($blogs, array('userblog_id' => get_current_blog_id()))) {
+        if (wp_list_filter($blogs, ['userblog_id' => get_current_blog_id()])) {
             return true;
         }
 

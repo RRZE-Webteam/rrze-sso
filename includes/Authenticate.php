@@ -92,11 +92,19 @@ class Authenticate
                     'person_attributes' => $_atts
                 ]
             );
-            $atts['uid'] = isset($_atts['urn:mace:dir:attribute-def:uid'][0]) ? $_atts['urn:mace:dir:attribute-def:uid'][0] : '';
-            $atts['mail'] = isset($_atts['urn:mace:dir:attribute-def:mail'][0]) ? $_atts['urn:mace:dir:attribute-def:mail'][0] : '';
-            $atts['displayName'] = isset($_atts['urn:mace:dir:attribute-def:displayName'][0]) ? $_atts['urn:mace:dir:attribute-def:displayName'][0] : '';
-            $atts['eduPersonAffiliation'] = isset($_atts['urn:mace:dir:attribute-def:eduPersonAffiliation']) ? $_atts['urn:mace:dir:attribute-def:eduPersonAffiliation'] : '';
-            $atts['eduPersonEntitlement'] = isset($_atts['urn:mace:dir:attribute-def:eduPersonEntitlement']) ? $_atts['urn:mace:dir:attribute-def:eduPersonEntitlement'] : '';
+
+            $attsKeys = ['uid', 'mail', 'displayName', 'eduPersonAffiliation', 'eduPersonEntitlement'];
+            foreach ($_atts as $key => $value) {
+                foreach ($attsKeys as $attsKey) {
+                    if (Functions::strEndsWith($key, $attsKey)) {
+                        if (is_array($value) && in_array($attsKey, ['uid', 'mail', 'displayName'])) {
+                            $atts[$attsKey] = $value[0];
+                        } else {
+                            $atts[$attsKey] = $value;
+                        }
+                    }
+                }
+            }
         }
 
         if (empty($atts['uid'])) {

@@ -93,21 +93,16 @@ class Authenticate
                 ]
             );
 
-            $attsKeys = ['uid', 'mail', 'displayName', 'eduPersonAffiliation', 'eduPersonEntitlement'];
             foreach ($_atts as $key => $value) {
-                foreach ($attsKeys as $attsKey) {
-                    if (Functions::strEndsWith($key, $attsKey)) {
-                        if (is_array($value) && in_array($attsKey, ['uid', 'mail', 'displayName'])) {
-                            $atts[$attsKey] = $value[0];
-                        } else {
-                            $atts[$attsKey] = $value;
-                        }
-                    }
+                if (is_array($value) && in_array($key, ['uid', 'mail', 'displayName'])) {
+                    $atts[$key] = $value[0];
+                } else {
+                    $atts[$key] = $value;
                 }
             }
         }
 
-        if (empty($atts['uid'])) {
+        if (empty($atts['uid']) || empty($atts['mail'])) {
             $this->loginDie(__("The IdM Username is not valid.", 'rrze-sso', false));
         }
 
@@ -117,15 +112,15 @@ class Authenticate
             $this->loginDie(__("The IdM Username entered is not valid.", 'rrze-sso'));
         }
 
-        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('%s@fau.de', base_convert(uniqid('', false), 16, 36));
+        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@fau.de', bin2hex(random_bytes(5)));
 
-        $displayName = $atts['displayName'];
-        $displayName_array = explode(' ', $displayName);
-        $firstName = array_shift($displayName_array);
-        $lastName = implode(' ', $displayName_array);
+        $displayName = $atts['displayName'] ?? '';
+        $displayNameAry = explode(' ', $displayName);
+        $firstName = array_shift($displayNameAry);
+        $lastName = implode(' ', $displayNameAry);
 
-        $eduPersonAffiliation = $atts['eduPersonAffiliation'];
-        $eduPersonEntitlement = $atts['eduPersonEntitlement'];
+        $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
+        $eduPersonEntitlement = $atts['eduPersonEntitlement'] ?? '';
 
         if (is_multisite()) {
             global $wpdb;

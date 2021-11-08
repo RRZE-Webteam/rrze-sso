@@ -94,7 +94,7 @@ class Authenticate
             );
 
             foreach ($_atts as $key => $value) {
-                if (is_array($value) && in_array($key, ['uid', 'mail', 'displayName'])) {
+                if (is_array($value) && in_array($key, ['uid', 'eduPersonPrincipalName', 'mail', 'displayName'])) {
                     $atts[$key] = $value[0];
                 } else {
                     $atts[$key] = $value;
@@ -106,7 +106,7 @@ class Authenticate
             $this->loginDie(__("The IdM Username is not valid.", 'rrze-sso', false));
         }
 
-        $userLogin = $atts['uid'];
+        $userLogin = $atts['uid'] ?: $atts['eduPersonPrincipalName'] ?? '';
 
         if ($userLogin != substr(sanitize_user($userLogin, true), 0, 60)) {
             $this->loginDie(__("The IdM Username entered is not valid.", 'rrze-sso'));

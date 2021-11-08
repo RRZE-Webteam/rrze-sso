@@ -109,7 +109,8 @@ class Authenticate
         $userLogin = $atts['uid'] ?? '';
         $userLogin = $userLogin ?: $atts['eduPersonPrincipalName'] ?? '';
 
-        if ($userLogin != substr(sanitize_user($userLogin, true), 0, 60)) {
+        $userLogin = substr(sanitize_user($userLogin, true), 0, 60);
+        if (!$userLogin) {
             $this->loginDie(__("The IdM Username entered is not valid.", 'rrze-sso'));
         }
 

@@ -13,10 +13,17 @@ Einstellungen › SSO
 -   3. Folgenden Attribute in der Datei /simplesamlphp/config/config.php ändern/bearbeiten:
 
 <pre>
-'auth.adminpassword' = 'Beliebiges Admin-Password'
-'secretsalt' => 'Beliebige, möglichst einzigartige Phrase'
-'technicalcontact_name' => 'Name des technischen Ansprechpartners'
-'technicalcontact_email' => 'E-Mail-Adresse des technischen Ansprechpartners'
+'auth.adminpassword' = 'Beliebiges Admin-Password',
+'secretsalt' => 'Beliebige, möglichst einzigartige Phrase',
+'technicalcontact_name' => 'Name des technischen Ansprechpartners',
+'technicalcontact_email' => 'E-Mail-Adresse des technischen Ansprechpartners',
+'authproc.sp' => [
+    10 => [
+        'class' => 'core:AttributeMap',
+        'urn2name',
+    ],
+    90 => 'core:LanguageAdaptor',
+],
 </pre>
 
 -   4. Folgende Element des "default-sp"-Array in der Datei /simplesamlphp/config/authsources.php ändern/bearbeiten:

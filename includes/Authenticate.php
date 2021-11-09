@@ -26,9 +26,12 @@ class Authenticate
 
     /**
      * The entity ID of the FAU IdP
-     * @var string
+     * @var array
      */
-    protected $fauIdP = 'https://sso.fau.localhost/simplesaml/saml2/idp/metadata.php';
+    protected $fauIdP = [
+        'https://sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
+        'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'
+    ];
 
     public function __construct($simplesaml)
     {
@@ -108,7 +111,7 @@ class Authenticate
             }
         }
 
-        if ($samlSpIdp === $this->fauIdP) {
+        if (in_array($samlSpIdp, $this->fauIdP)) {
             $userLogin = $atts['uid'] ?? '';
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';

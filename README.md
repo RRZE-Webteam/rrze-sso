@@ -89,7 +89,7 @@ $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] =
 
 <pre>Alias /simplesaml /Pfad zum simplesamlphp/www-Verzeichnis</pre>
 
-Z.B.: Alias /simplesaml /wordpress/wp-content/simplesamlphp/www
+Z.B.: Alias /simplesaml /var/www/wordpress/wp-content/simplesamlphp/www
 
 ## Anmeldung
 
@@ -99,12 +99,17 @@ Z.B.: Alias /simplesaml /wordpress/wp-content/simplesamlphp/www
 Webseite: (URL der Webseite)
 Beschreibung: (Kurze Beschreibung der Webseite)
 Metadata-URL: https://webauftritt-url/simplesaml/module.php/saml/sp/metadata.php/default-sp
-Login-URL: https://webauftritt-url/wp-login.php
 Erforderliche Attribute:
 	displayname
+    givenName
+    sn (Surname)
+    o (Organization name)
 	uid
 	mail
+    eduPersonPrincipalName
     eduPersonAffiliation
+    eduPersonEntitlement
+    eduPersonScopedAffiliation
 </pre>
 
 Hinweis: Bitte überprüfen Sie, dass die jeweiligen URLs keine Fehlermeldungen im Browser ausgeben.

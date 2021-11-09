@@ -22,7 +22,13 @@ class Authenticate
      * [public description]
      * @var boolean
      */
-    public $registration;
+    protected $registration;
+
+    /**
+     * The entity ID of the FAU IdP
+     * @var string
+     */
+    protected $fauIdP = 'https://sso.fau.localhost/simplesaml/saml2/idp/metadata.php';
 
     public function __construct($simplesaml)
     {
@@ -102,19 +108,19 @@ class Authenticate
             }
         }
 
-        if (empty($atts['uid']) || empty($atts['mail'])) {
-            $this->loginDie(__("The IdM Username is not valid.", 'rrze-sso', false));
+        if ($samlSpIdp === $this->fauIdP) {
+            $userLogin = $atts['uid'] ?? '';
+        } else {
+            $userLogin = $atts['eduPersonPrincipalName'] ?? '';
         }
-
-        $userLogin = $atts['uid'] ?? '';
-        $userLogin = $userLogin ?: $atts['eduPersonPrincipalName'] ?? '';
 
         $userLogin = substr(sanitize_user($userLogin, true), 0, 60);
         if (!$userLogin) {
-            $this->loginDie(__("The IdM Username entered is not valid.", 'rrze-sso'));
+            $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
         }
 
-        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@fau.de', bin2hex(random_bytes(5)));
+        $userEmail = $atts['mail'] ?? '';
+        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
 
         $displayName = $atts['displayName'] ?? '';
         $displayNameAry = explode(' ', $displayName);

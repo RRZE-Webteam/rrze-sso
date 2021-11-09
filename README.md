@@ -10,7 +10,7 @@ Einstellungen › SSO
 
 -   1. Letzte version des SimpleSAMLphp herunterladen. Siehe https://simplesamlphp.org/download
 -   2. Das simplesamlphp-Verzeichnis kopieren und unter dem wp-content-Verzeichnis des WordPress einsetzen
--   3. Folgenden Attribute in der Datei /simplesamlphp/config/config.php ändern/bearbeiten:
+-   3. Folgenden Attribute in der Datei "/simplesamlphp/config/config.php" ändern/bearbeiten:
 
 <pre>
 'auth.adminpassword' = 'Beliebiges Admin-Password',
@@ -26,13 +26,13 @@ Einstellungen › SSO
 ],
 </pre>
 
--   4. Folgende Element des "default-sp"-Array in der Datei /simplesamlphp/config/authsources.php ändern/bearbeiten:
+-   4. Folgende Element des "default-sp"-Array in der Datei "/simplesamlphp/config/authsources.php" ändern/bearbeiten:
 
 <pre>
 'idp' = 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'
 </pre>
 
--   5. Alle IdPs von der Datei /simplesamlphp/metadata/saml20-idp-remote.php entfernen und dann den folgenden Code hinzufügen:
+-   5. Den Inhalt der Datei "/simplesamlphp/metadata/saml20-idp-remote.php" löschen und dann den folgenden Code hinzufügen:
 
 ```php
 <?php

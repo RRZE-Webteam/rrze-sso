@@ -30,7 +30,8 @@ class Authenticate
      */
     protected $fauIdP = [
         'https://sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
-        'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'
+        'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
+        'https://sso.fau.localhost/simplesaml/saml2/idp/metadata.php'
     ];
 
     public function __construct($simplesaml)

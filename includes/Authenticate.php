@@ -25,13 +25,12 @@ class Authenticate
     protected $registration;
 
     /**
-     * The entity ID of the FAU IdP
+     * Domain scope of the FAU IdP
      * @var array
      */
-    protected $fauIdP = [
-        'https://sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
-        'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
-        'https://sso.fau.localhost/simplesaml/saml2/idp/metadata.php'
+    protected $fauDomainScope = [
+        'fau.de',
+        'uni-erlangen.de'
     ];
 
     public function __construct($simplesaml)
@@ -104,7 +103,10 @@ class Authenticate
             );
 
             foreach ($_atts as $key => $value) {
-                if (is_array($value) && in_array($key, ['uid', 'eduPersonPrincipalName', 'mail', 'displayName'])) {
+                if (
+                    is_array($value)
+                    && in_array($key, ['uid', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+                ) {
                     $atts[$key] = $value[0];
                 } else {
                     $atts[$key] = $value;
@@ -112,7 +114,12 @@ class Authenticate
             }
         }
 
-        if (in_array($samlSpIdp, $this->fauIdP)) {
+        $domainScope = '';
+        $eduPersonPrincipalName = $atts['eduPersonPrincipalName'] ?? '';
+        if (strpos($eduPersonPrincipalName, '@') !== false) {
+            $domainScope = explode('@', $eduPersonPrincipalName)[1];
+        }
+        if (in_array($domainScope, $this->fauDomainScope)) {
             $userLogin = $atts['uid'] ?? '';
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';
@@ -127,9 +134,10 @@ class Authenticate
         $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
 
         $displayName = $atts['displayName'] ?? '';
-        $displayNameAry = explode(' ', $displayName);
-        $firstName = array_shift($displayNameAry);
-        $lastName = implode(' ', $displayNameAry);
+        $commonName = $atts['cn'] ?? '';
+        $lastName = $atts['sn'] ?? '';
+        $firstName = $atts['givenName'] ?? '';
+        $organizationName = $atts['o'] ?? '';
 
         $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
         $eduPersonEntitlement = $atts['eduPersonEntitlement'] ?? '';
@@ -169,6 +177,7 @@ class Authenticate
 
             $user = new \WP_User($userdata->ID);
             update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userdata->ID, 'organization_name', $organizationName);
             update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
             update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
 
@@ -212,6 +221,7 @@ class Authenticate
 
             $user = new \WP_User($userId);
             update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userId, 'organization_name', $organizationName);
             update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
             update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 

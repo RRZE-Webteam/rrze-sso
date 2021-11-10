@@ -134,7 +134,7 @@ class Authenticate
         $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
 
         $displayName = $atts['displayName'] ?? '';
-        $commonName = $atts['cn'] ?? '';
+        $displayName = $displayName ?: $atts['cn'] ?? '';
         $lastName = $atts['sn'] ?? '';
         $firstName = $atts['givenName'] ?? '';
         $organizationName = $atts['o'] ?? '';

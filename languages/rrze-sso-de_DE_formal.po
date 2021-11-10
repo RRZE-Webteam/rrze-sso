@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2021-10-26T14:21:27+00:00\n"
-"PO-Revision-Date: 2021-10-26 16:22+0200\n"
+"POT-Creation-Date: 2021-11-10T10:42:50+00:00\n"
+"PO-Revision-Date: 2021-11-10 11:47+0100\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -38,35 +38,31 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:100
-msgid "The IdM Username is not valid."
-msgstr "Die IdM-Kennung ist nicht gültig."
+#: includes/Authenticate.php:130
+msgid "The username entered is not valid."
+msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:106
-msgid "The IdM Username entered is not valid."
-msgstr "Die eingegebene IdM-Kennung ist nicht gültig."
-
-#: includes/Authenticate.php:137
+#: includes/Authenticate.php:171
 msgid "The user data could not be updated."
 msgstr "Die Benutzerdaten konnten nicht aktualisiert werden."
 
-#: includes/Authenticate.php:158
+#: includes/Authenticate.php:193
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:184 includes/Users.php:31
+#: includes/Authenticate.php:219 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
-#: includes/Authenticate.php:234
+#: includes/Authenticate.php:270
 msgid "ERROR:"
 msgstr "Fehler:"
 
-#: includes/Authenticate.php:240
+#: includes/Authenticate.php:276
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:246
+#: includes/Authenticate.php:282
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -74,11 +70,11 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:255 includes/Authenticate.php:293
+#: includes/Authenticate.php:291 includes/Authenticate.php:329
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
-#: includes/Authenticate.php:267
+#: includes/Authenticate.php:303
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -90,7 +86,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:272
+#: includes/Authenticate.php:308
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -99,27 +95,27 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:274
+#: includes/Authenticate.php:310
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:280
+#: includes/Authenticate.php:316
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:281
+#: includes/Authenticate.php:317
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
-#: includes/Authenticate.php:318
+#: includes/Authenticate.php:354
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:329
+#: includes/Authenticate.php:365
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:122
+#: includes/Main.php:124
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
@@ -555,6 +551,9 @@ msgid ""
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
+
+#~ msgid "The IdM Username is not valid."
+#~ msgstr "Die IdM-Kennung ist nicht gültig."
 
 #~ msgid "User registration is currently not allowed."
 #~ msgstr "Zurzeit ist die Benutzerregistrierung nicht erlaubt."

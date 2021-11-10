@@ -140,6 +140,7 @@ class Authenticate
         $organizationName = $atts['o'] ?? '';
 
         $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
+        $eduPersonScopedAffiliation = $atts['eduPersonScopedAffiliation'] ?? '';
         $eduPersonEntitlement = $atts['eduPersonEntitlement'] ?? '';
 
         if (is_multisite()) {
@@ -179,6 +180,7 @@ class Authenticate
             update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
             update_user_meta($userdata->ID, 'organization_name', $organizationName);
             update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userdata->ID, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
             update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if ($this->registration && is_multisite()) {
@@ -223,6 +225,7 @@ class Authenticate
             update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
             update_user_meta($userId, 'organization_name', $organizationName);
             update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
             update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if (is_multisite()) {

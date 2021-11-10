@@ -89,6 +89,7 @@ class Authenticate
         $atts = [];
 
         $_atts = $this->simplesaml->getAttributes();
+        \RRZE\Debug\log($_atts);
 
         if (!empty($_atts)) {
             do_action(
@@ -124,7 +125,6 @@ class Authenticate
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';
         }
-
         $userLogin = substr(sanitize_user($userLogin, true), 0, 60);
         if (!$userLogin) {
             $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
@@ -135,9 +135,16 @@ class Authenticate
 
         $displayName = $atts['displayName'] ?? '';
         $displayName = $displayName ?: $atts['cn'] ?? '';
+        $displayName = $displayName ?: $atts['commonName'] ?? '';
+
         $lastName = $atts['sn'] ?? '';
-        $firstName = $atts['givenName'] ?? '';
+        $lastName = $lastName ?: $atts['surname'] ?? '';
+
+        $firstName = $atts['gn'] ?? '';
+        $firstName = $firstName ?: $atts['givenName'] ?? '';
+
         $organizationName = $atts['o'] ?? '';
+        $organizationName = $organizationName ?: $atts['organizationName'] ?? '';
 
         $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
         $eduPersonScopedAffiliation = $atts['eduPersonScopedAffiliation'] ?? '';

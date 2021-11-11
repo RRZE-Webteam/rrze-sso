@@ -9,28 +9,28 @@ class UsersList
     public function onLoaded()
     {
         add_filter('manage_users_columns', [$this, 'columns']);
-        add_action('manage_users_custom_column', [$this, 'idpColumn'], 10, 3);
+        add_action('manage_users_custom_column', [$this, 'organizationColumn'], 10, 3);
         add_action('manage_users_custom_column', [$this, 'attributesColumn'], 10, 3);
         add_filter('wpmu_users_columns', [$this, 'columns']);
-        add_action('wpmu_users_custom_column', [$this, 'idpColumn'], 10, 3);
+        add_action('wpmu_users_custom_column', [$this, 'organizationColumn'], 10, 3);
         add_action('wpmu_users_custom_column', [$this, 'attributesColumn'], 10, 3);
     }
 
     public function columns($columns)
     {
-        $columns['idp'] = __('IdP', 'rrze-sso');
+        $columns['organization'] = __('Organization', 'rrze-sso');
         $columns['attributes'] = __('Attributes', 'rrze-sso');
         return $columns;
     }
 
-    public function idpColumn($value, $columnName, $userId)
+    public function organizationColumn($value, $columnName, $userId)
     {
-        if ('idp' != $columnName) {
+        if ('organization' != $columnName) {
             return $value;
         }
 
-        $samlSpIdp = get_user_meta($userId, 'saml_sp_idp', true);
-        return $samlSpIdp ? $samlSpIdp : '&mdash;';
+        $organizationName = get_user_meta($userId, 'organization_name', true);
+        return $organizationName ?: '&mdash;';
     }
 
     public function attributesColumn($value, $columnName, $userId)

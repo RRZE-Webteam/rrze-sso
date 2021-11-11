@@ -89,7 +89,6 @@ class Authenticate
         $atts = [];
 
         $_atts = $this->simplesaml->getAttributes();
-        \RRZE\Debug\log($_atts);
 
         if (!empty($_atts)) {
             do_action(

@@ -22,7 +22,16 @@ class Authenticate
      * [public description]
      * @var boolean
      */
-    public $registration;
+    protected $registration;
+
+    /**
+     * Domain scope of the FAU IdP
+     * @var array
+     */
+    protected $fauDomainScope = [
+        'fau.de',
+        'uni-erlangen.de'
+    ];
 
     public function __construct($simplesaml)
     {
@@ -92,32 +101,51 @@ class Authenticate
                     'person_attributes' => $_atts
                 ]
             );
-            $atts['uid'] = isset($_atts['urn:mace:dir:attribute-def:uid'][0]) ? $_atts['urn:mace:dir:attribute-def:uid'][0] : '';
-            $atts['mail'] = isset($_atts['urn:mace:dir:attribute-def:mail'][0]) ? $_atts['urn:mace:dir:attribute-def:mail'][0] : '';
-            $atts['displayName'] = isset($_atts['urn:mace:dir:attribute-def:displayName'][0]) ? $_atts['urn:mace:dir:attribute-def:displayName'][0] : '';
-            $atts['eduPersonAffiliation'] = isset($_atts['urn:mace:dir:attribute-def:eduPersonAffiliation']) ? $_atts['urn:mace:dir:attribute-def:eduPersonAffiliation'] : '';
-            $atts['eduPersonEntitlement'] = isset($_atts['urn:mace:dir:attribute-def:eduPersonEntitlement']) ? $_atts['urn:mace:dir:attribute-def:eduPersonEntitlement'] : '';
+
+            foreach ($_atts as $key => $value) {
+                if (
+                    is_array($value)
+                    && in_array($key, ['uid', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+                ) {
+                    $atts[$key] = $value[0];
+                } else {
+                    $atts[$key] = $value;
+                }
+            }
         }
 
-        if (empty($atts['uid'])) {
-            $this->loginDie(__("The IdM Username is not valid.", 'rrze-sso', false));
+        $domainScope = '';
+        $eduPersonPrincipalName = $atts['eduPersonPrincipalName'] ?? '';
+        if (strpos($eduPersonPrincipalName, '@') !== false) {
+            $domainScope = explode('@', $eduPersonPrincipalName)[1];
+        }
+        if (in_array($domainScope, $this->fauDomainScope)) {
+            $userLogin = $atts['uid'] ?? '';
+        } else {
+            $userLogin = $atts['eduPersonPrincipalName'] ?? '';
+        }
+        $userLogin = substr(sanitize_user($userLogin, true), 0, 60);
+        if (!$userLogin) {
+            $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
         }
 
-        $userLogin = $atts['uid'];
+        $userEmail = $atts['mail'] ?? '';
+        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
 
-        if ($userLogin != substr(sanitize_user($userLogin, true), 0, 60)) {
-            $this->loginDie(__("The IdM Username entered is not valid.", 'rrze-sso'));
-        }
+        $displayName = $atts['displayName'] ?? '';
 
-        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('%s@fau.de', base_convert(uniqid('', false), 16, 36));
+        $lastName = $atts['sn'] ?? '';
+        $lastName = $lastName ?: $atts['surname'] ?? '';
 
-        $displayName = $atts['displayName'];
-        $displayName_array = explode(' ', $displayName);
-        $firstName = array_shift($displayName_array);
-        $lastName = implode(' ', $displayName_array);
+        $firstName = $atts['gn'] ?? '';
+        $firstName = $firstName ?: $atts['givenName'] ?? '';
 
-        $eduPersonAffiliation = $atts['eduPersonAffiliation'];
-        $eduPersonEntitlement = $atts['eduPersonEntitlement'];
+        $organizationName = $atts['o'] ?? '';
+        $organizationName = $organizationName ?: $atts['organizationName'] ?? '';
+
+        $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
+        $eduPersonScopedAffiliation = $atts['eduPersonScopedAffiliation'] ?? '';
+        $eduPersonEntitlement = $atts['eduPersonEntitlement'] ?? '';
 
         if (is_multisite()) {
             global $wpdb;
@@ -154,7 +182,9 @@ class Authenticate
 
             $user = new \WP_User($userdata->ID);
             update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userdata->ID, 'organization_name', $organizationName);
             update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userdata->ID, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
             update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if ($this->registration && is_multisite()) {
@@ -197,7 +227,9 @@ class Authenticate
 
             $user = new \WP_User($userId);
             update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userId, 'organization_name', $organizationName);
             update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
             update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if (is_multisite()) {

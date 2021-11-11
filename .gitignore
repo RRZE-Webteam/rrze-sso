@@ -1,0 +1,12 @@
+### vscode ###
+.vscode/
+### NetBeans ###
+**/nbproject/
+### PhpStorm ###
+.idea/
+### macOS ###
+.DS_Store
+### composer ###
+/composer.lock
+### WordPress ###
+/languages/*.pot

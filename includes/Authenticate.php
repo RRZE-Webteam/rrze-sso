@@ -124,10 +124,11 @@ class Authenticate
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';
         }
-        $userLogin = substr(sanitize_user($userLogin, true), 0, 60);
-        if (!$userLogin) {
+        $origUserLogin = $userLogin;
+        $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
+        if ($userLogin != $origUserLogin) {
             $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
-        }
+        }        
 
         $userEmail = $atts['mail'] ?? '';
         $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));

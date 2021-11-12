@@ -106,7 +106,7 @@ class Users
                     $add_user_errors = $user_details['errors'];
                     $redirect = add_query_arg(array('page' => 'usernew', 'error' => base64_encode(serialize($add_user_errors))), 'users.php');
                 } else {
-                    $new_user_login = sanitize_user(wp_unslash($_REQUEST['user_login']), true);
+                    $new_user_login = sanitize_user(wp_unslash($_REQUEST['user_login']));
 
                     wpmu_signup_user($new_user_login, $new_user_email, array('add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST['role']));
 
@@ -138,7 +138,7 @@ class Users
         $user = new \stdClass;
 
         if (isset($_POST['user_login'])) {
-            $user->user_login = sanitize_user($_POST['user_login'], true);
+            $user->user_login = sanitize_user($_POST['user_login']);
         }
 
         if (isset($_POST['role']) && current_user_can('edit_users')) {
@@ -220,8 +220,6 @@ class Users
 
     protected static function newUserNotification($user_id)
     {
-        $options = Options::getOptions();
-
         $password = bin2hex(random_bytes(4));
         wp_set_password($password, $user_id);
 
@@ -229,9 +227,6 @@ class Users
         $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
         $strf = __('Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s', 'rrze-sso');
-        if ($options->dev_mode) {
-            $strf .= __('Password: %5$s%4$s', 'rrze-sso');
-        }
         $strf .= __('%4$sThanks!%4$s%4$s--The Team @ %2$s', 'rrze-sso');
         $message = sprintf($strf, $user->user_login, $blogname, wp_login_url(), PHP_EOL, $password);
         wp_mail($user->user_email, sprintf(__("[%s] Your user account", 'rrze-sso'), $blogname), $message);
@@ -239,17 +234,12 @@ class Users
 
     protected static function inviteUserNotification($user_id, $user_login, $user_email)
     {
-        $options = Options::getOptions();
-
         $password = bin2hex(random_bytes(4));
         wp_set_password($password, $user_id);
 
         $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
         $strf = __('Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s', 'rrze-sso');
-        if ($options->dev_mode) {
-            $strf .= __('Password: %5$s%4$s', 'rrze-sso');
-        }
         $strf .= __('%4$sThanks!%4$s%4$s--The Team @ %2$s', 'rrze-sso');
         $message = sprintf($strf, $user_login, $blogname, wp_login_url(), PHP_EOL, $password);
         wp_mail($user_email, sprintf(__("[%s] Your user account", 'rrze-sso'), $blogname), $message);
@@ -320,10 +310,10 @@ class Users
         $errors = new \WP_Error();
 
         $orig_username = $user_name;
-        $user_name = preg_replace('/\s+/', '', sanitize_user($user_name, true));
+        $user_name = preg_replace('/\s+/', '', sanitize_user($user_name));
 
-        if ($user_name != $orig_username || preg_match('/[^a-z0-9]/', $user_name)) {
-            $errors->add('user_name', __("Only lowercase letters (a-z) and numbers are allowed.", 'rrze-sso'));
+        if ($user_name != $orig_username) {
+            $errors->add('user_name', __("The username entered is not valid.", 'rrze-sso'));
             $user_name = $orig_username;
         }
 

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2021-11-10T10:42:50+00:00\n"
-"PO-Revision-Date: 2021-11-10 11:46+0100\n"
+"POT-Creation-Date: 2021-11-19T15:49:53+00:00\n"
+"PO-Revision-Date: 2021-11-19 16:51+0100\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -27,8 +27,8 @@ msgid "https://github.com/RRZE-Webteam/rrze-sso"
 msgstr "https://github.com/RRZE-Webteam/rrze-sso"
 
 #. Description of the plugin
-msgid "Plugin for creating and sending HTML Newsletters."
-msgstr "Plugin zum Erstellen und Versenden von HTML-Newslettern."
+msgid "Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress."
+msgstr "Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress."
 
 #. Author of the plugin
 msgid "RRZE-Webteam"
@@ -38,31 +38,29 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:130
+#: includes/Authenticate.php:130 includes/Users.php:316
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:171
-msgid "The user data could not be updated."
-msgstr "Die Benutzerdaten konnten nicht aktualisiert werden."
-
-#: includes/Authenticate.php:193
-msgid "The username \"%s\" is not registered on this website."
-msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
-
-#: includes/Authenticate.php:219 includes/Users.php:31
+#: includes/Authenticate.php:202 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
-#: includes/Authenticate.php:270
+#. translators: %s: username.
+#: includes/Authenticate.php:224
+msgid "The username \"%s\" is not registered on this website."
+msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
+
+#: includes/Authenticate.php:262
 msgid "ERROR:"
 msgstr "Fehler:"
 
-#: includes/Authenticate.php:276
+#. translators: %s: name of the website.
+#: includes/Authenticate.php:269
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:282
+#: includes/Authenticate.php:275
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -70,11 +68,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:291 includes/Authenticate.php:329
+#: includes/Authenticate.php:284 includes/Authenticate.php:321
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
-#: includes/Authenticate.php:303
+#. translators: %s: name of the website.
+#: includes/Authenticate.php:295
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -86,7 +85,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:308
+#: includes/Authenticate.php:300
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -95,27 +94,28 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:310
+#: includes/Authenticate.php:302
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:316
+#: includes/Authenticate.php:308
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:317
+#: includes/Authenticate.php:309
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
-#: includes/Authenticate.php:354
+#. translators: %s: name of the website.
+#: includes/Authenticate.php:347
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:365
+#: includes/Authenticate.php:358
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:124
+#: includes/Main.php:123
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
@@ -360,7 +360,7 @@ msgstr "Dieser Benutzer ist bereits ein Mitglied dieser Website."
 msgid "The requested user does not exist."
 msgstr "Der angeforderte Benutzer existiert nicht."
 
-#: includes/StdMenu.php:108 includes/Users.php:367
+#: includes/StdMenu.php:108 includes/Users.php:357
 msgid "Please enter a valid email address."
 msgstr "Bitte geben Sie eine gültige E-Mail-Adresse ein."
 
@@ -462,7 +462,7 @@ msgstr ""
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
-#: includes/Users.php:231 includes/Users.php:249
+#: includes/Users.php:229 includes/Users.php:242
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -470,65 +470,57 @@ msgstr ""
 "Hallo,%4$s%4$sIhr Benutzerkonto %1$s wurde angelegt.%4$sBitte melden Sie "
 "sich mittels des folgenden Links an die Website an:%4$s%3$s%4$s"
 
-#: includes/Users.php:233 includes/Users.php:251
-msgid "Password: %5$s%4$s"
-msgstr "Passwort: %5$s%4$s"
-
-#: includes/Users.php:235 includes/Users.php:253
+#: includes/Users.php:230 includes/Users.php:243
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
-#: includes/Users.php:237 includes/Users.php:255
+#: includes/Users.php:232 includes/Users.php:245
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
-#: includes/Users.php:326
-msgid "Only lowercase letters (a-z) and numbers are allowed."
-msgstr "Es sind nur Kleinbuchstaben und Ziffern erlaubt."
-
-#: includes/Users.php:333
+#: includes/Users.php:323
 msgid "Please enter a username."
 msgstr "Bitte geben Sie eine Benutzername ein."
 
-#: includes/Users.php:343
+#: includes/Users.php:333
 msgid "Username is not allowed."
 msgstr "Der Benutzername ist nicht erlaubt."
 
-#: includes/Users.php:347
+#: includes/Users.php:337
 msgid "Email Address or Username is not allowed."
 msgstr "Die E-Mail-Adresse ist nicht erlaubt."
 
-#: includes/Users.php:351
+#: includes/Users.php:341
 msgid "The username must be at least 4 characters."
 msgstr "Der Benutzername muss aus mindestens 4 Zeichen bestehen."
 
-#: includes/Users.php:355
+#: includes/Users.php:345
 msgid "Username may not be longer than 60 characters."
 msgstr "Der Benutzername darf nicht länger als 60 Zeichen sein."
 
-#: includes/Users.php:359
+#: includes/Users.php:349
 msgid "Usernames may not contain the underscore character."
 msgstr "Benutzernamen dürfen keinen Unterstrich enthalten."
 
-#: includes/Users.php:374
+#: includes/Users.php:364
 msgid "That email address is not allowed!"
 msgstr "Diese E-Mail-Adresse ist nicht erlaubt!"
 
-#: includes/Users.php:383
+#: includes/Users.php:373
 msgid "That email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
 
-#: includes/Users.php:388
+#: includes/Users.php:378
 msgid "Username already exists!"
 msgstr "Der Benutzername existiert bereits!"
 
-#: includes/Users.php:392
+#: includes/Users.php:382
 msgid "The email address is already used!"
 msgstr "Die E-Mail-Adresse wird bereits verwendet!"
 
 #: includes/UsersList.php:21
-msgid "IdP"
-msgstr "IdP"
+msgid "Organization"
+msgstr "Organisation"
 
 #: includes/UsersList.php:22
 msgid "Attributes"
@@ -551,6 +543,21 @@ msgid ""
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
+
+#~ msgid "Plugin for creating and sending HTML Newsletters."
+#~ msgstr "Plugin zum Erstellen und Versenden von HTML-Newslettern."
+
+#~ msgid "The user data could not be updated."
+#~ msgstr "Die Benutzerdaten konnten nicht aktualisiert werden."
+
+#~ msgid "Password: %5$s%4$s"
+#~ msgstr "Passwort: %5$s%4$s"
+
+#~ msgid "Only lowercase letters (a-z) and numbers are allowed."
+#~ msgstr "Es sind nur Kleinbuchstaben und Ziffern erlaubt."
+
+#~ msgid "IdP"
+#~ msgstr "IdP"
 
 #~ msgid "The IdM Username is not valid."
 #~ msgstr "Die IdM-Kennung ist nicht gültig."

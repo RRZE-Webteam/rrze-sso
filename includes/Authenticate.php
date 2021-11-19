@@ -128,7 +128,7 @@ class Authenticate
         $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
         if ($userLogin != $origUserLogin) {
             $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
-        }        
+        }
 
         $userEmail = $atts['mail'] ?? '';
         $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
@@ -154,29 +154,14 @@ class Authenticate
             Users::activateSignup($key);
         }
 
-        $userdata = get_user_by('login', $userLogin);
-        if ($userdata) {
-            $_samlSpIdp = get_user_meta($userdata->ID, 'saml_sp_idp', true);
-        } else {
-            $_samlSpIdp = '';
-        }
-
-        if (
-            $userdata
-            && ($_samlSpIdp === $samlSpIdp || empty($_samlSpIdp))
-        ) {
-            if ((!empty($displayName) && $userdata->data->display_name == $userLogin)) {
+        if ($userdata = get_user_by('login', $userLogin)) {
+            if ($displayName && $userdata->data->display_name == $userLogin) {
                 $userId = wp_update_user(
                     [
                         'ID' => $userdata->ID,
                         'display_name' => $displayName
                     ]
                 );
-
-                if (is_wp_error($userId)) {
-                    $this->loginDie(__("The user data could not be updated.", 'rrze-sso'));
-                }
-
                 update_user_meta($userId, 'first_name', $firstName);
                 update_user_meta($userId, 'last_name', $lastName);
             }
@@ -193,16 +178,7 @@ class Authenticate
                     add_user_to_blog(1, $userdata->ID, 'subscriber');
                 }
             }
-        } else {
-            if (!$this->registration) {
-                $this->loginDie(
-                    sprintf(
-                        __('The username "%s" is not registered on this website.', 'rrze-sso'),
-                        $userLogin
-                    )
-                );
-            }
-
+        } elseif ($this->registration) {
             if (is_multisite()) {
                 switch_to_blog(1);
             }
@@ -241,6 +217,14 @@ class Authenticate
                     add_user_to_blog(get_current_blog_id(), $userId, 'subscriber');
                 }
             }
+        } else {
+            $this->loginDie(
+                sprintf(
+                    /* translators: %s: username. */
+                    __('The username "%s" is not registered on this website.', 'rrze-sso'),
+                    $userLogin
+                )
+            );
         }
 
         if (is_multisite()) {
@@ -281,6 +265,7 @@ class Authenticate
         $output .= sprintf(
             '<p>%s</p>',
             sprintf(
+                /* translators: %s: name of the website. */
                 __("Authentication failed on the &ldquo;%s&rdquo; website.", 'rrze-sso'),
                 get_bloginfo('name')
             )
@@ -305,11 +290,10 @@ class Authenticate
 
     private function accessDie403($blogs)
     {
-        $blog_name = get_bloginfo('name');
-
         $output = '<p>' . sprintf(
+            /* translators: %s: name of the website. */
             __('You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not currently have privileges on this website. If you believe you should be able to access the &ldquo;%1$s&rdquo; dashboard, please contact the contact person of the website.', 'rrze-sso'),
-            $blog_name
+            get_bloginfo('name')
         ) . '</p>';
 
         if (!empty($blogs)) {
@@ -359,6 +343,7 @@ class Authenticate
         $output = sprintf(
             '<h3>%s</h3>' . PHP_EOL,
             sprintf(
+                /* translators: %s: name of the website. */
                 __("Contact persons for the &ldquo;%s&rdquo; website", 'rrze-sso'),
                 get_bloginfo('name')
             )

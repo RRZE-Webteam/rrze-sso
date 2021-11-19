@@ -39,6 +39,10 @@ Einstellungen › SSO
 $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] = [
   'metadata-set' => 'saml20-idp-remote',
   'entityid' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
+  'name' => [
+      'en' => 'Friedrich-Alexander-Universität Erlangen-Nürnberg (FAU)',
+      'de' => 'Friedrich-Alexander-Universität Erlangen-Nürnberg (FAU)',
+  ],
   'SingleSignOnService' =>
   [
     0 =>

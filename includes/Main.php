@@ -14,7 +14,6 @@ class Main
 
     /**
      * [__construct description]
-     * @param string $pluginFile [description]
      */
     public function __construct()
     {

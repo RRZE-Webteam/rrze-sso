@@ -6,7 +6,10 @@
 .idea/
 ### macOS ###
 .DS_Store
-### composer ###
-/composer.lock
+### Node ###
+node_modules/
+package-lock.json
 ### WordPress ###
-/languages/*.pot
+*.pot
+### Tmp ###
+_tmp/

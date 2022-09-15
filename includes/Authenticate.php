@@ -13,12 +13,6 @@ class Authenticate
     protected $options;
 
     /**
-     * [protected description]
-     * @var object
-     */
-    protected $simplesaml;
-
-    /**
      * [public description]
      * @var boolean
      */
@@ -33,13 +27,8 @@ class Authenticate
         'uni-erlangen.de'
     ];
 
-    public function __construct($simplesaml)
+    public function __construct()
     {
-        if ($simplesaml === false) {
-            return;
-        }
-        $this->simplesaml = $simplesaml;
-
         $this->options = Options::getOptions();
 
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
@@ -78,17 +67,23 @@ class Authenticate
             return $user;
         }
 
-        if (!$this->simplesaml->isAuthenticated()) {
+        $simplesaml = new SimpleSAML();
+        $simplesaml = $simplesaml->onLoaded();
+        if ($simplesaml === false) {
+            return;
+        }
+
+        if (!$simplesaml->isAuthenticated()) {
             \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-            $this->simplesaml->requireAuth();
+            $simplesaml->requireAuth();
             \SimpleSAML\Session::getSessionFromRequest()->cleanup();
         }
 
-        $samlSpIdp = $this->simplesaml->getAuthData('saml:sp:IdP');
+        $samlSpIdp = $simplesaml->getAuthData('saml:sp:IdP');
 
         $atts = [];
 
-        $_atts = $this->simplesaml->getAttributes();
+        $_atts = $simplesaml->getAttributes();
 
         if (!empty($_atts)) {
             do_action(
@@ -377,7 +372,12 @@ class Authenticate
 
     public function wpLogout()
     {
-        $this->simplesaml->logout(site_url('', 'https'));
+        $simplesaml = new SimpleSAML();
+        $simplesaml = $simplesaml->onLoaded();
+        if ($simplesaml === false) {
+            return;
+        }
+        $simplesaml->logout(site_url('', 'https'));
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
     }
 }

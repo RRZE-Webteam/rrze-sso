@@ -212,10 +212,25 @@ class Users
         $roles = get_editable_roles();
         $role = $roles[$_REQUEST['role']];
 
-        $strf = __('Hi,%5$s%5$sYou\'ve been invited to join \'%1$s\' at %2$s with the role of %3$s.%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s', 'rrze-sso');
-        $message = sprintf($strf, $blogname, home_url(), wp_specialchars_decode(translate_user_role($role['name'])), wp_login_url(), PHP_EOL);
+        $message = sprintf(
+            /* translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL. */
+            __('Hi,%5$s%5$sYou\'ve been invited to join \'%1$s\' at %2$s with the role of %3$s.%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s', 'rrze-sso'),
+            $blogname,
+            home_url(),
+            wp_specialchars_decode(translate_user_role($role['name'])),
+            wp_login_url(),
+            PHP_EOL
+        );
 
-        wp_mail($user->user_email, sprintf(__("[%s] You've been invited", 'rrze-sso'), $blogname), $message);
+        wp_mail(
+            $user->user_email,
+            sprintf(
+                /* translators: %s: Blog name. */
+                __("[%s] You've been invited", 'rrze-sso'),
+                $blogname
+            ),
+            $message
+        );
     }
 
     protected static function newUserNotification($user_id)
@@ -226,10 +241,26 @@ class Users
         $user = get_userdata($user_id);
         $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
-        $strf = __('Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s', 'rrze-sso');
-        $strf .= __('%4$sThanks!%4$s%4$s--The Team @ %2$s', 'rrze-sso');
-        $message = sprintf($strf, $user->user_login, $blogname, wp_login_url(), PHP_EOL, $password);
-        wp_mail($user->user_email, sprintf(__("[%s] Your user account", 'rrze-sso'), $blogname), $message);
+        $strf = __(
+            /* translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL. */
+            'Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s',
+            'rrze-sso'
+        );
+        $strf .= __(
+            /* translators: 2: Blog name, 4: EOL. */
+            '%4$sThanks!%4$s%4$s--The Team @ %2$s',
+            'rrze-sso'
+        );
+        $message = sprintf($strf, $user->user_login, $blogname, wp_login_url(), PHP_EOL);
+        wp_mail(
+            $user->user_email,
+            sprintf(
+                /* translators: %s: Blog name. */
+                __('[%s] Your user account', 'rrze-sso'),
+                $blogname
+            ),
+            $message
+        );
     }
 
     protected static function inviteUserNotification($user_id, $user_login, $user_email)
@@ -239,10 +270,26 @@ class Users
 
         $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
-        $strf = __('Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s', 'rrze-sso');
-        $strf .= __('%4$sThanks!%4$s%4$s--The Team @ %2$s', 'rrze-sso');
-        $message = sprintf($strf, $user_login, $blogname, wp_login_url(), PHP_EOL, $password);
-        wp_mail($user_email, sprintf(__("[%s] Your user account", 'rrze-sso'), $blogname), $message);
+        $strf = __(
+            /* translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL. */
+            'Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using the following link to the website:%4$s%3$s%4$s',
+            'rrze-sso'
+        );
+        $strf .= __(
+            /* translators: 2: Blog name, 4: EOL. */
+            '%4$sThanks!%4$s%4$s--The Team @ %2$s',
+            'rrze-sso'
+        );
+        $message = sprintf($strf, $user_login, $blogname, wp_login_url(), PHP_EOL);
+        wp_mail(
+            $user_email,
+            sprintf(
+                /* translators: %s: Blog name. */
+                __('[%s] Your user account', 'rrze-sso'),
+                $blogname
+            ),
+            $message
+        );
     }
 
     public static function activateSignup($key)
@@ -370,7 +417,14 @@ class Users
         if (is_array($allowedUserEmailDomains) && !empty($allowedUserEmailDomains)) {
             $emaildomain = substr($user_email, 1 + strpos($user_email, '@'));
             if (!in_array($emaildomain, $allowedUserEmailDomains)) {
-                $errors->add('user_email', sprintf(__("That email address domain is not allowed! Allowed domains: %s", 'rrze-sso'), implode(', ', $allowedUserEmailDomains)));
+                $errors->add(
+                    'user_email',
+                    sprintf(
+                        /* translators: %s: List of allowed domains. */
+                        __("That email address domain is not allowed! Allowed domains: %s", 'rrze-sso'),
+                        implode(', ', $allowedUserEmailDomains)
+                    )
+                );
             }
         }
 

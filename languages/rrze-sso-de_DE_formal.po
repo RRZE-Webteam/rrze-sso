@@ -2,20 +2,20 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2021-11-19T15:49:53+00:00\n"
-"PO-Revision-Date: 2021-11-19 16:52+0100\n"
+"POT-Creation-Date: 2022-09-15T12:33:54+00:00\n"
+"PO-Revision-Date: 2022-09-15 14:35+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;esc_attr__;esc_attr_e;_n:1,2;"
 "_nx:4c,1,2;_x:1,2c\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.1.1\n"
 "X-Poedit-SearchPath-0: ..\n"
 
 #. Plugin Name of the plugin
@@ -38,29 +38,29 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:130 includes/Users.php:316
+#: includes/Authenticate.php:125 includes/Users.php:363
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:202 includes/Users.php:31
+#: includes/Authenticate.php:197 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:224
+#: includes/Authenticate.php:219
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:262
+#: includes/Authenticate.php:257
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:269
+#: includes/Authenticate.php:264
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:275
+#: includes/Authenticate.php:270
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -68,12 +68,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:284 includes/Authenticate.php:321
+#: includes/Authenticate.php:279 includes/Authenticate.php:316
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:295
+#: includes/Authenticate.php:290
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -85,7 +85,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:300
+#: includes/Authenticate.php:295
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -94,28 +94,28 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:302
+#: includes/Authenticate.php:297
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:308
+#: includes/Authenticate.php:303
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:309
+#: includes/Authenticate.php:304
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:347
+#: includes/Authenticate.php:342
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:358
+#: includes/Authenticate.php:353
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:123
+#: includes/Main.php:117
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
@@ -273,7 +273,7 @@ msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:44 rrze-sso.php:80 rrze-sso.php:128
+#: includes/SimpleSAML.php:44 rrze-sso.php:99 rrze-sso.php:146
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
@@ -360,7 +360,7 @@ msgstr "Dieser Benutzer ist bereits ein Mitglied dieser Website."
 msgid "The requested user does not exist."
 msgstr "Der angeforderte Benutzer existiert nicht."
 
-#: includes/StdMenu.php:108 includes/Users.php:357
+#: includes/StdMenu.php:108 includes/Users.php:404
 msgid "Please enter a valid email address."
 msgstr "Bitte geben Sie eine gültige E-Mail-Adresse ein."
 
@@ -449,7 +449,8 @@ msgstr ""
 "<strong>Fehler:</strong>: Diese E-Mail-Adresse wurde bereits registriert, "
 "bitte wählen Sie eine andere."
 
-#: includes/Users.php:215
+#. translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL.
+#: includes/Users.php:217
 msgid ""
 "Hi,%5$s%5$sYou've been invited to join '%1$s' at %2$s with the role of %3$s."
 "%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s"
@@ -458,11 +459,13 @@ msgstr ""
 "%5$sBitte melden Sie sich mittels des folgenden Links an die Website %1$s an:"
 "%5$s %4$s"
 
-#: includes/Users.php:218
+#. translators: %s: Blog name.
+#: includes/Users.php:229
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
-#: includes/Users.php:229 includes/Users.php:242
+#. translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL.
+#: includes/Users.php:244 includes/Users.php:273
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -470,51 +473,54 @@ msgstr ""
 "Hallo,%4$s%4$sIhr Benutzerkonto %1$s wurde angelegt.%4$sBitte melden Sie "
 "sich mittels des folgenden Links an die Website an:%4$s%3$s%4$s"
 
-#: includes/Users.php:230 includes/Users.php:243
+#. translators: 2: Blog name, 4: EOL.
+#: includes/Users.php:249 includes/Users.php:278
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
-#: includes/Users.php:232 includes/Users.php:245
+#. translators: %s: Blog name.
+#: includes/Users.php:259 includes/Users.php:288
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
-#: includes/Users.php:323
+#: includes/Users.php:370
 msgid "Please enter a username."
 msgstr "Bitte geben Sie eine Benutzername ein."
 
-#: includes/Users.php:333
+#: includes/Users.php:380
 msgid "Username is not allowed."
 msgstr "Der Benutzername ist nicht erlaubt."
 
-#: includes/Users.php:337
+#: includes/Users.php:384
 msgid "Email Address or Username is not allowed."
 msgstr "Die E-Mail-Adresse ist nicht erlaubt."
 
-#: includes/Users.php:341
+#: includes/Users.php:388
 msgid "The username must be at least 4 characters."
 msgstr "Der Benutzername muss aus mindestens 4 Zeichen bestehen."
 
-#: includes/Users.php:345
+#: includes/Users.php:392
 msgid "Username may not be longer than 60 characters."
 msgstr "Der Benutzername darf nicht länger als 60 Zeichen sein."
 
-#: includes/Users.php:349
+#: includes/Users.php:396
 msgid "Usernames may not contain the underscore character."
 msgstr "Benutzernamen dürfen keinen Unterstrich enthalten."
 
-#: includes/Users.php:364
+#: includes/Users.php:411
 msgid "That email address is not allowed!"
 msgstr "Diese E-Mail-Adresse ist nicht erlaubt!"
 
-#: includes/Users.php:373
+#. translators: %s: List of allowed domains.
+#: includes/Users.php:424
 msgid "That email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
 
-#: includes/Users.php:378
+#: includes/Users.php:432
 msgid "Username already exists!"
 msgstr "Der Benutzername existiert bereits!"
 
-#: includes/Users.php:382
+#: includes/Users.php:436
 msgid "The email address is already used!"
 msgstr "Die E-Mail-Adresse wird bereits verwendet!"
 
@@ -527,7 +533,7 @@ msgid "Attributes"
 msgstr "Attribute"
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-sso.php:55
+#: rrze-sso.php:73
 msgid ""
 "The server is running PHP version %1$s. The Plugin requires at least PHP "
 "version %2$s."
@@ -536,7 +542,7 @@ msgstr ""
 "Version %2$s."
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-sso.php:62
+#: rrze-sso.php:80
 msgid ""
 "The server is running WordPress version %1$s. The Plugin requires at least "
 "WordPress version %2$s."

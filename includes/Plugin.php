@@ -46,9 +46,9 @@ class Plugin
     }
 
     /**
-     * onLoaded method
+     * loaded method
      */
-    public function onLoaded()
+    public function loaded()
     {
         $this->setBasename()
             ->setDirectory()
@@ -116,7 +116,7 @@ class Plugin
      */
     public function getPath(string $path = ''): string
     {
-        return $this->directory . ltrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return $this->directory . ($path ? trim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '');
     }
 
     /**
@@ -127,7 +127,7 @@ class Plugin
      */
     public function getUrl(string $path = ''): string
     {
-        return $this->url . ltrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return $this->url . ($path ? trim($path, '/') . '/' : '');
     }
 
     /**
@@ -137,7 +137,7 @@ class Plugin
      */
     public function setUrl(): object
     {
-        $this->url = rtrim(plugin_dir_url($this->pluginFile), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->url = rtrim(plugin_dir_url($this->pluginFile), '/') . '/';
         return $this;
     }
 
@@ -186,7 +186,7 @@ class Plugin
     public function __call(string $name, array $arguments)
     {
         if (!method_exists($this, $name)) {
-            $message = sprintf(__('Call to undefined method %1$s::%2$s', 'rrze-rsvp'), __CLASS__, $name);
+            $message = sprintf('Call to undefined method %1$s::%2$s', __CLASS__, $name);
             do_action(
                 'rrze.log.error',
                 $message,

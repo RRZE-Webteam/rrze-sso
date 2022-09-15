@@ -34,13 +34,7 @@ class Main
             return;
         }
 
-        $simplesaml = new SimpleSAML();
-        $simplesaml = $simplesaml->onLoaded();
-        if ($simplesaml === false) {
-            return;
-        }
-
-        $authenticate = new Authenticate($simplesaml);
+        $authenticate = new Authenticate();
         $authenticate->onLoaded();
 
         $this->registerRedirect();

@@ -22,7 +22,8 @@ class Options
             'simplesaml_include' => '/simplesamlphp/lib/_autoload.php',
             'simplesaml_auth_source' => 'default-sp',
             'force_sso' => 0,
-            'allowed_user_email_domains' => []
+            'allowed_user_email_domains' => [],
+            'domain_scope' => ['fau.de', 'uni-erlangen.de']
         ];
 
         return $options;

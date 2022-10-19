@@ -117,6 +117,7 @@ class Settings
         add_settings_field('simplesaml_auth_source', __("Authentication source", 'rrze-sso'), [$this, 'simpleSAMLAuthSourceField'], $this->menuPage, 'simplesaml_options_section');
         if ($this->options->force_sso) {
             add_settings_field('allowed_user_email_domains', __("Allowed User Email Domains", 'rrze-sso'), [$this, 'allowedUserEmailDomainsField'], $this->menuPage, 'simplesaml_options_section');
+            add_settings_field('domain_scope', __("Domain Scope", 'rrze-sso'), [$this, 'domainScopeField'], $this->menuPage, 'simplesaml_options_section');
         }
     }
 
@@ -180,7 +181,18 @@ class Settings
     {
         $allowedUserEmailDomains = implode(PHP_EOL, (array) $this->options->allowed_user_email_domains);
         echo '<textarea rows="5" cols="55" id="allowed_user_email_domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
-        echo '<p class="description">' . __('List of allowed domains for user email addresses.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('List of allowed domains for user email addresses. Enter one domain per line.', 'rrze-sso') . '</p>';
+    }
+
+    /**
+     * [domainScopeField description]
+     * @return void
+     */
+    public function domainScopeField()
+    {
+        $domainScope = implode(PHP_EOL, (array) $this->options->domain_scope);
+        echo '<textarea rows="5" cols="55" id="domain_scope" class="regular-text" name="' . $this->optionName . '[domain_scope]">' . esc_attr($domainScope) . '</textarea>';
+        echo '<p class="description">' . __('List of domains that do not need to be added as suffixes to the username. Enter one domain per line.', 'rrze-sso') . '</p>';
     }
 
     /**
@@ -196,8 +208,10 @@ class Settings
         $input['simplesaml_auth_source'] = isset($input['simplesaml_auth_source']) ? esc_attr(trim($input['simplesaml_auth_source'])) : $this->options->simplesaml_auth_source;
         if ($this->options->force_sso) {
             $input['allowed_user_email_domains'] = array_filter(array_map('trim', explode(PHP_EOL, $input['allowed_user_email_domains'])));
+            $input['domain_scope'] = array_filter(array_map('trim', explode(PHP_EOL, $input['domain_scope'])));
         } else {
             $input['allowed_user_email_domains'] = $this->options->allowed_user_email_domains;
+            $input['domain_scope'] = $this->options->domain_scope;
         }
 
         return $input;

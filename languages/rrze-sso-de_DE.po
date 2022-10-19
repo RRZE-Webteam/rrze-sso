@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2022-09-15T12:33:54+00:00\n"
-"PO-Revision-Date: 2022-09-15 14:34+0200\n"
+"POT-Creation-Date: 2022-10-19T12:46:35+00:00\n"
+"PO-Revision-Date: 2022-10-19 14:48+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -38,29 +38,29 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:125 includes/Users.php:363
+#: includes/Authenticate.php:116 includes/Users.php:363
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:197 includes/Users.php:31
+#: includes/Authenticate.php:188 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:219
+#: includes/Authenticate.php:210
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:257
+#: includes/Authenticate.php:248
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:264
+#: includes/Authenticate.php:255
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:270
+#: includes/Authenticate.php:261
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -68,12 +68,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:279 includes/Authenticate.php:316
+#: includes/Authenticate.php:270 includes/Authenticate.php:307
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:290
+#: includes/Authenticate.php:281
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -85,7 +85,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:295
+#: includes/Authenticate.php:286
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -94,24 +94,24 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:297
+#: includes/Authenticate.php:288
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:303
+#: includes/Authenticate.php:294
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:304
+#: includes/Authenticate.php:295
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:342
+#: includes/Authenticate.php:333
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:353
+#: includes/Authenticate.php:344
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
@@ -216,7 +216,7 @@ msgstr "E-Mail-Adresse"
 msgid "SSO"
 msgstr "SSO"
 
-#: includes/Settings.php:92 includes/Settings.php:140
+#: includes/Settings.php:92 includes/Settings.php:141
 msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
@@ -236,39 +236,54 @@ msgstr "Authentifizierungsquelle"
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
-#: includes/Settings.php:129
+#: includes/Settings.php:120
+msgid "Domain Scope"
+msgstr "Domänenbereich"
+
+#: includes/Settings.php:130
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
 
-#: includes/Settings.php:130
+#: includes/Settings.php:131
 msgid "General SSO Settings."
 msgstr "Allgemeine SSO-Einstellungen."
 
-#: includes/Settings.php:141
+#: includes/Settings.php:142
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: includes/Settings.php:142
+#: includes/Settings.php:143
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: includes/Settings.php:152
+#: includes/Settings.php:153
 msgid "SimpleSAMLphp"
 msgstr "SimpleSAMLphp"
 
-#: includes/Settings.php:153
+#: includes/Settings.php:154
 msgid "Service Provider Settings."
 msgstr "Einstellungen des Service Providers."
 
-#: includes/Settings.php:163
+#: includes/Settings.php:164
 msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
-#: includes/Settings.php:183
-msgid "List of allowed domains for user email addresses."
-msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
+#: includes/Settings.php:184
+msgid ""
+"List of allowed domains for user email addresses. Enter one domain per line."
+msgstr ""
+"Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen. Geben Sie eine "
+"Domäne pro Zeile ein."
 
-#: includes/Settings.php:228
+#: includes/Settings.php:195
+msgid ""
+"List of domains that do not need to be added as suffixes to the username. "
+"Enter one domain per line."
+msgstr ""
+"Liste der Domänen, die dem Benutzernamen nicht als Suffixe hinzugefügt "
+"werden müssen. Geben Sie eine Domäne pro Zeile ein."
+
+#: includes/Settings.php:242
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 

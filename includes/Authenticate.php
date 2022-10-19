@@ -18,15 +18,6 @@ class Authenticate
      */
     protected $registration;
 
-    /**
-     * Domain scope of the FAU IdP
-     * @var array
-     */
-    protected $fauDomainScope = [
-        'fau.de',
-        'uni-erlangen.de'
-    ];
-
     public function __construct()
     {
         $this->options = Options::getOptions();
@@ -114,7 +105,7 @@ class Authenticate
         if (strpos($eduPersonPrincipalName, '@') !== false) {
             $domainScope = explode('@', $eduPersonPrincipalName)[1];
         }
-        if (in_array($domainScope, $this->fauDomainScope)) {
+        if (in_array($domainScope, $this->options->domain_scope)) {
             $userLogin = $atts['uid'] ?? '';
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';

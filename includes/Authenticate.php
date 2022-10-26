@@ -107,6 +107,8 @@ class Authenticate
         }
         if (in_array($domainScope, $this->options->domain_scope)) {
             $userLogin = $atts['uid'] ?? '';
+        } elseif ($domainScope === 'uni-erlangen.de') {
+            $userLogin = explode('@', $eduPersonPrincipalName)[0] . '@fau.de';
         } else {
             $userLogin = $atts['eduPersonPrincipalName'] ?? '';
         }

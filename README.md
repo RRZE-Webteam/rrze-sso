@@ -37,51 +37,42 @@ Einstellungen › SSO
 ```php
 <?php
 $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] = [
-  'metadata-set' => 'saml20-idp-remote',
-  'entityid' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
-  'name' => [
-      'en' => 'Friedrich-Alexander-Universität Erlangen-Nürnberg (FAU)',
-      'de' => 'Friedrich-Alexander-Universität Erlangen-Nürnberg (FAU)',
-  ],
-  'SingleSignOnService' =>
-  [
-    0 =>
-    [
-      'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
-      'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+    'metadata-set' => 'saml20-idp-remote',
+    'entityid' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
+    'SingleSignOnService' => [
+        [
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+            'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+        ],
+        [
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+            'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+        ],
+        [
+            'index' => 0,
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:SOAP',
+            'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+        ],
     ],
-    1 =>
-    [
-      'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
-      'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+    'SingleLogoutService' => [
+        [
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+            'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SingleLogoutService.php',
+        ],
     ],
-    2 =>
-    [
-      'index' => 0,
-      'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:SOAP',
-      'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SSOService.php',
+    'certData' => 'MIIEFzCCAn+gAwIBAgIUZu6JGUynt+HmkDyTBVufV8brvfIwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAxMXd3d3LnNzby51bmktZXJsYW5nZW4uZGUwHhcNMjIxMDI1MTI0NDIzWhcNMjUxMTE5MTI0NDIzWjAiMSAwHgYDVQQDExd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAKV+3afbJg5B5r94ZuQMPRfFJdmixpAPiRqqif0hoXC4GAAd09txIWp2sMLWOEseiBYfSndBOz5OUHfyxvQ3IKubucP26leZxvyEDBymlaMw6ad2pi5JdCycJegGgkH2rThiNRK9rYLjyO5oUuCNumMBwqN1rCxaTsf6vC97cv5sEAoH551jNSPDYVvbn1/uUNw15GQuvvU43N3N3efiLnbRjUE8Ih/qDYp6v63/nxExINt7xgErgvD82k0gHrBJv7BIOMe7WmTQ2yQYC8FnzvCwHdHnZ8i1vRzPDYFTktxxn6Vsu1YMeNdd2K4Q+LLb/ljdoSxrNMKiwz9ls1Mj059hxlo3Q1g6JAYSZc9Lzqo26iTYLlq/LfF259OENIZX6FeQqDExK8BPLX6OXlneeksTxl9Bohsga3QPtRMRlGF415hmtpunW9LSiF1VewcKwpvjoEcDK+wutI/N7RNRhLNauUPQz16v1gZJDim4/zLB3Nfh19kLfJnlcRVnIkpKQQIDAQABo0UwQzAiBgNVHREEGzAZghd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTAdBgNVHQ4EFgQUPB7olQAUEMwG9ImXfbDXtdLNPeUwDQYJKoZIhvcNAQELBQADggGBAEiIFXch6BzXOeU4S5/YgTQ/dHYpwHAc93YYP6WmlzEambSx+HGu4c6eav9zSrRhIVxwHkPE1nGJzBvtcM0FMML9/5U7keOtAcD7jkcHfnrC5cz9bWEbVpu4pSGVK1OWvC24gqwLn7++W3lx7prwpN7fO1uCSsudT3oOhSjy3oEJvtnBS26pqf/FFBUl6slZ4M3uVGUuf4q0PVXRIjK04oM8AwSO2Bb3tYU4u1lTBJkXJ+nFZGd8BcyYpFkQVY9/8iElY2qDWS6q1hNJ4c/phS7heJlk98MqtBeFw/Jo4juukdfIAtGmRpLg2xN3FzO2eoIzFgwQKrMrwMrTlovL71MEYkX/2NJ+TUCMcwseeAQaa8IgCXWfP7eD/RnS3DNj6su3Zes7W9HIpUJP33Ds3I+h0+QU9OYTnsjhxfOZOUm8BxNLvtBwVxKUmtJkh3zX/8F/exHXRaB2h0jx7iQ8bjpsGGnTE0izn0b/R3YuhH6yzt5nW8FaoHVQC/A7NVOfhg==',
+    'NameIDFormat' => 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    'scope' => [
+        'fau.de',
+        'uni-erlangen.de',
     ],
-  ],
-  'SingleLogoutService' =>
-  [
-    0 =>
-    [
-      'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
-      'Location' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/SingleLogoutService.php',
+    'contacts' => [
+        [
+            'emailAddress' => 'sso-support@fau.de',
+            'contactType' => 'technical',
+            'givenName' => 'SSO-Admins RRZE FAU',
+        ],
     ],
-  ],
-  'certData' => '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',
-  'NameIDFormat' => 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-  'contacts' =>
-  [
-    0 =>
-    [
-      'emailAddress' => 'sso-support@fau.de',
-      'contactType' => 'technical',
-      'givenName' => 'Frank',
-      'surName' => 'Tröger',
-    ],
-  ],
 ];
 ```
 

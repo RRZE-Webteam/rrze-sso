@@ -110,14 +110,14 @@ class Settings
         }
 
         add_settings_section('sso_options_section', false, [$this, 'sso_settings_section'], $this->menuPage);
-        add_settings_field('force_sso', __("Allow SSO", 'rrze-sso'), [$this, 'ssoField'], $this->menuPage, 'sso_options_section');
+        add_settings_field('force_sso', __("SSO Authentication", 'rrze-sso'), [$this, 'ssoField'], $this->menuPage, 'sso_options_section');
 
         add_settings_section('simplesaml_options_section', false, [$this, 'simpleSAMLSettingsSection'], $this->menuPage);
-        add_settings_field('simplesaml_include', __("Autoload path", 'rrze-sso'), [$this, 'simpleSAMLIncludeField'], $this->menuPage, 'simplesaml_options_section');
-        add_settings_field('simplesaml_auth_source', __("Authentication source", 'rrze-sso'), [$this, 'simpleSAMLAuthSourceField'], $this->menuPage, 'simplesaml_options_section');
+        add_settings_field('simplesaml_include', __("Autoload Path", 'rrze-sso'), [$this, 'simpleSAMLIncludeField'], $this->menuPage, 'simplesaml_options_section');
+        add_settings_field('simplesaml_auth_source', __("Authentication Source", 'rrze-sso'), [$this, 'simpleSAMLAuthSourceField'], $this->menuPage, 'simplesaml_options_section');
         if ($this->options->force_sso) {
-            add_settings_field('allowed_user_email_domains', __("Allowed User Email Domains", 'rrze-sso'), [$this, 'allowedUserEmailDomainsField'], $this->menuPage, 'simplesaml_options_section');
             add_settings_field('domain_scope', __("Domain Scope", 'rrze-sso'), [$this, 'domainScopeField'], $this->menuPage, 'simplesaml_options_section');
+            add_settings_field('allowed_user_email_domains', __("Allowed User Email Domains", 'rrze-sso'), [$this, 'allowedUserEmailDomainsField'], $this->menuPage, 'simplesaml_options_section');
         }
     }
 
@@ -174,17 +174,6 @@ class Settings
     }
 
     /**
-     * [allowedUserEmailDomainsField description]
-     * @return void
-     */
-    public function allowedUserEmailDomainsField()
-    {
-        $allowedUserEmailDomains = implode(PHP_EOL, (array) $this->options->allowed_user_email_domains);
-        echo '<textarea rows="5" cols="55" id="allowed_user_email_domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
-        echo '<p class="description">' . __('List of allowed domains for user email addresses. Enter one domain per line.', 'rrze-sso') . '</p>';
-    }
-
-    /**
      * [domainScopeField description]
      * @return void
      */
@@ -192,7 +181,23 @@ class Settings
     {
         $domainScope = implode(PHP_EOL, (array) $this->options->domain_scope);
         echo '<textarea rows="5" cols="55" id="domain_scope" class="regular-text" name="' . $this->optionName . '[domain_scope]">' . esc_attr($domainScope) . '</textarea>';
-        echo '<p class="description">' . __('List of domains that do not need to be added as suffixes to the username. Enter one domain per line.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('List of domains to be added as suffix to the username.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('The domain suffix can have an alias. Use the ">" separator to indicate the alias.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('If the field is left empty or a certain domain is not found in the list then the domain suffix will not be used.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('Enter one domain per line.', 'rrze-sso') . '</p>';
+    }
+
+    /**
+     * [allowedUserEmailDomainsField description]
+     * @return void
+     */
+    public function allowedUserEmailDomainsField()
+    {
+        $allowedUserEmailDomains = implode(PHP_EOL, (array) $this->options->allowed_user_email_domains);
+        echo '<textarea rows="5" cols="55" id="allowed_user_email_domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
+        echo '<p class="description">' . __('List of allowed domains for user email addresses.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('If the field is left empty then all email domains are allowed.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('Enter one email domain per line.', 'rrze-sso') . '</p>';
     }
 
     /**

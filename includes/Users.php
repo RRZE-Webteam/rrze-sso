@@ -42,18 +42,10 @@ class Users
 
             $user_details = null;
             $user_email = wp_unslash($_REQUEST['email']);
-            if (strpos($user_email, '@') !== false) {
+            $user_details = get_user_by('login', $user_email);
+            if (!$user_details) {
                 $user_details = get_user_by('email', $user_email);
-            } else {
-                if (is_super_admin()) {
-                    $user_details = get_user_by('login', $user_email);
-                } else {
-                    //wp_redirect(add_query_arg(array('page' => 'usernew', 'update' => 'enter_email'), 'users.php'));
-                    //exit;
-                    $user_details = get_user_by('login', $user_email);
-                }
             }
-
             if (!$user_details) {
                 wp_redirect(add_query_arg(array('page' => 'usernew', 'update' => 'does_not_exist'), 'users.php'));
                 exit;

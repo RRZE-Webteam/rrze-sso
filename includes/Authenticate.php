@@ -91,7 +91,7 @@ class Authenticate
             foreach ($_atts as $key => $value) {
                 if (
                     is_array($value)
-                    && in_array($key, ['uid', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+                    && in_array($key, ['uid', 'subject-id', 'eduPersonUniqueId', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
                 ) {
                     $atts[$key] = $value[0];
                 } else {
@@ -101,17 +101,22 @@ class Authenticate
         }
 
         $domainScope = '';
-        $eduPersonPrincipalName = $atts['eduPersonPrincipalName'] ?? '';
-        if (strpos($eduPersonPrincipalName, '@') !== false) {
-            $domainScope = explode('@', $eduPersonPrincipalName)[1];
+        $userLogin = $atts['uid'] ?? '';
+        $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
+
+        if (strpos($subjectId, '@') !== false) {
+            $domainScope = explode('@', $subjectId)[1];
         }
-        if (in_array($domainScope, $this->options->domain_scope)) {
-            $userLogin = $atts['uid'] ?? '';
-        } elseif ($domainScope === 'uni-erlangen.de') {
-            $userLogin = explode('@', $eduPersonPrincipalName)[0] . '@fau.de';
-        } else {
-            $userLogin = $atts['eduPersonPrincipalName'] ?? '';
+
+        foreach ($this->options->domain_scope as $domain) {
+            if (strpos($domain, $domainScope) !== false) {
+                if (strpos($domain, '>') !== false) {
+                    $domainScope = explode('>', $domain)[1];
+                }
+                $userLogin = explode('@', $subjectId)[0] . '@' . $domainScope;
+            }
         }
+
         $origUserLogin = $userLogin;
         $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
         if ($userLogin != $origUserLogin) {

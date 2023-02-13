@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2022-10-19T12:46:35+00:00\n"
-"PO-Revision-Date: 2022-10-19 14:48+0200\n"
+"POT-Creation-Date: 2023-02-13T08:12:20+00:00\n"
+"PO-Revision-Date: 2023-02-13 09:17+0100\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -15,7 +15,7 @@ msgstr ""
 "_nx:4c,1,2;_x:1,2c\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-SearchPath-0: ..\n"
 
 #. Plugin Name of the plugin
@@ -38,29 +38,29 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:116 includes/Users.php:363
+#: includes/Authenticate.php:123 includes/Users.php:355
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:188 includes/Users.php:31
+#: includes/Authenticate.php:195 includes/Users.php:31
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:210
+#: includes/Authenticate.php:217
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:248
+#: includes/Authenticate.php:255
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:255
+#: includes/Authenticate.php:262
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:261
+#: includes/Authenticate.php:268
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -68,12 +68,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:270 includes/Authenticate.php:307
+#: includes/Authenticate.php:277 includes/Authenticate.php:314
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:281
+#: includes/Authenticate.php:288
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -85,7 +85,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:286
+#: includes/Authenticate.php:293
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -94,24 +94,24 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:288
+#: includes/Authenticate.php:295
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:294
+#: includes/Authenticate.php:301
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:295
+#: includes/Authenticate.php:302
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:333
+#: includes/Authenticate.php:340
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:344
+#: includes/Authenticate.php:351
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
@@ -199,16 +199,16 @@ msgid "User added."
 msgstr "Benutzer hinzugefügt."
 
 #: includes/NetworkMenu.php:67 includes/NetworkMenu.php:100
-#: includes/StdMenu.php:74 includes/StdMenu.php:120 includes/StdMenu.php:208
-#: includes/StdMenu.php:252
+#: includes/StdMenu.php:74 includes/StdMenu.php:121 includes/StdMenu.php:210
+#: includes/StdMenu.php:254
 msgid "Add New User"
 msgstr "Neuen Benutzer hinzufügen"
 
-#: includes/NetworkMenu.php:91 includes/StdMenu.php:224
+#: includes/NetworkMenu.php:91 includes/StdMenu.php:226
 msgid "IdM Username"
 msgstr "IdM-Kennung"
 
-#: includes/NetworkMenu.php:95 includes/StdMenu.php:228
+#: includes/NetworkMenu.php:95 includes/StdMenu.php:230
 msgid "Email Address"
 msgstr "E-Mail-Adresse"
 
@@ -221,24 +221,24 @@ msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
 #: includes/Settings.php:113
-msgid "Allow SSO"
-msgstr "Erlaube SSO"
+msgid "SSO Authentication"
+msgstr "SSO-Authentifizierung"
 
 #: includes/Settings.php:116
-msgid "Autoload path"
+msgid "Autoload Path"
 msgstr "Autoload-Pfad"
 
 #: includes/Settings.php:117
-msgid "Authentication source"
+msgid "Authentication Source"
 msgstr "Authentifizierungsquelle"
 
 #: includes/Settings.php:119
-msgid "Allowed User Email Domains"
-msgstr "Zulässige Benutzer-E-Mail-Domänen"
-
-#: includes/Settings.php:120
 msgid "Domain Scope"
 msgstr "Domänenbereich"
+
+#: includes/Settings.php:120
+msgid "Allowed User Email Domains"
+msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
 #: includes/Settings.php:130
 msgid "Single Sign-On"
@@ -269,21 +269,44 @@ msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
 #: includes/Settings.php:184
-msgid ""
-"List of allowed domains for user email addresses. Enter one domain per line."
+msgid "List of domains to be added as suffix to the username."
 msgstr ""
-"Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen. Geben Sie eine "
-"Domäne pro Zeile ein."
+"Liste der Domänen, die dem Benutzernamen als Suffix hinzugefügt werden "
+"sollen."
 
-#: includes/Settings.php:195
+#: includes/Settings.php:185
 msgid ""
-"List of domains that do not need to be added as suffixes to the username. "
-"Enter one domain per line."
+"The domain suffix can have an alias. Use the \">\" separator to indicate the "
+"alias."
 msgstr ""
-"Liste der Domänen, die dem Benutzernamen nicht als Suffixe hinzugefügt "
-"werden müssen. Geben Sie eine Domäne pro Zeile ein."
+"Das Domain-Suffix kann einen Alias haben. Verwenden Sie das Trennzeichen "
+"„>“, um den Alias anzugeben."
 
-#: includes/Settings.php:242
+#: includes/Settings.php:186
+msgid ""
+"If the field is left empty or a certain domain is not found in the list then "
+"the domain suffix will not be used."
+msgstr ""
+"Wenn das Feld leer gelassen wird oder eine bestimmte Domain nicht in der "
+"Liste gefunden wird, wird das Domain-Suffix nicht verwendet."
+
+#: includes/Settings.php:187
+msgid "Enter one domain per line."
+msgstr "Geben Sie eine Domäne pro Zeile ein."
+
+#: includes/Settings.php:198
+msgid "List of allowed domains for user email addresses."
+msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
+
+#: includes/Settings.php:199
+msgid "If the field is left empty then all email domains are allowed."
+msgstr "Wenn das Feld leer gelassen wird, sind alle E-Mail-Domänen zulässig."
+
+#: includes/Settings.php:200
+msgid "Enter one email domain per line."
+msgstr "Geben Sie eine E-Mail-Domäne pro Zeile ein."
+
+#: includes/Settings.php:247
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
@@ -375,15 +398,15 @@ msgstr "Dieser Benutzer ist bereits ein Mitglied dieser Website."
 msgid "The requested user does not exist."
 msgstr "Der angeforderte Benutzer existiert nicht."
 
-#: includes/StdMenu.php:108 includes/Users.php:404
+#: includes/StdMenu.php:108 includes/Users.php:396
 msgid "Please enter a valid email address."
 msgstr "Bitte geben Sie eine gültige E-Mail-Adresse ein."
 
-#: includes/StdMenu.php:122 includes/StdMenu.php:162 includes/StdMenu.php:201
+#: includes/StdMenu.php:123 includes/StdMenu.php:164 includes/StdMenu.php:203
 msgid "Add Existing User"
 msgstr "Bestehenden Benutzer hinzufügen"
 
-#: includes/StdMenu.php:168 includes/StdMenu.php:172
+#: includes/StdMenu.php:170 includes/StdMenu.php:174
 msgid ""
 "Enter the email address or username of an existing user on this network to "
 "invite them to this site. That person will be sent an email asking them to "
@@ -393,29 +416,29 @@ msgstr ""
 "Nutzers dieses Netzwerkes ein um ihn zu dieser Website einzuladen. Dieser "
 "Person wird eine Mail gesendet um die Einladung zu bestätigen."
 
-#: includes/StdMenu.php:169 includes/StdMenu.php:173
+#: includes/StdMenu.php:171 includes/StdMenu.php:175
 msgid "Email Address or Username"
 msgstr "E-Mail-Adresse oder Benutzername"
 
-#: includes/StdMenu.php:186 includes/StdMenu.php:232
+#: includes/StdMenu.php:188 includes/StdMenu.php:234
 msgid "Role"
 msgstr "Rolle"
 
-#: includes/StdMenu.php:195 includes/StdMenu.php:245
+#: includes/StdMenu.php:197 includes/StdMenu.php:247
 msgid "Skip Confirmation Email"
 msgstr "Keine Bestätigungs-E-Mail"
 
-#: includes/StdMenu.php:196 includes/StdMenu.php:246
+#: includes/StdMenu.php:198 includes/StdMenu.php:248
 msgid "Add the user without sending an email that requires their confirmation."
 msgstr ""
 "Benutzer hinzufügen ohne eine E-Mail zu versenden, die bestätigt werden muss."
 
-#: includes/StdMenu.php:210
+#: includes/StdMenu.php:212
 msgid "Create a brand new user and add them to this website."
 msgstr ""
 "Legen Sie einen neuen Benutzer an und fügen Sie ihn dieser Website hinzu."
 
-#: includes/StdMenu.php:224 includes/StdMenu.php:228
+#: includes/StdMenu.php:226 includes/StdMenu.php:230
 msgid "(required)"
 msgstr "(erforderlich)"
 
@@ -423,15 +446,15 @@ msgstr "(erforderlich)"
 msgid "Cannot create an empty user."
 msgstr "Es kann kein leerer Benutzer angelegt werden."
 
-#: includes/Users.php:154
+#: includes/Users.php:146
 msgid "You can't give users that role."
 msgstr "Sie können keinem Benutzer diese Rolle geben."
 
-#: includes/Users.php:178
+#: includes/Users.php:170
 msgid "<strong>ERROR</strong>: Please enter a username."
 msgstr "<strong>Fehler:</strong> Bitte geben Sie einen Benutzernamen ein."
 
-#: includes/Users.php:182
+#: includes/Users.php:174
 msgid ""
 "<strong>ERROR</strong>: This username is invalid because it uses illegal "
 "characters. Please enter a valid username."
@@ -440,7 +463,7 @@ msgstr ""
 "er ungültige Zeichen enthält. Bitte geben Sie einen gültigen Benutzernamen "
 "an."
 
-#: includes/Users.php:186
+#: includes/Users.php:178
 msgid ""
 "<strong>ERROR</strong>: This username is already registered. Please choose "
 "another one."
@@ -448,15 +471,15 @@ msgstr ""
 "<strong>Fehler:</strong>: Dieser Benutzername ist bereits registriert. Bitte "
 "wähle Sie einen anderen."
 
-#: includes/Users.php:190
+#: includes/Users.php:182
 msgid "<strong>ERROR</strong>: Please enter an email address."
 msgstr "<strong>Fehler:</strong> Bitte eine E-Mail-Adresse eingeben."
 
-#: includes/Users.php:192
+#: includes/Users.php:184
 msgid "<strong>ERROR</strong>: The email address isn't correct."
 msgstr "<strong>Fehler:</strong>: Die E-Mail-Adresse ist ungültig."
 
-#: includes/Users.php:194
+#: includes/Users.php:186
 msgid ""
 "<strong>ERROR</strong>: This email address is already registered, please "
 "choose another one."
@@ -465,7 +488,7 @@ msgstr ""
 "bitte wählen Sie eine andere."
 
 #. translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL.
-#: includes/Users.php:217
+#: includes/Users.php:209
 msgid ""
 "Hi,%5$s%5$sYou've been invited to join '%1$s' at %2$s with the role of %3$s."
 "%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s"
@@ -475,12 +498,12 @@ msgstr ""
 "%5$s %4$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:229
+#: includes/Users.php:221
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
 #. translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL.
-#: includes/Users.php:244 includes/Users.php:273
+#: includes/Users.php:236 includes/Users.php:265
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -489,53 +512,53 @@ msgstr ""
 "sich mittels des folgenden Links an die Website an:%4$s%3$s%4$s"
 
 #. translators: 2: Blog name, 4: EOL.
-#: includes/Users.php:249 includes/Users.php:278
+#: includes/Users.php:241 includes/Users.php:270
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:259 includes/Users.php:288
+#: includes/Users.php:251 includes/Users.php:280
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
-#: includes/Users.php:370
+#: includes/Users.php:362
 msgid "Please enter a username."
 msgstr "Bitte geben Sie eine Benutzername ein."
 
-#: includes/Users.php:380
+#: includes/Users.php:372
 msgid "Username is not allowed."
 msgstr "Der Benutzername ist nicht erlaubt."
 
-#: includes/Users.php:384
+#: includes/Users.php:376
 msgid "Email Address or Username is not allowed."
 msgstr "Die E-Mail-Adresse ist nicht erlaubt."
 
-#: includes/Users.php:388
+#: includes/Users.php:380
 msgid "The username must be at least 4 characters."
 msgstr "Der Benutzername muss aus mindestens 4 Zeichen bestehen."
 
-#: includes/Users.php:392
+#: includes/Users.php:384
 msgid "Username may not be longer than 60 characters."
 msgstr "Der Benutzername darf nicht länger als 60 Zeichen sein."
 
-#: includes/Users.php:396
+#: includes/Users.php:388
 msgid "Usernames may not contain the underscore character."
 msgstr "Benutzernamen dürfen keinen Unterstrich enthalten."
 
-#: includes/Users.php:411
+#: includes/Users.php:403
 msgid "That email address is not allowed!"
 msgstr "Diese E-Mail-Adresse ist nicht erlaubt!"
 
 #. translators: %s: List of allowed domains.
-#: includes/Users.php:424
+#: includes/Users.php:416
 msgid "That email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
 
-#: includes/Users.php:432
+#: includes/Users.php:424
 msgid "Username already exists!"
 msgstr "Der Benutzername existiert bereits!"
 
-#: includes/Users.php:436
+#: includes/Users.php:428
 msgid "The email address is already used!"
 msgstr "Die E-Mail-Adresse wird bereits verwendet!"
 
@@ -564,24 +587,3 @@ msgid ""
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
-
-#~ msgid "Plugin for creating and sending HTML Newsletters."
-#~ msgstr "Plugin zum Erstellen und Versenden von HTML-Newslettern."
-
-#~ msgid "The user data could not be updated."
-#~ msgstr "Die Benutzerdaten konnten nicht aktualisiert werden."
-
-#~ msgid "Password: %5$s%4$s"
-#~ msgstr "Passwort: %5$s%4$s"
-
-#~ msgid "Only lowercase letters (a-z) and numbers are allowed."
-#~ msgstr "Es sind nur Kleinbuchstaben und Ziffern erlaubt."
-
-#~ msgid "IdP"
-#~ msgstr "IdP"
-
-#~ msgid "The IdM Username is not valid."
-#~ msgstr "Die IdM-Kennung ist nicht gültig."
-
-#~ msgid "User registration is currently not allowed."
-#~ msgstr "Zurzeit ist die Benutzerregistrierung nicht erlaubt."

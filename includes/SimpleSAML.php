@@ -10,13 +10,13 @@ defined('ABSPATH') || exit;
 class SimpleSAML
 {
     /**
-     * [protected description]
+     * Settings options
      * @var object
      */
     protected $options;
 
     /**
-     * [__construct description]
+     * Constructor
      */
     public function __construct()
     {
@@ -25,15 +25,15 @@ class SimpleSAML
 
     /**
      * onLoaded
-     * @return [type] [description]
+     * @return mixed false or \SimpleSAML\Auth\Simple
      */
     public function onLoaded()
     {
-        $simplesaml = $this->loadSimpleSAML();
-        if (is_wp_error($simplesaml)) {
-            add_action('admin_init', function () use ($simplesaml) {
+        $simplesamlAuthSimple = $this->authSimple();
+        if (is_wp_error($simplesamlAuthSimple)) {
+            add_action('admin_init', function () use ($simplesamlAuthSimple) {
                 if (current_user_can('activate_plugins')) {
-                    $error = $simplesaml->get_error_message();
+                    $error = $simplesamlAuthSimple->get_error_message();
                     $pluginData = get_plugin_data(plugin()->getFile());
                     $pluginName = $pluginData['Name'];
                     $tag = is_plugin_active_for_network(plugin()->getBaseName()) ? 'network_admin_notices' : 'admin_notices';
@@ -51,10 +51,14 @@ class SimpleSAML
             });
             return false;
         }
-        return $simplesaml;
+        return $simplesamlAuthSimple;
     }
 
-    protected function loadSimpleSAML()
+    /**
+     * Load/Instantiate \SimpleSAML\Auth\Simple class.
+     * @return mixed \WP_Error or \SimpleSAML\Auth\Simple
+     */
+    protected function authSimple()
     {
         if (file_exists(WP_CONTENT_DIR . $this->options->simplesaml_include)) {
             require_once(WP_CONTENT_DIR . $this->options->simplesaml_include);

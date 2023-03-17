@@ -10,6 +10,41 @@ defined('ABSPATH') || exit;
 class Utils
 {
     /**
+     * Get available IdPs list.
+     * @param string $simplesamlInclude
+     * @return mixed
+     */
+    public static function getIdps(string $simplesamlInclude)
+    {
+        if (!file_exists(WP_CONTENT_DIR . $simplesamlInclude)) {
+            return null;
+        }
+
+        $saml20IdpRemoteFile = WP_CONTENT_DIR . explode('/lib/', $simplesamlInclude)[0] . '/metadata/saml20-idp-remote.php';
+        if (!file_exists($saml20IdpRemoteFile)) {
+            return null;
+        }
+        // Load $metadata array.
+        require_once($saml20IdpRemoteFile);
+
+        $locale = get_locale();
+        $lang = explode('_', $locale)[0];
+        $idps = [];
+        foreach ($metadata as $key => $value) {
+            if (isset($value['name'][$lang])) {
+                $name = $value['name'][$lang];
+            } elseif (isset($value['name']) && is_string($value['name'])) {
+                $name = $value['name'];
+            } else {
+                $name = parse_url($key, PHP_URL_HOST);
+            }
+            $idps[$key] = $name;
+        }
+
+        return $idps;
+    }
+
+    /**
      * Log errors by writing to the debug.log file.
      */
     public static function debug($input, string $level = 'i')

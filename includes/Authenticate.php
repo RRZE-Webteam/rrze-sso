@@ -7,21 +7,42 @@ defined('ABSPATH') || exit;
 class Authenticate
 {
     /**
-     * [protected description]
+     * Settings options
      * @var object
      */
     protected $options;
 
     /**
-     * [public description]
+     * \SimpleSAML\Auth\Simple
+     * @var object
+     */
+    protected $simplesamlAuthSimple;
+
+    /**
+     * Users can register
      * @var boolean
      */
     protected $registration;
 
-    public function __construct()
+
+    /**
+     * Class constructor
+     *
+     * @param object \SimpleSAML\Auth\Simple
+     * @return bool
+     */
+    public function __construct($simplesamlAuthSimple)
     {
         $this->options = Options::getOptions();
+        if (!is_a($simplesamlAuthSimple, '\SimpleSAML\Auth\Simple')) {
+            return false;
+        }
+        $this->simplesamlAuthSimple = $simplesamlAuthSimple;
+        return true;
+    }
 
+    public function onLoaded()
+    {
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
         remove_action('authenticate', 'wp_authenticate_username_password', 20, 3);
         remove_action('authenticate', 'wp_authenticate_email_password', 20, 3);
@@ -31,10 +52,19 @@ class Authenticate
         add_action('wp_logout', [$this, 'wpLogout']);
 
         add_filter('wp_auth_check_same_domain', '__return_false');
-    }
 
-    public function onLoaded()
-    {
+        if (
+            (is_admin()
+                || is_customize_preview()
+                //|| is_admin_bar_showing()
+            )
+            && is_user_logged_in()
+            && !$this->simplesamlAuthSimple->isAuthenticated()
+        ) {
+            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+            wp_logout();
+        }
+
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
             $this->registration = false;
         } elseif (!is_multisite() && !get_option('users_can_register')) {
@@ -58,23 +88,17 @@ class Authenticate
             return $user;
         }
 
-        $simplesaml = new SimpleSAML();
-        $simplesaml = $simplesaml->onLoaded();
-        if ($simplesaml === false) {
-            return;
-        }
-
-        if (!$simplesaml->isAuthenticated()) {
+        if (!$this->simplesamlAuthSimple->isAuthenticated()) {
             \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-            $simplesaml->requireAuth();
+            $this->simplesamlAuthSimple->requireAuth();
             \SimpleSAML\Session::getSessionFromRequest()->cleanup();
         }
 
-        $samlSpIdp = $simplesaml->getAuthData('saml:sp:IdP');
+        $samlSpIdp = $this->simplesamlAuthSimple->getAuthData('saml:sp:IdP');
 
         $atts = [];
 
-        $_atts = $simplesaml->getAttributes();
+        $_atts = $this->simplesamlAuthSimple->getAttributes();
 
         if (!empty($_atts)) {
             do_action(
@@ -246,7 +270,7 @@ class Authenticate
         return false;
     }
 
-    private function loginDie($message, $simplesamlAuth = true)
+    private function loginDie($message, $simplesamlAuthSimple = true)
     {
         $output = '';
 
@@ -270,7 +294,7 @@ class Authenticate
 
         $output .= $this->getContact();
 
-        if ($simplesamlAuth) {
+        if ($simplesamlAuthSimple) {
             $output .= sprintf(
                 '<p><a href="%1$s">%2$s</a></p>',
                 wp_logout_url(),
@@ -370,12 +394,7 @@ class Authenticate
 
     public function wpLogout()
     {
-        $simplesaml = new SimpleSAML();
-        $simplesaml = $simplesaml->onLoaded();
-        if ($simplesaml === false) {
-            return;
-        }
-        $simplesaml->logout(site_url('', 'https'));
+        $this->simplesamlAuthSimple->logout(site_url('', 'https'));
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
     }
 }

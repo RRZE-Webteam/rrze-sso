@@ -25,20 +25,28 @@ class Main
         $settings = new Settings();
         $settings->onLoaded();
 
-        if (is_super_admin()) {
-            $userList = new UsersList();
-            $userList->onLoaded();
-        }
-
         if (!$this->options->force_sso) {
             return;
         }
 
-        $authenticate = new Authenticate();
-        $authenticate->onLoaded();
+        $simplesaml = new SimpleSAML();
+        if (($simplesamlAuthSimple = $simplesaml->onLoaded()) === false) {
+            return;
+        }
+
+        if (($authenticate = new Authenticate($simplesamlAuthSimple)) !== false) {
+            $authenticate->onLoaded();
+        } else {
+            return;
+        }
 
         $this->registerRedirect();
         $this->userNewPageRedirect();
+
+        if (is_super_admin()) {
+            $userList = new UsersList();
+            $userList->onLoaded();
+        }
 
         // Fires before the lost password form (die).
         add_action('lost_password', [$this, 'disableFunction']);
@@ -64,8 +72,8 @@ class Main
         // on the Multisite Users screen (disable).
         add_filter('show_network_site_users_add_new_form', '__return_false');
 
-        add_action('network_admin_menu', [__NAMESPACE__ . '\NetworkMenu', 'userNewPage']);
-        add_action('admin_menu', [__NAMESPACE__ . '\StdMenu', 'userNewPage']);
+        add_action('network_admin_menu', [__NAMESPACE__ . '\NetworkUsersMenu', 'userNewPage']);
+        add_action('admin_menu', [__NAMESPACE__ . '\UsersMenu', 'userNewPage']);
 
         add_action('admin_init', [__NAMESPACE__ . '\Users', 'userNewAction']);
 

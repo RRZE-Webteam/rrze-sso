@@ -4,7 +4,7 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
-class StdMenu
+class UsersMenu
 {
     public static function userNewPage()
     {

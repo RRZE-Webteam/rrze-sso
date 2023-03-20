@@ -54,15 +54,10 @@ class Authenticate
         add_filter('wp_auth_check_same_domain', '__return_false');
 
         if (
-            (is_admin()
-                || is_network_admin()
-                || is_customize_preview()
-                //|| is_admin_bar_showing()
-            )
+            is_admin()
             && is_user_logged_in()
             && !$this->simplesamlAuthSimple->isAuthenticated()
         ) {
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
             wp_logout();
         }
 

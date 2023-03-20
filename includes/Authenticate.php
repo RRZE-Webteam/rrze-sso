@@ -57,7 +57,7 @@ class Authenticate
             (is_admin()
                 || is_network_admin()
                 || is_customize_preview()
-                || is_admin_bar_showing()
+                //|| is_admin_bar_showing()
             )
             && is_user_logged_in()
             && !$this->simplesamlAuthSimple->isAuthenticated()

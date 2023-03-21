@@ -58,6 +58,7 @@ class Authenticate
             && is_user_logged_in()
             && !$this->simplesamlAuthSimple->isAuthenticated()
         ) {
+            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
             wp_logout();
         }
 
@@ -84,11 +85,8 @@ class Authenticate
             return $user;
         }
 
-        if (!$this->simplesamlAuthSimple->isAuthenticated()) {
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-            $this->simplesamlAuthSimple->requireAuth();
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-        }
+        $this->simplesamlAuthSimple->requireAuth();
+        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
 
         $samlSpIdp = $this->simplesamlAuthSimple->getAuthData('saml:sp:IdP');
 

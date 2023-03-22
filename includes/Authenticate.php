@@ -50,8 +50,8 @@ class Authenticate
         add_filter('login_url', [$this, 'loginUrl'], 10, 2);
 
         add_action('wp_logout', [$this, 'wpLogout']);
-        // Avoid loading authentication check.
-        add_filter('wp_auth_check_load', '__return_false');
+        // Filters whether the authentication check originated at the same domain.
+        add_filter('wp_auth_check_same_domain', '__return_false');
 
         add_action('admin_init', [$this, 'isUserLoggedIn']);
 
@@ -75,11 +75,15 @@ class Authenticate
     public function isUserLoggedIn()
     {
         if (
-            is_admin()
-            && is_user_logged_in()
+            is_user_logged_in()
             && !$this->simplesamlAuthSimple->isAuthenticated()
         ) {
-            wp_logout();
+            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+            wp_destroy_current_session();
+            wp_clear_auth_cookie();
+            wp_set_current_user(0);
+            //wp_redirect(site_url('', 'https'));
+            //exit;
         }
     }
 

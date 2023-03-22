@@ -51,7 +51,7 @@ class Authenticate
 
         add_action('wp_logout', [$this, 'wpLogout']);
 
-        //add_filter('wp_auth_check_same_domain', '__return_false');
+        add_filter('wp_auth_check_same_domain', '__return_false');
         add_action('admin_init', [$this, 'isUserLoggedIn']);
 
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {

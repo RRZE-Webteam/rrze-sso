@@ -51,16 +51,8 @@ class Authenticate
 
         add_action('wp_logout', [$this, 'wpLogout']);
 
-        add_filter('wp_auth_check_same_domain', '__return_false');
-
-        if (
-            is_admin()
-            && is_user_logged_in()
-            && !$this->simplesamlAuthSimple->isAuthenticated()
-        ) {
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-            wp_logout();
-        }
+        //add_filter('wp_auth_check_same_domain', '__return_false');
+        add_action('admin_init', [$this, 'isUserLoggedIn']);
 
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
             $this->registration = false;
@@ -76,6 +68,17 @@ class Authenticate
 
         if (!$this->registration) {
             add_action('before_signup_header', [$this, 'beforeSignupHeader']);
+        }
+    }
+
+    public function isUserLoggedIn()
+    {
+        if (
+            is_admin()
+            && is_user_logged_in()
+            && !$this->simplesamlAuthSimple->isAuthenticated()
+        ) {
+            wp_logout();
         }
     }
 

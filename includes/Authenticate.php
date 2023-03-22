@@ -50,10 +50,10 @@ class Authenticate
         add_filter('login_url', [$this, 'loginUrl'], 10, 2);
 
         add_action('wp_logout', [$this, 'wpLogout']);
-        // Filters whether to load the authentication check.
-        add_filter('wp_auth_check_load', '__return_false');
+        // Filters whether the authentication check originated at the same domain.
+        add_filter('wp_auth_check_same_domain', '__return_false');
 
-        add_action('admin_init', [$this, 'isUserLoggedIn']);
+        //add_action('admin_init', [$this, 'isUserLoggedIn']);
 
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
             $this->registration = false;

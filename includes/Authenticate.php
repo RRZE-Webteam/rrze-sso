@@ -78,13 +78,11 @@ class Authenticate
             is_user_logged_in()
             && !$this->simplesamlAuthSimple->isAuthenticated()
         ) {
-            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
             wp_destroy_current_session();
             wp_clear_auth_cookie();
             wp_set_current_user(0);
-            //wp_redirect(site_url('', 'https'));
-            //exit;
         }
+        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
     }
 
     public function authenticate($user, $userLogin)

@@ -82,12 +82,6 @@ class Main
         add_filter('is_fau_websso_active', '__return_true');
     }
 
-    public function beforeSignupHeader()
-    {
-        wp_redirect(site_url('', 'https'));
-        exit;
-    }
-
     public function registerRedirect()
     {
         if ($this->isLoginPage() && isset($_REQUEST['action']) && $_REQUEST['action'] == 'register') {

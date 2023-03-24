@@ -27,7 +27,6 @@ class Authenticate
 
     /**
      * Class constructor
-     *
      * @param object \SimpleSAML\Auth\Simple
      * @return bool
      */
@@ -41,20 +40,31 @@ class Authenticate
         return true;
     }
 
+    /**
+     * onLoaded
+     * @return void
+     */
     public function onLoaded()
     {
+        // Filters whether a set of user login credentials are valid.
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
+
+        // Removed: Authenticates a user, confirming the username and password are valid.
         remove_action('authenticate', 'wp_authenticate_username_password', 20, 3);
+
+        // Removed: Authenticates a user using the email and password.
         remove_action('authenticate', 'wp_authenticate_email_password', 20, 3);
 
+        // Filters the login URL.
         add_filter('login_url', [$this, 'loginUrl'], 10, 2);
 
-        add_action('wp_logout', [$this, 'wpLogout']);
+        // Fires after a user is logged out.
+        add_action('wp_logout', [$this, 'logout']);
+
         // Filters whether the authentication check originated at the same domain.
         add_filter('wp_auth_check_same_domain', '__return_false');
 
-        //add_action('admin_init', [$this, 'isUserLoggedIn']);
-
+        // Determines if user registration is enabled.
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
             $this->registration = false;
         } elseif (!is_multisite() && !get_option('users_can_register')) {
@@ -63,64 +73,70 @@ class Authenticate
             $this->registration = true;
         }
 
+        // Filters user registration enablement.
         $this->registration = apply_filters('rrze_sso_registration', $this->registration);
-        // Backward compatibility
+        // Filters user registration enablement (backward compatibility).
         $this->registration = apply_filters('fau_websso_registration', $this->registration);
 
         if (!$this->registration) {
-            add_action('before_signup_header', [$this, 'beforeSignupHeader']);
+            // Fires before the Site Sign-up page is loaded.
+            add_action('before_signup_header', [$this, 'redirectToSiteUrl']);
         }
     }
 
-    public function isUserLoggedIn()
-    {
-        if (
-            is_user_logged_in()
-            && !$this->simplesamlAuthSimple->isAuthenticated()
-        ) {
-            wp_destroy_current_session();
-            wp_clear_auth_cookie();
-            wp_set_current_user(0);
-        }
-        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
-    }
-
+    /**
+     * Checks if a set of user login credentials is valid.
+     * @param mixed $user null|WP_User|WP_Error
+     * @param string $userLogin
+     * @return object \WP_User
+     */
     public function authenticate($user, $userLogin)
     {
         if (is_a($user, '\WP_User')) {
             return $user;
         }
 
+        // Make sure that the user is authenticated.
+        // If the user isn't authenticated, this function will start the authentication process.
         $this->simplesamlAuthSimple->requireAuth();
+
+        // Save the current session and clean any left overs that could interfere 
+        // with the normal application behaviour.
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
 
+        // The entityID of the IdP the user is authenticated against.
         $samlSpIdp = $this->simplesamlAuthSimple->getAuthData('saml:sp:IdP');
+
+        // Retrieve the attributes of the current user.
+        // If the user isn't authenticated, an empty array will be returned.
+        if (empty($_atts = $this->simplesamlAuthSimple->getAttributes())) {
+            $this->authFailed(
+                $this->authFailed(__("User attributes could not be retrieved.", 'rrze-sso'))
+            );
+        }
+
+        // Process logging.
+        do_action(
+            'rrze.log.info',
+            [
+                'plugin' => plugin()->getBaseName(),
+                'method' => __METHOD__,
+                'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+                'saml_sp_idp' => $samlSpIdp,
+                'person_attributes' => $_atts
+            ]
+        );
 
         $atts = [];
 
-        $_atts = $this->simplesamlAuthSimple->getAttributes();
-
-        if (!empty($_atts)) {
-            do_action(
-                'rrze.log.info',
-                [
-                    'plugin' => plugin()->getBaseName(),
-                    'method' => __METHOD__,
-                    'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-                    'saml_sp_idp' => $samlSpIdp,
-                    'person_attributes' => $_atts
-                ]
-            );
-
-            foreach ($_atts as $key => $value) {
-                if (
-                    is_array($value)
-                    && in_array($key, ['uid', 'subject-id', 'eduPersonUniqueId', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
-                ) {
-                    $atts[$key] = $value[0];
-                } else {
-                    $atts[$key] = $value;
-                }
+        foreach ($_atts as $key => $value) {
+            if (
+                is_array($value)
+                && in_array($key, ['uid', 'subject-id', 'eduPersonUniqueId', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+            ) {
+                $atts[$key] = $value[0];
+            } else {
+                $atts[$key] = $value;
             }
         }
 
@@ -144,7 +160,7 @@ class Authenticate
         $origUserLogin = $userLogin;
         $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
         if ($userLogin != $origUserLogin) {
-            $this->loginDie(__("The username entered is not valid.", 'rrze-sso'));
+            $this->authFailed(__("The username entered is not valid.", 'rrze-sso'));
         }
 
         $userEmail = $atts['mail'] ?? '';
@@ -172,27 +188,37 @@ class Authenticate
         }
 
         if ($userdata = get_user_by('login', $userLogin)) {
-            if ($displayName && $userdata->data->display_name == $userLogin) {
-                $userId = wp_update_user(
+            $userId = $userdata->ID;
+            $updateDisplayName = false;
+            if ($firstName && !get_user_meta($userId, 'first_name', true)) {
+                if (update_user_meta($userId, 'first_name', $firstName) === true) {
+                    $updateDisplayName = true;
+                }
+            }
+            if ($lastName && !get_user_meta($userId, 'last_name', true)) {
+                if (update_user_meta($userId, 'last_name', $firstName) === true) {
+                    $updateDisplayName = true;
+                }
+            }
+            if ($displayName && $updateDisplayName) {
+                wp_update_user(
                     [
-                        'ID' => $userdata->ID,
+                        'ID' => $userId,
                         'display_name' => $displayName
                     ]
                 );
-                update_user_meta($userId, 'first_name', $firstName);
-                update_user_meta($userId, 'last_name', $lastName);
             }
 
-            $user = new \WP_User($userdata->ID);
-            update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
-            update_user_meta($userdata->ID, 'organization_name', $organizationName);
-            update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
-            update_user_meta($userdata->ID, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
-            update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
+            $user = new \WP_User($userId);
+            update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userId, 'organization_name', $organizationName);
+            update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
+            update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if ($this->registration && is_multisite()) {
-                if (!is_user_member_of_blog($userdata->ID, 1)) {
-                    add_user_to_blog(1, $userdata->ID, 'subscriber');
+                if (!is_user_member_of_blog($userId, 1)) {
+                    add_user_to_blog(1, $userId, 'subscriber');
                 }
             }
         } elseif ($this->registration) {
@@ -216,7 +242,7 @@ class Authenticate
                 if (is_multisite()) {
                     restore_current_blog();
                 }
-                $this->loginDie(__("The user could not be added.", 'rrze-sso'));
+                $this->authFailed(__("The user could not be added.", 'rrze-sso'));
             }
 
             $user = new \WP_User($userId);
@@ -235,7 +261,7 @@ class Authenticate
                 }
             }
         } else {
-            $this->loginDie(
+            $this->authFailed(
                 sprintf(
                     /* translators: %s: username. */
                     __('The username "%s" is not registered on this website.', 'rrze-sso'),
@@ -247,7 +273,7 @@ class Authenticate
         if (is_multisite()) {
             $blogs = get_blogs_of_user($user->ID);
             if (!$this->hasDashboardAccess($user->ID, $blogs)) {
-                $this->accessDie403($blogs);
+                $this->accessDenied($blogs);
             }
         }
 
@@ -257,20 +283,31 @@ class Authenticate
         return $user;
     }
 
+    /**
+     * Check if the user has access to the website dashboard.
+     * @param int $userId
+     * @param mixed $blogs object|array
+     * @return boolean
+     */
     private function hasDashboardAccess($userId, $blogs)
     {
         if (is_super_admin($userId)) {
             return true;
         }
-
         if (wp_list_filter($blogs, ['userblog_id' => get_current_blog_id()])) {
             return true;
         }
-
         return false;
     }
 
-    private function loginDie($message, $simplesamlAuthSimple = true)
+    /**
+     * Kills WordPress execution and displays an HTML page 
+     * with an authentication error message.
+     * @param string $message
+     * @param boolean $simplesamlAuthSimple
+     * @return void
+     */
+    private function authFailed($message, $simplesamlAuthSimple = true)
     {
         $output = '';
 
@@ -292,7 +329,7 @@ class Authenticate
             __("However, if no login is possible, please contact the contact person of the website.", 'rrze-sso')
         );
 
-        $output .= $this->getContact();
+        $output .= $this->getContacts();
 
         if ($simplesamlAuthSimple) {
             $output .= sprintf(
@@ -305,7 +342,13 @@ class Authenticate
         wp_die($output);
     }
 
-    private function accessDie403($blogs)
+    /**
+     * Kills WordPress execution and displays an HTML page 
+     * with an access denied message.
+     * @param array $blogs
+     * @return void
+     */
+    private function accessDenied($blogs)
     {
         $output = '<p>' . sprintf(
             /* translators: %s: name of the website. */
@@ -330,7 +373,7 @@ class Authenticate
             $output .= '</table>';
         }
 
-        $output .= $this->getContact();
+        $output .= $this->getContacts();
 
         $output .= sprintf(
             '<p><a href="%1$s">%2$s</a></p>',
@@ -341,19 +384,19 @@ class Authenticate
         wp_die($output, 403);
     }
 
-    private function getContact()
+    /**
+     * Get a list of website contact users (administrators).
+     * @return string
+     */
+    private function getContacts()
     {
-        global $wpdb;
-
-        $blog_prefix = $wpdb->get_blog_prefix(get_current_blog_id());
-        $users = $wpdb->get_results(
-            "SELECT user_id, user_id AS ID, user_login, display_name, user_email, meta_value
-             FROM $wpdb->users, $wpdb->usermeta
-             WHERE {$wpdb->users}.ID = {$wpdb->usermeta}.user_id AND meta_key = '{$blog_prefix}capabilities'
-             ORDER BY {$wpdb->usermeta}.user_id"
+        $args = array(
+            'role'    => 'administrator',
+            'orderby' => 'display_name',
+            'order'   => 'ASC'
         );
 
-        if (empty($users)) {
+        if (empty($users = get_users($args))) {
             return '';
         }
 
@@ -367,34 +410,52 @@ class Authenticate
         );
 
         foreach ($users as $user) {
-            $roles = unserialize($user->meta_value);
-            if (isset($roles['administrator'])) {
-                $output .= sprintf(
-                    '<p>%1$s<br/>%2$s %3$s</p>' . PHP_EOL,
-                    $user->display_name,
-                    __("Email Address:", 'rrze-sso'),
-                    make_clickable($user->user_email)
-                );
-            }
+            $output .= sprintf(
+                '<p>%1$s<br/>%2$s %3$s</p>' . PHP_EOL,
+                $user->display_name,
+                __("Email Address:", 'rrze-sso'),
+                make_clickable($user->user_email)
+            );
         }
 
         return $output;
     }
 
+    /**
+     * Set the login URL.
+     * @param string $loginUrl
+     * @param string $redirect
+     * @return string The login URL.
+     */
     public function loginUrl($loginUrl, $redirect)
     {
         $loginUrl = site_url('wp-login.php', 'login');
-
         if (!empty($redirect)) {
             $loginUrl = add_query_arg('redirect_to', urlencode($redirect), $loginUrl);
         }
-
         return $loginUrl;
     }
 
-    public function wpLogout()
+    /**
+     * Log the user out.
+     * @return void
+     */
+    public function logout()
     {
+        // Log the user out. After logging out, the user will be redirected to the home page.
         $this->simplesamlAuthSimple->logout(site_url('', 'https'));
+        // Save the current session and clean any left overs that could interfere 
+        // with the normal application behaviour.        
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+    }
+
+    /**
+     * Redirects to the home page.
+     * @return void
+     */
+    public function redirectToSiteUrl()
+    {
+        wp_redirect(site_url('', 'https'));
+        exit;
     }
 }

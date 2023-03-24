@@ -188,27 +188,37 @@ class Authenticate
         }
 
         if ($userdata = get_user_by('login', $userLogin)) {
-            if ($displayName) {
-                $userId = wp_update_user(
+            $userId = $userdata->ID;
+            $updateDisplayName = false;
+            if ($firstName && !get_user_meta($userId, 'first_name', true)) {
+                if (update_user_meta($userId, 'first_name', $firstName) === true) {
+                    $updateDisplayName = true;
+                }
+            }
+            if ($lastName && !get_user_meta($userId, 'last_name', true)) {
+                if (update_user_meta($userId, 'last_name', $firstName) === true) {
+                    $updateDisplayName = true;
+                }
+            }
+            if ($displayName && $updateDisplayName) {
+                wp_update_user(
                     [
-                        'ID' => $userdata->ID,
+                        'ID' => $userId,
                         'display_name' => $displayName
                     ]
                 );
-                update_user_meta($userId, 'first_name', $firstName);
-                update_user_meta($userId, 'last_name', $lastName);
             }
 
-            $user = new \WP_User($userdata->ID);
-            update_user_meta($userdata->ID, 'saml_sp_idp', $samlSpIdp);
-            update_user_meta($userdata->ID, 'organization_name', $organizationName);
-            update_user_meta($userdata->ID, 'edu_person_affiliation', $eduPersonAffiliation);
-            update_user_meta($userdata->ID, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
-            update_user_meta($userdata->ID, 'edu_person_entitlement', $eduPersonEntitlement);
+            $user = new \WP_User($userId);
+            update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
+            update_user_meta($userId, 'organization_name', $organizationName);
+            update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
+            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
+            update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
 
             if ($this->registration && is_multisite()) {
-                if (!is_user_member_of_blog($userdata->ID, 1)) {
-                    add_user_to_blog(1, $userdata->ID, 'subscriber');
+                if (!is_user_member_of_blog($userId, 1)) {
+                    add_user_to_blog(1, $userId, 'subscriber');
                 }
             }
         } elseif ($this->registration) {

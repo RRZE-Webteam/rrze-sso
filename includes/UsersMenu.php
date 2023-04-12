@@ -272,7 +272,7 @@ class UsersMenu
                             <th scope="row"><label for="user_idp"><?php _e('Identity Provider', 'rrze-sso'); ?> <span class="description"><?php _e("(required)"); ?></span></label></th>
                             <td><?php
                                 echo '<select id="user_idp" name="user_idp">';
-                                echo '<option  value="">--' . __('Select an Identity Provider', 'rrze-sso') . '--</option>';
+                                echo '<option  value="">&mdash; ' . __('Select an Identity Provider', 'rrze-sso') . ' &mdash;</option>';
                                 foreach (simpleSAML()->getIdentityProviders() as $key => $value) {
                                     $key = sanitize_title($key);
                                     echo '<option  value="' . $key . '" ' . selected($new_user_idp, $key, false) . '>' . $value . '</option>';

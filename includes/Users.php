@@ -10,25 +10,26 @@ class Users
     {
         global $wpdb;
 
-        if (isset($_REQUEST['action']) && 'add-user' == $_REQUEST['action']) {
+        if (isset($_REQUEST['action']) && '_network_add-user' == $_REQUEST['action']) {
             check_admin_referer('add-user', '_wpnonce_add-user');
 
             if (!is_array($_POST['user'])) {
-                wp_die(__("Cannot create an empty user.", 'rrze-sso'));
+                wp_die(__('Cannot create an empty user.'));
             }
 
             $user = wp_unslash($_POST['user']);
 
-            $user_details = self::validateUserSignup($user['username'], $user['email']);
+            $user_details = self::validateUserSignup($user['idp'], $user['username'], $user['email']);
             if (is_wp_error($user_details['errors']) && !empty($user_details['errors']->errors)) {
                 $add_user_errors = base64_encode(serialize($user_details['errors']));
                 $redirect = add_query_arg(array('page' => 'usernew', 'update' => 'addusererrors', 'error' => $add_user_errors), 'users.php');
             } else {
+                $username = self::addDomainScope($user['username'], $user['idp']);
                 $password = wp_generate_password(12, false);
-                $user_id = wpmu_create_user(esc_html(strtolower($user['username'])), $password, sanitize_email($user['email']));
+                $user_id = wpmu_create_user(esc_html(strtolower($username)), $password, sanitize_email($user['email']));
 
                 if (!$user_id) {
-                    $add_user_errors = new \WP_Error('add_user_fail', __("The user could not be added.", 'rrze-sso'));
+                    $add_user_errors = new \WP_Error('add_user_fail', __('Cannot add user.'));
                     $redirect = add_query_arg(array('page' => 'usernew', 'error' => base64_encode(serialize($add_user_errors))), 'users.php');
                 } else {
                     self::newUserNotification($user_id);
@@ -37,7 +38,7 @@ class Users
             }
             wp_redirect($redirect);
             exit;
-        } elseif (isset($_REQUEST['action'], $_REQUEST['email']) && 'adduser' == $_REQUEST['action']) {
+        } elseif (isset($_REQUEST['action'], $_REQUEST['email']) && '_admin_add-user' == $_REQUEST['action']) {
             check_admin_referer('add-user', '_wpnonce_add-user');
 
             $user_details = null;
@@ -51,7 +52,7 @@ class Users
                 exit;
             }
 
-            // Bestehenden Benutzer hinzufügen
+            // Add Existing User
             $redirect = add_query_arg(array('page' => 'usernew'), 'users.php');
             $username = $user_details->user_login;
             $user_id = $user_details->ID;
@@ -69,7 +70,7 @@ class Users
             }
             wp_redirect($redirect);
             exit;
-        } elseif (isset($_REQUEST['action']) && 'createuser' == $_REQUEST['action']) {
+        } elseif (isset($_REQUEST['action']) && '_admin_create-user' == $_REQUEST['action']) {
             check_admin_referer('create-user', '_wpnonce_create-user');
 
             if (!is_multisite()) {
@@ -90,15 +91,17 @@ class Users
                     exit;
                 }
             } else {
-                // Neuen Benutzer hinzufügen
                 $new_user_email = wp_unslash($_REQUEST['email']);
-                $user_details = self::validateUserSignup($_REQUEST['user_login'], $new_user_email);
+                $user_details = self::validateUserSignup($_REQUEST['user_idp'], $_REQUEST['user_login'], $new_user_email);
 
                 if (is_wp_error($user_details['errors']) && !empty($user_details['errors']->errors)) {
                     $add_user_errors = $user_details['errors'];
                     $redirect = add_query_arg(array('page' => 'usernew', 'error' => base64_encode(serialize($add_user_errors))), 'users.php');
                 } else {
-                    $new_user_login = sanitize_user(wp_unslash($_REQUEST['user_login']));
+                    $userIdp = $_REQUEST['user_idp'] ?? '';
+                    $username = $_REQUEST['user_login'] ?? '';
+                    $username = self::addDomainScope(wp_unslash($username), $userIdp);
+                    $new_user_login = sanitize_user($username);
 
                     wpmu_signup_user($new_user_login, $new_user_email, array('add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST['role']));
 
@@ -129,8 +132,11 @@ class Users
         global $wp_roles;
         $user = new \stdClass;
 
-        if (isset($_POST['user_login'])) {
-            $user->user_login = sanitize_user($_POST['user_login']);
+        $userIdp = $_POST['user_idp'] ?? '';
+        $username = $_POST['user_login'] ?? '';
+        if ($username) {
+            $username = self::addDomainScope($username, $userIdp);
+            $user->user_login = sanitize_user($username);
         }
 
         if (isset($_POST['role']) && current_user_can('edit_users')) {
@@ -143,7 +149,7 @@ class Users
 
             $editable_roles = get_editable_roles();
             if (!empty($new_role) && empty($editable_roles[$new_role])) {
-                wp_die(__("You can't give users that role.", 'rrze-sso'));
+                wp_die(__('Sorry, you are not allowed to give users that role.'), 403);
             }
         }
 
@@ -342,24 +348,39 @@ class Users
         return true;
     }
 
-    protected static function validateUserSignup($user_name, $user_email)
+    protected static function validateUserSignup($user_idp, $user_name, $user_email)
     {
         global $wpdb;
 
         $errors = new \WP_Error();
 
-        $orig_username = $user_name;
-        $user_name = preg_replace('/\s+/', '', sanitize_user($user_name));
+        if (empty($user_idp)) {
+            $errors->add('user_idp', __('Please select an identity provider.', 'rrze-sso'));
+        }
 
-        if ($user_name != $orig_username) {
-            $errors->add('user_name', __("The username entered is not valid.", 'rrze-sso'));
+        $idpExists = false;
+        foreach (array_keys(simpleSAML()->getIdentityProviders()) as $key) {
+            if ($user_idp == sanitize_title($key)) {
+                $idpExists = true;
+                break;
+            }
+        }
+        if (!empty($user_idp) && !$idpExists) {
+            $errors->add('user_idp', __('Sorry, that identity provider does not exists!', 'rrze-sso'));
+        }
+
+        $orig_username = $user_name;
+        $user_name = preg_replace('/\s+/', '', sanitize_user($user_name, true));
+
+        if ($user_name != $orig_username || preg_match('/[^a-z0-9]/', $user_name)) {
+            $errors->add('user_name', __('Usernames can only contain lowercase letters (a-z) and numbers.'));
             $user_name = $orig_username;
         }
 
         $user_email = sanitize_email($user_email);
 
         if (empty($user_name)) {
-            $errors->add('user_name', __("Please enter a username.", 'rrze-sso'));
+            $errors->add('user_name', __('Please enter a username.'));
         }
 
         $illegal_names = get_site_option('illegal_names');
@@ -369,38 +390,48 @@ class Users
         }
 
         if (in_array($user_name, $illegal_names)) {
-            $errors->add('user_name', __("Username is not allowed.", 'rrze-sso'));
+            $errors->add('user_name', __('Sorry, that username is not allowed.'));
         }
 
         if (is_email_address_unsafe($user_email)) {
-            $errors->add('user_email', __("Email Address or Username is not allowed.", 'rrze-sso'));
+            $errors->add('user_email', __('Sorry, that email address is not allowed!'));
         }
 
         if (strlen($user_name) < 4) {
-            $errors->add('user_name', __("The username must be at least 4 characters.", 'rrze-sso'));
+            $errors->add('user_name', __('The username must be at least 4 characters.'));
         }
 
-        if (strlen($user_name) > 60) {
-            $errors->add('user_name', __("Username may not be longer than 60 characters.", 'rrze-sso'));
+        $options = Options::getOptions();
+        $domainScope = $options->domain_scope[$user_idp] ?? '';
+        $usernameMaxLen = 60 - ($domainScope ? strlen($domainScope) + 1 : 0);
+        if (strlen($user_name) > $usernameMaxLen) {
+            $errors->add(
+                'user_name',
+                sprintf(
+                    /* translators: %s: Max length of username. */
+                    __('Username may not be longer than %s characters.', 'rrze-sso'),
+                    $usernameMaxLen
+                )
+            );
         }
 
         if (strpos($user_name, '_') !== false) {
-            $errors->add('user_name', __("Usernames may not contain the underscore character.", 'rrze-sso'));
+            $errors->add('user_name', __('Usernames may not contain the underscore character.'));
         }
 
         if (preg_match('/^[0-9]*$/', $user_name)) {
-            $errors->add('user_name', __("Usernames must have letters too!"), 'rrze-sso');
+            $errors->add('user_name', __('Sorry, usernames must have letters too!'));
         }
 
         if (!is_email($user_email)) {
-            $errors->add('user_email', __("Please enter a valid email address.", 'rrze-sso'));
+            $errors->add('user_email', __('Please enter a valid email address.'));
         }
 
         $limited_email_domains = get_site_option('limited_email_domains');
         if (is_array($limited_email_domains) && !empty($limited_email_domains)) {
             $emaildomain = substr($user_email, 1 + strpos($user_email, '@'));
             if (!in_array($emaildomain, $limited_email_domains)) {
-                $errors->add('user_email', __("That email address is not allowed!", 'rrze-sso'));
+                $errors->add('user_email', __('Sorry, that email address is not allowed!'));
             }
         }
 
@@ -413,24 +444,35 @@ class Users
                     'user_email',
                     sprintf(
                         /* translators: %s: List of allowed domains. */
-                        __("That email address domain is not allowed! Allowed domains: %s", 'rrze-sso'),
+                        __('Sorry, that email address domain is not allowed! Allowed domains: %s', 'rrze-sso'),
                         implode(', ', $allowedUserEmailDomains)
                     )
                 );
             }
         }
 
+        if ($idpExists) {
+            $user_name = $user_name . '@' . $user_idp;
+        }
         if (username_exists($user_name)) {
-            $errors->add('user_name', __("Username already exists!", 'rrze-sso'));
+            $errors->add('user_name', __('Sorry, that username already exists!'));
         }
 
         if (email_exists($user_email)) {
-            $errors->add('user_email', __("The email address is already used!", 'rrze-sso'));
+            $errors->add('user_email', __('Sorry, that email address is already used!'));
         }
 
         $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->signups WHERE user_login = %s OR user_email = %s", $user_name, $user_email));
 
         $result = array('user_name' => $user_name, 'orig_username' => $orig_username, 'user_email' => $user_email, 'errors' => $errors);
         return apply_filters('wpmu_validate_user_signup', $result);
+    }
+
+    protected static function addDomainScope($username, $identityProvider)
+    {
+        $options = Options::getOptions();
+        $domainScope = $options->domain_scope[$identityProvider] ?? '';
+        $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
+        return $username . $domainScope;
     }
 }

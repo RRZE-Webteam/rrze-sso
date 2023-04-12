@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2023-03-23T13:39:27+00:00\n"
-"PO-Revision-Date: 2023-04-12 09:41+0200\n"
+"POT-Creation-Date: 2023-04-12T14:49:56+00:00\n"
+"PO-Revision-Date: 2023-04-12 16:50+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -141,88 +141,97 @@ msgstr "Wählen Sie einen Identity-Provider aus"
 msgid "User Identifier"
 msgstr "Benutzerkennung"
 
-#: includes/Settings.php:64 includes/Settings.php:65 includes/Settings.php:79
-#: includes/Settings.php:80 includes/Settings.php:95
+#: includes/Settings.php:65 includes/Settings.php:66 includes/Settings.php:80
+#: includes/Settings.php:81 includes/Settings.php:96
 msgid "SSO"
 msgstr "SSO"
 
-#: includes/Settings.php:113 includes/Settings.php:164
+#: includes/Settings.php:114 includes/Settings.php:210
 msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
-#: includes/Settings.php:134
+#: includes/Settings.php:146
 msgid "SSO Authentication"
 msgstr "SSO-Authentifizierung"
 
-#: includes/Settings.php:137
+#: includes/Settings.php:160
 msgid "Autoload Path"
 msgstr "Autoload-Pfad"
 
-#: includes/Settings.php:138
+#: includes/Settings.php:167
 msgid "Authentication Source"
 msgstr "Authentifizierungsquelle"
 
-#: includes/Settings.php:141
+#: includes/Settings.php:176
 msgid "Identity Provider Domain Scope"
 msgstr "Domänenbereich des Identity-Providers"
 
-#: includes/Settings.php:143
+#: includes/Settings.php:184
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
-#: includes/Settings.php:153
+#: includes/Settings.php:198
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
 
-#: includes/Settings.php:154
+#: includes/Settings.php:199
 msgid "General SSO Settings."
 msgstr "Allgemeine SSO-Einstellungen."
 
-#: includes/Settings.php:165
+#: includes/Settings.php:211
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: includes/Settings.php:166
+#: includes/Settings.php:212
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: includes/Settings.php:176
+#: includes/Settings.php:222
 msgid "SimpleSAMLphp"
 msgstr "SimpleSAMLphp"
 
-#: includes/Settings.php:177
+#: includes/Settings.php:223
 msgid "Service Provider Settings."
 msgstr "Einstellungen des Service Providers."
 
-#: includes/Settings.php:187
+#: includes/Settings.php:233
 msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
-#: includes/Settings.php:212
+#: includes/Settings.php:258
 msgid ""
-"(Optional) The domain to add to the username to associate it with the "
+"(Optional) The domain to add to the user identifier to associate it with the "
 "identity provider."
 msgstr ""
-"(Optional) Die Domäne, die dem Benutzernamen hinzugefügt werden soll, um ihn "
-"mit dem Identity-Provider zu verknüpfen."
+"(Optional) Die Domäne, die der Benutzerkennung hinzugefügt werden soll, um "
+"sie dem Identity-Provider zuzuordnen."
 
-#: includes/Settings.php:224
+#: includes/Settings.php:270
 msgid "List of allowed domains for user email addresses."
 msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
 
-#: includes/Settings.php:225
+#: includes/Settings.php:271
 msgid "If the field is left empty then all email domains are allowed."
 msgstr "Wenn das Feld leer gelassen wird, sind alle E-Mail-Domänen zulässig."
 
-#: includes/Settings.php:226
+#: includes/Settings.php:272
 msgid "Format: <i>domain.tld</i>"
 msgstr "Format: <i>domain.tld</i>"
 
-#: includes/Settings.php:227
+#: includes/Settings.php:273
 msgid "Enter one email domain per line."
 msgstr "Geben Sie eine E-Mail-Domäne pro Zeile ein."
 
-#: includes/Settings.php:298
+#: includes/Settings.php:295
+msgid "The domain scope of the identity provider already exists."
+msgstr "Der Domänenbereich des Identity-Providers ist bereits vorhanden."
+
+#. translators: %s: domain name.
+#: includes/Settings.php:331
+msgid "%s is not a valid domain name."
+msgstr "%s ist kein gültiger Domänenname."
+
+#: includes/Settings.php:360
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
@@ -231,7 +240,7 @@ msgid "The simpleSAML library could not be loaded."
 msgstr "Die simpleSAML-Bibliothek konnte nicht geladen werden."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:183 rrze-sso.php:99 rrze-sso.php:159
+#: includes/SimpleSAML.php:183 rrze-sso.php:99 rrze-sso.php:167
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 

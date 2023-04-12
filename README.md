@@ -9,7 +9,7 @@ Einstellungen › SSO
 ## Bereitstellung eines FAU-SP (Service Provider der FAU) mittels SimpleSAMLphp
 
 -   1. Letzte version des SimpleSAMLphp herunterladen. Siehe https://simplesamlphp.org/download
--   2. Das simplesamlphp-Verzeichnis kopieren und unter dem wp-content-Verzeichnis des WordPress einsetzen
+-   2. Bitte folgen Sie den Anweisungen zur Installation von SimpleSAMLphp unter diesem Link: https://simplesamlphp.org/docs/stable/simplesamlphp-install
 -   3. Folgenden Attribute in der Datei "/simplesamlphp/config/config.php" ändern/bearbeiten:
 
 <pre>
@@ -76,16 +76,6 @@ $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] =
 ];
 ```
 
-## Webserver-Einstellungen (Apache)
-
--   Standard- und SSL-Virtualhost einrichten.
-
--   Alias für SimpleSAMLphp im SSL-Virtualhost einrichten:
-
-<pre>Alias /simplesaml /Pfad zum simplesamlphp/www-Verzeichnis</pre>
-
-Z.B.: Alias /simplesaml /var/www/wordpress/wp-content/simplesamlphp/www
-
 ## Anmeldung
 
 -   Folgende Info an sso-admins@rrze.fau.de versenden:
@@ -107,4 +97,4 @@ eduPersonEntitlement
 eduPersonScopedAffiliation
 </pre>
 
-Hinweis: Bitte überprüfen Sie, dass die jeweiligen URLs keine Fehlermeldungen im Browser ausgeben.
+Hinweis: Bitte überprüfen Sie, dass die Metadaten-URL keine Fehlermeldung im Browser auslöst.

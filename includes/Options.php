@@ -22,8 +22,8 @@ class Options
             'simplesaml_include' => '/simplesamlphp/lib/_autoload.php',
             'simplesaml_auth_source' => 'default-sp',
             'force_sso' => 0,
+            'domain_scope' => [],
             'allowed_user_email_domains' => [],
-            'domain_scope' => []
         ];
 
         return $options;

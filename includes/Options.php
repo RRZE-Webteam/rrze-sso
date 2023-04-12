@@ -7,13 +7,19 @@ defined('ABSPATH') || exit;
 class Options
 {
     /**
-     * Option name
+     * Option group.
+     * @var string
+     */
+    protected static $optionGroup = 'sso';
+
+    /**
+     * Option name.
      * @var string
      */
     protected static $optionName = 'rrze_sso';
 
     /**
-     * Default options
+     * Default options.
      * @return array
      */
     protected static function defaultOptions()
@@ -47,6 +53,15 @@ class Options
         $options = array_intersect_key($options, $defaults);
 
         return (object) $options;
+    }
+
+    /**
+     * Returns the name of the option group.
+     * @return string
+     */
+    public static function getOptionGroup()
+    {
+        return self::$optionGroup;
     }
 
     /**

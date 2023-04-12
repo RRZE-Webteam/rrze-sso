@@ -109,7 +109,15 @@ function activation()
  */
 function deactivation()
 {
-    // Nothing to do here.
+    $optionGroup = Options::getOptionGroup();
+    $optionName = Options::getOptionName();
+    $options = Options::getOptions();
+    unregister_setting($optionGroup, $optionName);
+    if ($options->force_sso) {
+        $options->force_sso = 0;
+        $options = (array) $options;
+        update_site_option($optionName, $options);
+    }
 }
 
 /**

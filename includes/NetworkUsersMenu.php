@@ -96,7 +96,7 @@ class NetworkUsersMenu
                         <th scope="row"><?php _e("Identity Provider", 'rrze-sso') ?></th>
                         <td><?php
                             echo '<select name="user[idp]">';
-                            echo '<option  value="">' . __('Select an Identity Provider', 'rrze-sso') . '</option>';
+                            echo '<option  value="">&mdash; ' . __('Select an Identity Provider', 'rrze-sso') . ' &mdash;</option>';
                             foreach (simpleSAML()->getIdentityProviders() as $key => $value) {
                                 echo '<option  value="' . sanitize_title($key) . '">' . $value . '</option>';
                             }

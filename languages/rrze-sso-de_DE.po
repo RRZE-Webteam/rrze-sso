@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2023-03-23T13:39:27+00:00\n"
-"PO-Revision-Date: 2023-03-23 14:40+0100\n"
+"POT-Creation-Date: 2023-04-12T07:34:43+00:00\n"
+"PO-Revision-Date: 2023-04-12 09:41+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -38,33 +38,33 @@ msgstr "RRZE-Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:114
+#: includes/Authenticate.php:110
 msgid "User attributes could not be retrieved."
 msgstr "Benutzerattribute konnten nicht abgerufen werden."
 
-#: includes/Authenticate.php:163 includes/Users.php:355
+#: includes/Authenticate.php:156
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:235 includes/Users.php:31
+#: includes/Authenticate.php:238
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:257
+#: includes/Authenticate.php:260
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:306
+#: includes/Authenticate.php:309
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:313
+#: includes/Authenticate.php:316
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:319
+#: includes/Authenticate.php:322
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -72,12 +72,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:328 includes/Authenticate.php:371
+#: includes/Authenticate.php:331 includes/Authenticate.php:374
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:345
+#: includes/Authenticate.php:348
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -89,7 +89,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:350
+#: includes/Authenticate.php:353
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -98,248 +98,148 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:352
+#: includes/Authenticate.php:355
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:358
+#: includes/Authenticate.php:361
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:359
+#: includes/Authenticate.php:362
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:397
+#: includes/Authenticate.php:400
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:406
+#: includes/Authenticate.php:409
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:119
+#: includes/Main.php:131
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
-#: includes/NetworkUsersMenu.php:15 includes/NetworkUsersMenu.php:21
-#: includes/UsersMenu.php:21 includes/UsersMenu.php:27
+#: includes/NetworkUsersMenu.php:17 includes/NetworkUsersMenu.php:18
+#: includes/NetworkUsersMenu.php:28 includes/UsersMenu.php:23
+#: includes/UsersMenu.php:24 includes/UsersMenu.php:34
 msgid "Add New"
 msgstr "Neu hinzufügen"
 
-#: includes/NetworkUsersMenu.php:35
-msgid "Add User will set up a new user account on the network."
-msgstr ""
-"Die Funktion &bdquo;Benutzer hinzufügen&ldquo; erstellt ein neues "
-"Benutzerkonto im Netzwerk."
+#: includes/NetworkUsersMenu.php:96 includes/UsersMenu.php:272
+msgid "Identity Provider"
+msgstr "Identity-Provider"
 
-#: includes/NetworkUsersMenu.php:36
-msgid ""
-"Users who are signed up to the network without a site are added as "
-"subscribers to the main website, giving them profile pages to manage their "
-"accounts. These users will only see Dashboard and My Sites in the main "
-"navigation until a site is created for them."
-msgstr ""
-"Benutzer, die im Netzwerk registriert sind, aber keine eigene Webseite "
-"haben, werden automatisch in der Netzwerk-Webseite hinzugefügt und haben so "
-"die Möglichkeit, ihr Profil zu bearbeiten und zu sehen, in welchen Webseiten "
-"sie noch als Abonennten geführt sind."
+#: includes/NetworkUsersMenu.php:99 includes/UsersMenu.php:275
+msgid "Select an Identity Provider"
+msgstr "Wählen Sie einen Identity-Provider aus"
 
-#: includes/NetworkUsersMenu.php:40 includes/UsersMenu.php:54
-msgid "Overall view"
-msgstr "Übersicht"
+#: includes/NetworkUsersMenu.php:107 includes/UsersMenu.php:284
+msgid "User Identifier"
+msgstr "Benutzerkennung"
 
-#: includes/NetworkUsersMenu.php:46 includes/UsersMenu.php:60
-msgid "User Roles"
-msgstr "Benutzerrollen"
-
-#: includes/NetworkUsersMenu.php:47 includes/UsersMenu.php:61
-msgid ""
-"Here is a basic overview of the different user roles and the permissions "
-"associated with each one:"
-msgstr ""
-"Hier ist ein grober Überblick über die verschiedenen Benutzerrollen und die "
-"jeweils damit verknüpften Berechtigungen:"
-
-#: includes/NetworkUsersMenu.php:49 includes/UsersMenu.php:63
-msgid ""
-"Subscribers can read comments/comment/receive newsletters, etc. but cannot "
-"create regular site content."
-msgstr ""
-"Abonennten können nur Kommentare lesen und abgeben, aber keine eigenen "
-"Inhalte erstellen."
-
-#: includes/NetworkUsersMenu.php:50 includes/UsersMenu.php:64
-msgid ""
-"Contributors can write and manage their posts but not publish posts or "
-"upload media files."
-msgstr ""
-"Mitarbeiter können eigene Artikel schreiben und bearbeiten, sie jedoch nicht "
-"veröffentlichen. Auch dürfen sie keine Dateien hochladen."
-
-#: includes/NetworkUsersMenu.php:51 includes/UsersMenu.php:65
-msgid ""
-"Authors can publish and manage their own posts, and are able to upload files."
-msgstr ""
-"Autoren können ihre eigenen Artikel veröffentlichen und verwalten sowie "
-"Dateien hochladen."
-
-#: includes/NetworkUsersMenu.php:52 includes/UsersMenu.php:66
-msgid ""
-"Editors can publish posts, manage posts as well as manage other people's "
-"posts, etc."
-msgstr ""
-"Redakteure können Artikel und Seiten anlegen und veröffentlichen, sowie die "
-"Artikel, Seiten, usw. von anderen Benutzern verwalten (bearbeiten, löschen, "
-"veröffentlichen)."
-
-#: includes/NetworkUsersMenu.php:53 includes/UsersMenu.php:67
-msgid "Administrators have access to all the administration features."
-msgstr "Administratoren haben die komplette Macht und sehen alle Optionen."
-
-#: includes/NetworkUsersMenu.php:63 includes/UsersMenu.php:113
-msgid "User added."
-msgstr "Benutzer hinzugefügt."
-
-#: includes/NetworkUsersMenu.php:67 includes/NetworkUsersMenu.php:100
-#: includes/UsersMenu.php:74 includes/UsersMenu.php:121
-#: includes/UsersMenu.php:210 includes/UsersMenu.php:254
-msgid "Add New User"
-msgstr "Neuen Benutzer hinzufügen"
-
-#: includes/NetworkUsersMenu.php:91 includes/UsersMenu.php:226
-msgid "IdM Username"
-msgstr "IdM-Kennung"
-
-#: includes/NetworkUsersMenu.php:95 includes/UsersMenu.php:230
-msgid "Email Address"
-msgstr "E-Mail-Adresse"
-
-#: includes/Settings.php:63 includes/Settings.php:72 includes/Settings.php:83
+#: includes/Settings.php:64 includes/Settings.php:65 includes/Settings.php:79
+#: includes/Settings.php:80 includes/Settings.php:95
 msgid "SSO"
 msgstr "SSO"
 
-#: includes/Settings.php:101 includes/Settings.php:151
+#: includes/Settings.php:113 includes/Settings.php:164
 msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
-#: includes/Settings.php:122
+#: includes/Settings.php:134
 msgid "SSO Authentication"
 msgstr "SSO-Authentifizierung"
 
-#: includes/Settings.php:125
+#: includes/Settings.php:137
 msgid "Autoload Path"
 msgstr "Autoload-Pfad"
 
-#: includes/Settings.php:126
+#: includes/Settings.php:138
 msgid "Authentication Source"
 msgstr "Authentifizierungsquelle"
 
-#: includes/Settings.php:128
-msgid "Identity Providers"
-msgstr "Identity-Providers"
+#: includes/Settings.php:141
+msgid "Identity Provider Domain Scope"
+msgstr "Domänenbereich des Identity-Providers"
 
-#: includes/Settings.php:129
-msgid "Domain Scope"
-msgstr "Domänenbereich"
-
-#: includes/Settings.php:130
+#: includes/Settings.php:143
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
-#: includes/Settings.php:140
+#: includes/Settings.php:153
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
 
-#: includes/Settings.php:141
+#: includes/Settings.php:154
 msgid "General SSO Settings."
 msgstr "Allgemeine SSO-Einstellungen."
 
-#: includes/Settings.php:152
+#: includes/Settings.php:165
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: includes/Settings.php:153
+#: includes/Settings.php:166
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: includes/Settings.php:163
+#: includes/Settings.php:176
 msgid "SimpleSAMLphp"
 msgstr "SimpleSAMLphp"
 
-#: includes/Settings.php:164
+#: includes/Settings.php:177
 msgid "Service Provider Settings."
 msgstr "Einstellungen des Service Providers."
 
-#: includes/Settings.php:174
+#: includes/Settings.php:187
 msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
-#: includes/Settings.php:208
-msgid "List of domains to be added as suffix to the username."
-msgstr ""
-"Liste der Domänen, die dem Benutzernamen als Suffix hinzugefügt werden "
-"sollen."
-
-#: includes/Settings.php:209
+#: includes/Settings.php:212
 msgid ""
-"The domain suffix can have an alias. Use the \">\" separator to indicate the "
-"alias."
+"(Optional) The domain to add to the username to associate it with the "
+"identity provider."
 msgstr ""
-"Das Domain-Suffix kann einen Alias haben. Verwenden Sie das Trennzeichen "
-"„>“, um den Alias anzugeben."
+"(Optional) Die Domäne, die dem Benutzernamen hinzugefügt werden soll, um ihn "
+"mit dem Identity-Provider zu verknüpfen."
 
-#: includes/Settings.php:210
-msgid ""
-"If the field is left empty or a certain domain is not found in the list then "
-"the domain suffix will not be used."
-msgstr ""
-"Wenn das Feld leer gelassen wird oder eine bestimmte Domain nicht in der "
-"Liste gefunden wird, wird das Domain-Suffix nicht verwendet."
-
-#: includes/Settings.php:211
-msgid "Enter one domain per line."
-msgstr "Geben Sie eine Domäne pro Zeile ein."
-
-#: includes/Settings.php:222
+#: includes/Settings.php:224
 msgid "List of allowed domains for user email addresses."
 msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
 
-#: includes/Settings.php:223
+#: includes/Settings.php:225
 msgid "If the field is left empty then all email domains are allowed."
 msgstr "Wenn das Feld leer gelassen wird, sind alle E-Mail-Domänen zulässig."
 
-#: includes/Settings.php:224
+#: includes/Settings.php:226
+msgid "Format: <i>domain.tld</i>"
+msgstr "Format: <i>domain.tld</i>"
+
+#: includes/Settings.php:227
 msgid "Enter one email domain per line."
 msgstr "Geben Sie eine E-Mail-Domäne pro Zeile ein."
 
-#: includes/Settings.php:271
+#: includes/Settings.php:298
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:44 rrze-sso.php:99 rrze-sso.php:146
-msgid "Plugins: %1$s: %2$s"
-msgstr "Plugins: %1$s: %2$s"
-
-#: includes/SimpleSAML.php:72
+#: includes/SimpleSAML.php:162
 msgid "The simpleSAML library could not be loaded."
 msgstr "Die simpleSAML-Bibliothek konnte nicht geladen werden."
 
-#: includes/Users.php:17
-msgid "Cannot create an empty user."
-msgstr "Es kann kein leerer Benutzer angelegt werden."
+#. translators: 1: The plugin name, 2: The error string.
+#: includes/SimpleSAML.php:183 rrze-sso.php:99 rrze-sso.php:159
+msgid "Plugins: %1$s: %2$s"
+msgstr "Plugins: %1$s: %2$s"
 
-#: includes/Users.php:146
-msgid "You can't give users that role."
-msgstr "Sie können keinem Benutzer diese Rolle geben."
-
-#: includes/Users.php:170
+#: includes/Users.php:176
 msgid "<strong>ERROR</strong>: Please enter a username."
 msgstr "<strong>Fehler:</strong> Bitte geben Sie einen Benutzernamen ein."
 
-#: includes/Users.php:174
+#: includes/Users.php:180
 msgid ""
 "<strong>ERROR</strong>: This username is invalid because it uses illegal "
 "characters. Please enter a valid username."
@@ -348,7 +248,7 @@ msgstr ""
 "er ungültige Zeichen enthält. Bitte geben Sie einen gültigen Benutzernamen "
 "an."
 
-#: includes/Users.php:178
+#: includes/Users.php:184
 msgid ""
 "<strong>ERROR</strong>: This username is already registered. Please choose "
 "another one."
@@ -356,15 +256,15 @@ msgstr ""
 "<strong>Fehler:</strong>: Dieser Benutzername ist bereits registriert. Bitte "
 "wähle Sie einen anderen."
 
-#: includes/Users.php:182
+#: includes/Users.php:188
 msgid "<strong>ERROR</strong>: Please enter an email address."
 msgstr "<strong>Fehler:</strong> Bitte eine E-Mail-Adresse eingeben."
 
-#: includes/Users.php:184
+#: includes/Users.php:190
 msgid "<strong>ERROR</strong>: The email address isn't correct."
 msgstr "<strong>Fehler:</strong>: Die E-Mail-Adresse ist ungültig."
 
-#: includes/Users.php:186
+#: includes/Users.php:192
 msgid ""
 "<strong>ERROR</strong>: This email address is already registered, please "
 "choose another one."
@@ -373,7 +273,7 @@ msgstr ""
 "bitte wählen Sie eine andere."
 
 #. translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL.
-#: includes/Users.php:209
+#: includes/Users.php:215
 msgid ""
 "Hi,%5$s%5$sYou've been invited to join '%1$s' at %2$s with the role of %3$s."
 "%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s"
@@ -383,12 +283,12 @@ msgstr ""
 "%5$s %4$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:221
+#: includes/Users.php:227
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
 #. translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL.
-#: includes/Users.php:236 includes/Users.php:265
+#: includes/Users.php:242 includes/Users.php:271
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -397,59 +297,32 @@ msgstr ""
 "sich mittels des folgenden Links an die Website an:%4$s%3$s%4$s"
 
 #. translators: 2: Blog name, 4: EOL.
-#: includes/Users.php:241 includes/Users.php:270
+#: includes/Users.php:247 includes/Users.php:276
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:251 includes/Users.php:280
+#: includes/Users.php:257 includes/Users.php:286
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
-#: includes/Users.php:362
-msgid "Please enter a username."
-msgstr "Bitte geben Sie eine Benutzername ein."
+#: includes/Users.php:358
+msgid "Please select an identity provider."
+msgstr "Bitte wählen Sie einen Identity-Provider aus."
 
-#: includes/Users.php:372
-msgid "Username is not allowed."
-msgstr "Der Benutzername ist nicht erlaubt."
+#: includes/Users.php:369
+msgid "Sorry, that identity provider does not exists!"
+msgstr "Dieser Identity-Provider existiert nicht!"
 
-#: includes/Users.php:376
-msgid "Email Address or Username is not allowed."
-msgstr "Die E-Mail-Adresse ist nicht erlaubt."
-
-#: includes/Users.php:380
-msgid "The username must be at least 4 characters."
-msgstr "Der Benutzername muss aus mindestens 4 Zeichen bestehen."
-
-#: includes/Users.php:384
-msgid "Username may not be longer than 60 characters."
-msgstr "Der Benutzername darf nicht länger als 60 Zeichen sein."
-
-#: includes/Users.php:388
-msgid "Usernames may not contain the underscore character."
-msgstr "Benutzernamen dürfen keinen Unterstrich enthalten."
-
-#: includes/Users.php:396 includes/UsersMenu.php:108
-msgid "Please enter a valid email address."
-msgstr "Bitte geben Sie eine gültige E-Mail-Adresse ein."
-
-#: includes/Users.php:403
-msgid "That email address is not allowed!"
-msgstr "Diese E-Mail-Adresse ist nicht erlaubt!"
+#. translators: %s: Max length of username.
+#: includes/Users.php:412
+msgid "Username may not be longer than %s characters."
+msgstr "Der Benutzername darf nicht länger als %s Zeichen sein."
 
 #. translators: %s: List of allowed domains.
-#: includes/Users.php:416
-msgid "That email address domain is not allowed! Allowed domains: %s"
+#: includes/Users.php:447
+msgid "Sorry, that email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
-
-#: includes/Users.php:424
-msgid "Username already exists!"
-msgstr "Der Benutzername existiert bereits!"
-
-#: includes/Users.php:428
-msgid "The email address is already used!"
-msgstr "Die E-Mail-Adresse wird bereits verwendet!"
 
 #: includes/UsersList.php:21
 msgid "Organization"
@@ -459,125 +332,13 @@ msgstr "Organisation"
 msgid "Attributes"
 msgstr "Attribute"
 
-#: includes/UsersMenu.php:41
-msgid ""
-"To add a new user to your website, fill out the form on this page, and click "
-"below to add a new user."
-msgstr ""
-"Um einen neuen Benutzer zu Ihrer Webseite hinzufügen, füllen Sie das "
-"Formular auf dieser Seite aus, und klicken Sie unten auf Neuen Benutzer "
-"hinzufügen."
+#: includes/UsersMenu.php:169
+msgid "Add New User"
+msgstr "Neuen Benutzer hinzufügen"
 
-#: includes/UsersMenu.php:44
-msgid ""
-"Because this is a multisite installation, you may add accounts that already "
-"exist on the Network by specifying a username or email, and defining a role. "
-"For more options, you have to be a Network Administrator and use the hover "
-"link under an existing user's name to Edit the user profile under Network "
-"Admin &gt; All Users."
-msgstr ""
-"Da dies ein Websites-Netzwerk ist, können Sie in anderen Websites dieses "
-"Netzwerks existierende Benutzer einfach hinzufügen, in dem Sie deren "
-"Nutzernamen oder E-Mail-Adresse angeben, sowie deren Benutzerrolle "
-"festlegen. Für weitere Optionen müssen Sie Netzwerk-Administrator sein. Sie "
-"können dann über Netzwerkverwaltung &gt; Benutzer das Profil des Benutzers "
-"verändern."
-
-#: includes/UsersMenu.php:45
-msgid ""
-"New users will receive an email letting them know they've been added as a "
-"user for your site. Check the box if you don't want the user receive a "
-"welcome email."
-msgstr ""
-"Neue Benutzer erhalten eine E-Mail, in welcher ihnen mitgeteilt wird, dass "
-"sie als Benutzer dieser Website hinzugefügt wurden. Sie können allerdings "
-"die Checkbox <em>Keine E-Mail versenden</em> markieren, so dass die E-Mail "
-"nicht versendet wird."
-
-#: includes/UsersMenu.php:47
-msgid ""
-"New users will receive an email letting them know they've been added as a "
-"user for your website."
-msgstr ""
-"Neue Benutzer erhalten eine E-Mail, in welcher ihnen mitgeteilt wird, dass "
-"sie als Benutzer dieser Website hinzugefügt wurden."
-
-#: includes/UsersMenu.php:50
-msgid ""
-"Remember to click the Add New User button at the bottom of this screen when "
-"you are finished."
-msgstr ""
-"Vergessen Sie nicht, unten auf dieser Seite auf Neuen Benutzer hinzufügen zu "
-"klicken, wenn Sie fertig sind."
-
-#: includes/UsersMenu.php:93
-msgid ""
-"The user account has been succesfully created. An invitation email has been "
-"sent to the user."
-msgstr ""
-"Das Benutzerkonto wurde erfolgreich angelegt. Die Einladungs-E-Mail wurde "
-"zum neuen Benutzer versandt."
-
-#: includes/UsersMenu.php:96
-msgid ""
-"The user has been added to your website. An invitation email has been sent "
-"to the user."
-msgstr ""
-"Der Benutzer wurde zu Ihrer Website hinzugefügt. Die Einladungs-E-Mail wurde "
-"zum Benutzer versandt."
-
-#: includes/UsersMenu.php:99
-msgid "The user has been added to your website."
-msgstr "Der Benutzer wurde zu Ihrer Website hinzugefügt."
-
-#: includes/UsersMenu.php:102
-msgid "This user is already a member of this website."
-msgstr "Dieser Benutzer ist bereits ein Mitglied dieser Website."
-
-#: includes/UsersMenu.php:105
-msgid "The requested user does not exist."
-msgstr "Der angeforderte Benutzer existiert nicht."
-
-#: includes/UsersMenu.php:123 includes/UsersMenu.php:164
-#: includes/UsersMenu.php:203
+#: includes/UsersMenu.php:171
 msgid "Add Existing User"
 msgstr "Bestehenden Benutzer hinzufügen"
-
-#: includes/UsersMenu.php:170 includes/UsersMenu.php:174
-msgid ""
-"Enter the email address or username of an existing user on this network to "
-"invite them to this site. That person will be sent an email asking them to "
-"confirm the invite."
-msgstr ""
-"Tragen Sie die E-Mail Adresse oder den Benutzernamen eines bestehenden "
-"Nutzers dieses Netzwerkes ein um ihn zu dieser Website einzuladen. Dieser "
-"Person wird eine Mail gesendet um die Einladung zu bestätigen."
-
-#: includes/UsersMenu.php:171 includes/UsersMenu.php:175
-msgid "Email Address or Username"
-msgstr "E-Mail-Adresse oder Benutzername"
-
-#: includes/UsersMenu.php:188 includes/UsersMenu.php:234
-msgid "Role"
-msgstr "Rolle"
-
-#: includes/UsersMenu.php:197 includes/UsersMenu.php:247
-msgid "Skip Confirmation Email"
-msgstr "Keine Bestätigungs-E-Mail"
-
-#: includes/UsersMenu.php:198 includes/UsersMenu.php:248
-msgid "Add the user without sending an email that requires their confirmation."
-msgstr ""
-"Benutzer hinzufügen ohne eine E-Mail zu versenden, die bestätigt werden muss."
-
-#: includes/UsersMenu.php:212
-msgid "Create a brand new user and add them to this website."
-msgstr ""
-"Legen Sie einen neuen Benutzer an und fügen Sie ihn dieser Website hinzu."
-
-#: includes/UsersMenu.php:226 includes/UsersMenu.php:230
-msgid "(required)"
-msgstr "(erforderlich)"
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
 #: rrze-sso.php:73

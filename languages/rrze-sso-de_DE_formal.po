@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2023-04-12T14:49:56+00:00\n"
-"PO-Revision-Date: 2023-04-12 16:50+0200\n"
+"POT-Creation-Date: 2023-04-13T15:21:18+00:00\n"
+"PO-Revision-Date: 2023-04-13 17:22+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -42,29 +42,29 @@ msgstr "https://blogs.fau.de/webworking/"
 msgid "User attributes could not be retrieved."
 msgstr "Benutzerattribute konnten nicht abgerufen werden."
 
-#: includes/Authenticate.php:156
+#: includes/Authenticate.php:173
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:238
+#: includes/Authenticate.php:255
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:260
+#: includes/Authenticate.php:277
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:309
+#: includes/Authenticate.php:326
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:316
+#: includes/Authenticate.php:333
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:322
+#: includes/Authenticate.php:339
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -72,12 +72,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:331 includes/Authenticate.php:374
+#: includes/Authenticate.php:348 includes/Authenticate.php:391
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:348
+#: includes/Authenticate.php:365
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -89,7 +89,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:353
+#: includes/Authenticate.php:370
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -98,24 +98,24 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:355
+#: includes/Authenticate.php:372
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:361
+#: includes/Authenticate.php:378
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:362
+#: includes/Authenticate.php:379
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:400
+#: includes/Authenticate.php:417
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:409
+#: includes/Authenticate.php:426
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 

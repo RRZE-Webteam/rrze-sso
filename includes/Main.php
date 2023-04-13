@@ -7,45 +7,56 @@ defined('ABSPATH') || exit;
 class Main
 {
     /**
-     * [protected description]
+     * Option name.
+     * @var string
+     */
+    protected $optionName;
+
+    /**
+     * Settings options.
      * @var object
      */
     protected $options;
 
     /**
-     * [__construct description]
+     * Class constructor.
      */
     public function __construct()
     {
+        $this->optionName = Options::getOptionName();
         $this->options = Options::getOptions();
     }
 
-    public function onLoaded()
+    public function loaded()
     {
+        if ($this->options->force_sso) {
+            if (!simpleSAML()->loaded()) {
+                $this->options->force_sso = 0;
+                update_option($this->optionName, (array) $this->options);
+            }
+        }
+
         $settings = new Settings();
-        $settings->onLoaded();
+        $settings->loaded();
 
         if (!$this->options->force_sso) {
             return;
         }
 
-        $simplesaml = new SimpleSAML();
-        if (($simplesamlAuthSimple = $simplesaml->onLoaded()) === false) {
+        $authSimple = simpleSAML()->getAuthSimple();
+        if (!is_a($authSimple, '\SimpleSAML\Auth\Simple')) {
             return;
         }
 
-        if (($authenticate = new Authenticate($simplesamlAuthSimple)) !== false) {
-            $authenticate->onLoaded();
-        } else {
-            return;
-        }
+        $authenticate = new Authenticate($authSimple);
+        $authenticate->loaded();
 
         $this->registerRedirect();
         $this->userNewPageRedirect();
 
         if (is_super_admin()) {
             $userList = new UsersList();
-            $userList->onLoaded();
+            $userList->loaded();
         }
 
         // Fires before the lost password form (die).
@@ -72,9 +83,10 @@ class Main
         // on the Multisite Users screen (disable).
         add_filter('show_network_site_users_add_new_form', '__return_false');
 
+        // Custom user registration menu.
         add_action('network_admin_menu', [__NAMESPACE__ . '\NetworkUsersMenu', 'userNewPage']);
         add_action('admin_menu', [__NAMESPACE__ . '\UsersMenu', 'userNewPage']);
-
+        // Custom user registration functions.
         add_action('admin_init', [__NAMESPACE__ . '\Users', 'userNewAction']);
 
         add_filter('is_rrze_sso_active', '__return_true');
@@ -101,7 +113,7 @@ class Main
     protected function isUserNewPage()
     {
         if (isset($GLOBALS['pagenow'])) {
-            return in_array($GLOBALS['pagenow'], array('user-new.php'));
+            return in_array($GLOBALS['pagenow'], ['user-new.php']);
         }
         return false;
     }
@@ -109,7 +121,7 @@ class Main
     protected function isLoginPage()
     {
         if (isset($GLOBALS['pagenow'])) {
-            return in_array($GLOBALS['pagenow'], array('wp-login.php'));
+            return in_array($GLOBALS['pagenow'], ['wp-login.php']);
         }
         return false;
     }
@@ -118,5 +130,29 @@ class Main
     {
         $output = __("Disabled function.", 'rrze-sso');
         wp_die($output);
+    }
+
+    /**
+     * Register admin styles & scripts.
+     */
+    public function adminEnqueueScripts($hook)
+    {
+        if (!str_contains($hook, 'settings_page_sso')) {
+            return;
+        }
+
+        wp_enqueue_style(
+            'rrze-sso-settings',
+            plugins_url('build/admin.css', plugin()->getBasename()),
+            [],
+            plugin()->getVersion()
+        );
+
+        wp_enqueue_script(
+            'rrze-sso-setings',
+            plugins_url('build/admin.js', plugin()->getBasename()),
+            ['jquery'],
+            plugin()->getVersion()
+        );
     }
 }

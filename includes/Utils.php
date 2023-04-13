@@ -5,7 +5,7 @@ namespace RRZE\SSO;
 defined('ABSPATH') || exit;
 
 /**
- * [Utils description]
+ * Utilities.
  */
 class Utils
 {

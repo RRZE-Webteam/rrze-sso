@@ -16,7 +16,7 @@ class Authenticate
      * \SimpleSAML\Auth\Simple
      * @var object
      */
-    protected $simplesamlAuthSimple;
+    protected $authSimple;
 
     /**
      * Users can register
@@ -28,23 +28,19 @@ class Authenticate
     /**
      * Class constructor
      * @param object \SimpleSAML\Auth\Simple
-     * @return bool
+     * @return void
      */
-    public function __construct($simplesamlAuthSimple)
+    public function __construct(\SimpleSAML\Auth\Simple $authSimple)
     {
         $this->options = Options::getOptions();
-        if (!is_a($simplesamlAuthSimple, '\SimpleSAML\Auth\Simple')) {
-            return false;
-        }
-        $this->simplesamlAuthSimple = $simplesamlAuthSimple;
-        return true;
+        $this->authSimple = $authSimple;
     }
 
     /**
-     * onLoaded
+     * loaded
      * @return void
      */
-    public function onLoaded()
+    public function loaded()
     {
         // Filters whether a set of user login credentials are valid.
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
@@ -98,18 +94,18 @@ class Authenticate
 
         // Make sure that the user is authenticated.
         // If the user isn't authenticated, this function will start the authentication process.
-        $this->simplesamlAuthSimple->requireAuth();
+        $this->authSimple->requireAuth();
 
         // Save the current session and clean any left overs that could interfere 
         // with the normal application behaviour.
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
 
         // The entityID of the IdP the user is authenticated against.
-        $samlSpIdp = $this->simplesamlAuthSimple->getAuthData('saml:sp:IdP');
+        $samlSpIdp = $this->authSimple->getAuthData('saml:sp:IdP');
 
         // Retrieve the attributes of the current user.
         // If the user isn't authenticated, an empty array will be returned.
-        if (empty($_atts = $this->simplesamlAuthSimple->getAttributes())) {
+        if (empty($_atts = $this->authSimple->getAttributes())) {
             $this->authFailed(
                 $this->authFailed(__("User attributes could not be retrieved.", 'rrze-sso'))
             );
@@ -132,7 +128,7 @@ class Authenticate
         foreach ($_atts as $key => $value) {
             if (
                 is_array($value)
-                && in_array($key, ['uid', 'subject-id', 'eduPersonUniqueId', 'eduPersonPrincipalName', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+                && in_array($key, ['uid', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
             ) {
                 $atts[$key] = $value[0];
             } else {
@@ -141,19 +137,16 @@ class Authenticate
         }
 
         $domainScope = '';
+        $identityProviders = simpleSAML()->getIdentityProviders();
         $userLogin = $atts['uid'] ?? '';
-        $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
 
-        if (strpos($subjectId, '@') !== false) {
-            $domainScope = explode('@', $subjectId)[1];
-        }
-
-        foreach ($this->options->domain_scope as $domain) {
-            if (strpos($domain, $domainScope) !== false) {
-                if (strpos($domain, '>') !== false) {
-                    $domainScope = explode('>', $domain)[1];
-                }
-                $userLogin = explode('@', $subjectId)[0] . '@' . $domainScope;
+        foreach (array_keys($identityProviders) as $key) {
+            $key = sanitize_title($key);
+            $domainScope = $this->options->domain_scope[$key] ?? '';
+            $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
+            if (sanitize_title($samlSpIdp) == $key) {
+                $userLogin = $userLogin . $domainScope;
+                break;
             }
         }
 
@@ -301,13 +294,13 @@ class Authenticate
     }
 
     /**
-     * Kills WordPress execution and displays an HTML page 
+     * Kills WordPress execution and displays an HTML page
      * with an authentication error message.
      * @param string $message
-     * @param boolean $simplesamlAuthSimple
+     * @param boolean $authSimple
      * @return void
      */
-    private function authFailed($message, $simplesamlAuthSimple = true)
+    private function authFailed($message, $authSimple = true)
     {
         $output = '';
 
@@ -331,7 +324,7 @@ class Authenticate
 
         $output .= $this->getContacts();
 
-        if ($simplesamlAuthSimple) {
+        if ($authSimple) {
             $output .= sprintf(
                 '<p><a href="%1$s">%2$s</a></p>',
                 wp_logout_url(),
@@ -443,7 +436,7 @@ class Authenticate
     public function logout()
     {
         // Log the user out. After logging out, the user will be redirected to the home page.
-        $this->simplesamlAuthSimple->logout(site_url('', 'https'));
+        $this->authSimple->logout(site_url('', 'https'));
         // Save the current session and clean any left overs that could interfere 
         // with the normal application behaviour.        
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();

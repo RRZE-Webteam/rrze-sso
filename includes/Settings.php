@@ -7,36 +7,45 @@ defined('ABSPATH') || exit;
 class Settings
 {
     /**
-     * [protected description]
+     * Option name.
      * @var string
      */
     protected $optionName;
 
     /**
-     * [protected description]
+     * Options object.
      * @var object
      */
     protected $options;
 
     /**
-     * [protected description]
+     * Option group (menu page slug).
      * @var string
      */
-    protected $menuPage = 'sso';
+    protected $optionGroup;
 
     /**
-     * [__construct description]
+     * Identity providers list.
+     * @var array
+     */
+    protected $identityProviders;
+
+    /**
+     * Class constructor.
      */
     public function __construct()
     {
+        $this->optionGroup = Options::getOptionGroup();
         $this->optionName = Options::getOptionName();
         $this->options = Options::getOptions();
+
+        $this->identityProviders = simpleSAML()->getIdentityProviders();
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         if (is_multisite()) {
-            add_action('admin_init', [$this, 'networkSettingsUpdate']);
+            add_action('admin_init', [$this, 'settingsUpdate']);
             add_action('network_admin_menu', [$this, 'networkAdminMenu']);
         } else {
             add_action('admin_menu', [$this, 'adminMenu']);
@@ -51,30 +60,43 @@ class Settings
      */
     public function networkAdminMenu()
     {
-        add_submenu_page('settings.php', __('SSO', 'rrze-sso'), __('SSO', 'rrze-sso'), 'manage_network_options', $this->menuPage, [$this, 'networkOptionsPage']);
+        add_submenu_page(
+            'settings.php',
+            __('SSO', 'rrze-sso'),
+            __('SSO', 'rrze-sso'),
+            'manage_network_options',
+            $this->optionGroup,
+            [$this, 'networkOptionsPage']
+        );
     }
 
     /**
-     * [adminMenu description]
+     * Add settings page.
      * @return void
      */
     public function adminMenu()
     {
-        add_options_page(__('SSO', 'rrze-sso'), __('SSO', 'rrze-sso'), 'manage_options', $this->menuPage, [$this, 'optionsPage']);
+        add_options_page(
+            __('SSO', 'rrze-sso'),
+            __('SSO', 'rrze-sso'),
+            'manage_options',
+            $this->optionGroup,
+            [$this, 'optionsPage']
+        );
     }
 
     /**
-     * [networkOptionsPage description]
+     * Network admin menu.
      * @return void
      */
     public function networkOptionsPage()
     {
-?>
+    ?>
         <div class="wrap">
             <h1><?php echo esc_html(__('SSO', 'rrze-sso')); ?></h1>
             <form method="post">
-                <?php do_settings_sections($this->menuPage); ?>
-                <?php settings_fields($this->menuPage); ?>
+                <?php do_settings_sections($this->optionGroup); ?>
+                <?php settings_fields($this->optionGroup); ?>
                 <?php submit_button(); ?>
             </form>
         </div>
@@ -82,7 +104,7 @@ class Settings
     }
 
     /**
-     * [optionsPage description]
+     * Admin menu.
      * @return void
      */
     public function optionsPage()
@@ -91,48 +113,95 @@ class Settings
         <div class="wrap">
             <h1><?php echo esc_html(__("SSO Settings", 'rrze-sso')); ?></h1>
             <form method="post" action="options.php">
-                <?php do_settings_sections($this->menuPage); ?>
-                <?php settings_fields($this->menuPage); ?>
+                <?php do_settings_sections($this->optionGroup); ?>
+                <?php settings_fields($this->optionGroup); ?>
                 <?php submit_button(); ?>
             </form>
         </div>
-<?php
+    <?php
     }
 
     /**
-     * [adminInit description]
+     * Admin script is being initialized.
      * @return void
      */
     public function adminInit()
     {
         if (!is_multisite()) {
-            register_setting($this->menuPage, $this->optionName, [$this, 'optionsValidate']);
+            register_setting(
+                $this->optionGroup,
+                $this->optionName,
+                [$this, 'optionsValidate']
+            );
         }
 
-        add_settings_section('sso_options_section', false, [$this, 'sso_settings_section'], $this->menuPage);
-        add_settings_field('force_sso', __("SSO Authentication", 'rrze-sso'), [$this, 'ssoField'], $this->menuPage, 'sso_options_section');
+        add_settings_section(
+            'sso_options_section',
+            false,
+            [$this, 'sso_settings_section'],
+            $this->optionGroup
+        );
+        add_settings_field(
+            'force_sso',
+            __("SSO Authentication", 'rrze-sso'),
+            [$this, 'ssoField'],
+            $this->optionGroup,
+            'sso_options_section'
+        );
 
-        add_settings_section('simplesaml_options_section', false, [$this, 'simpleSAMLSettingsSection'], $this->menuPage);
-        add_settings_field('simplesaml_include', __("Autoload Path", 'rrze-sso'), [$this, 'simpleSAMLIncludeField'], $this->menuPage, 'simplesaml_options_section');
-        add_settings_field('simplesaml_auth_source', __("Authentication Source", 'rrze-sso'), [$this, 'simpleSAMLAuthSourceField'], $this->menuPage, 'simplesaml_options_section');
+        add_settings_section(
+            'simplesaml_options_section',
+            false,
+            [$this, 'simpleSAMLSettingsSection'],
+            $this->optionGroup
+        );
+        add_settings_field(
+            'simplesaml_include',
+            __("Autoload Path", 'rrze-sso'),
+            [$this, 'simpleSAMLIncludeField'],
+            $this->optionGroup,
+            'simplesaml_options_section'
+        );
+        add_settings_field(
+            'simplesaml_auth_source',
+            __("Authentication Source", 'rrze-sso'),
+            [$this, 'simpleSAMLAuthSourceField'],
+            $this->optionGroup,
+            'simplesaml_options_section'
+        );
         if ($this->options->force_sso) {
-            add_settings_field('domain_scope', __("Domain Scope", 'rrze-sso'), [$this, 'domainScopeField'], $this->menuPage, 'simplesaml_options_section');
-            add_settings_field('allowed_user_email_domains', __("Allowed User Email Domains", 'rrze-sso'), [$this, 'allowedUserEmailDomainsField'], $this->menuPage, 'simplesaml_options_section');
+            if (!empty($this->identityProviders)) {
+                add_settings_field(
+                    'domain_scope',
+                    __("Identity Provider Domain Scope", 'rrze-sso'),
+                    [$this, 'domainScopeField'],
+                    $this->optionGroup,
+                    'simplesaml_options_section'
+                );
+            }
+            add_settings_field(
+                'allowed_user_email_domains',
+                __("Allowed User Email Domains", 'rrze-sso'),
+                [$this, 'allowedUserEmailDomainsField'],
+                $this->optionGroup,
+                'simplesaml_options_section'
+            );
         }
     }
 
     /**
-     * [sso_settings_section description]
+     * SSO settings section.
      * @return void
      */
     public function sso_settings_section()
     {
         echo '<h3 class="title">' . __("Single Sign-On", 'rrze-sso') . '</h3>';
         echo '<p>' . __("General SSO Settings.", 'rrze-sso') . '</p>';
+        settings_errors($this->optionName);
     }
 
     /**
-     * [ssoField description]
+     * SSO field.
      * @return void
      */
     public function ssoField()
@@ -145,7 +214,7 @@ class Settings
     }
 
     /**
-     * [simpleSAMLSettingsSection description]
+     * SAML settings section.
      * @return void
      */
     public function simpleSAMLSettingsSection()
@@ -155,7 +224,7 @@ class Settings
     }
 
     /**
-     * [simpleSAMLIncludeField description]
+     * SAML autoload path field.
      * @return void
      */
     public function simpleSAMLIncludeField()
@@ -165,7 +234,7 @@ class Settings
     }
 
     /**
-     * [simpleSAMLAuthSourceField description]
+     * Authentication source field.
      * @return void
      */
     public function simpleSAMLAuthSourceField()
@@ -174,21 +243,24 @@ class Settings
     }
 
     /**
-     * [domainScopeField description]
+     * Domain scope field.
      * @return void
      */
     public function domainScopeField()
     {
-        $domainScope = implode(PHP_EOL, (array) $this->options->domain_scope);
-        echo '<textarea rows="5" cols="55" id="domain_scope" class="regular-text" name="' . $this->optionName . '[domain_scope]">' . esc_attr($domainScope) . '</textarea>';
-        echo '<p class="description">' . __('List of domains to be added as suffix to the username.', 'rrze-sso') . '</p>';
-        echo '<p class="description">' . __('The domain suffix can have an alias. Use the ">" separator to indicate the alias.', 'rrze-sso') . '</p>';
-        echo '<p class="description">' . __('If the field is left empty or a certain domain is not found in the list then the domain suffix will not be used.', 'rrze-sso') . '</p>';
-        echo '<p class="description">' . __('Enter one domain per line.', 'rrze-sso') . '</p>';
+        foreach ($this->identityProviders as $key => $value) {
+            $key = sanitize_title($key);
+            $domain = $this->options->domain_scope[$key] ?? '';
+            echo '<p><strong>', $value, '</strong></p>';
+            echo '<input type="hidden" name="identity_providers[]" value="' . $key . '">';
+            echo '<input type="text" id="' . $key . '" class="identity-provider-domain regular-text" ';
+            echo 'name="' . $this->optionName . '[identity_provider_domain][' . $key . ']" value="' . esc_attr($domain) . '">';
+            echo '<p class="description">' . __('(Optional) The domain to add to the user identifier to associate it with the identity provider.', 'rrze-sso') . '</p>';
+        }
     }
 
     /**
-     * [allowedUserEmailDomainsField description]
+     * Allowed user email domains field.
      * @return void
      */
     public function allowedUserEmailDomainsField()
@@ -197,51 +269,92 @@ class Settings
         echo '<textarea rows="5" cols="55" id="allowed_user_email_domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
         echo '<p class="description">' . __('List of allowed domains for user email addresses.', 'rrze-sso') . '</p>';
         echo '<p class="description">' . __('If the field is left empty then all email domains are allowed.', 'rrze-sso') . '</p>';
+        echo '<p class="description">' . __('Format: <i>domain.tld</i>', 'rrze-sso') . '</p>';
         echo '<p class="description">' . __('Enter one email domain per line.', 'rrze-sso') . '</p>';
     }
 
     /**
-     * [optionsValidate description]
+     * Validate settings options.
      * @param  array $input [description]
      * @return array        [description]
      */
     public function optionsValidate($input)
     {
         $input['force_sso'] = isset($input['force_sso']) && in_array(absint($input['force_sso']), [0, 1]) ? absint($input['force_sso']) : $this->options->force_sso;
-
         $input['simplesaml_include'] = !empty($input['simplesaml_include']) ? esc_attr(trim($input['simplesaml_include'])) : $this->options->simplesaml_include;
         $input['simplesaml_auth_source'] = isset($input['simplesaml_auth_source']) ? esc_attr(trim($input['simplesaml_auth_source'])) : $this->options->simplesaml_auth_source;
         if ($this->options->force_sso) {
-            $input['allowed_user_email_domains'] = array_filter(array_map('trim', explode(PHP_EOL, $input['allowed_user_email_domains'])));
-            $input['domain_scope'] = array_filter(array_map('trim', explode(PHP_EOL, $input['domain_scope'])));
+            $domainScope = !empty($input['identity_provider_domain']) ? $input['identity_provider_domain'] : '';
+            $domainScope = is_array($domainScope) ? array_filter(array_map([__CLASS__, 'validateDomain'], $domainScope)) : $this->options->domain_scope;
+            $domainScope = !in_array('*', $domainScope) ? $domainScope : $this->options->domain_scope;
+            if (count($domainScope) !== count(array_unique($domainScope))) {
+                $domainScope = $this->options->domain_scope;
+                add_settings_error(
+                    $this->optionName,
+                    'domain_scope',
+                    __('The domain scope of the identity provider already exists.', 'rrze-sso'),
+                );
+            }
+            $input['domain_scope'] =  $domainScope;
+            $emailDomains = !empty($input['allowed_user_email_domains']) ? $input['allowed_user_email_domains'] : '';
+            $emailDomains = array_filter(array_map([__CLASS__, 'validateDomain'], array_unique(array_filter(explode(PHP_EOL, $emailDomains)))));
+            $input['allowed_user_email_domains'] = !in_array('*', $emailDomains) ? $emailDomains : $this->options->allowed_user_email_domains;
         } else {
-            $input['allowed_user_email_domains'] = $this->options->allowed_user_email_domains;
             $input['domain_scope'] = $this->options->domain_scope;
+            $input['allowed_user_email_domains'] = $this->options->allowed_user_email_domains;
         }
-
+        if (isset($input['identity_provider_domain'])) {
+            unset($input['identity_provider_domain']);
+        }
         return $input;
     }
 
     /**
-     * [networkSettingsUpdate description]
+     * Validate a domain name.
+     * @param string $input Entered domain name.
+     * @return mixed
+     */
+    protected function validateDomain($input)
+    {
+        $domain = trim($input);
+        if (!$domain) {
+            return $domain;
+        }
+        if (!preg_match('/(--|\.\.)/', $domain) && preg_match('|^([a-zA-Z0-9-\.])+$|', $domain)) {
+            return $domain;
+        }
+        add_settings_error(
+            $this->optionName,
+            'domain_scope',
+            sprintf(
+                /* translators: %s: domain name. */
+                __('%s is not a valid domain name.', 'rrze-sso'),
+                esc_html($domain)
+            )
+        );
+        return '*';
+    }
+
+    /**
+     * Network settings admin notices.
      * @return void
      */
-    public function networkSettingsUpdate()
+    public function settingsUpdate()
     {
         if (!empty($_POST[$this->optionName])) {
-            check_admin_referer($this->menuPage . '-options');
+            check_admin_referer($this->optionGroup . '-options');
             $input = $this->optionsValidate($_POST[$this->optionName]);
             update_site_option($this->optionName, $input);
             $this->options = Options::getOptions();
-            add_action('network_admin_notices', [$this, 'networkSettingsUpdateNotice']);
+            add_action('network_admin_notices', [$this, 'settingsUpdateNotice']);
         }
     }
 
     /**
-     * [networkSettingsUpdateNotice description]
+     * Settings admin notice.
      * @return void
      */
-    public function networkSettingsUpdateNotice()
+    public function settingsUpdateNotice()
     {
         $class = 'notice updated';
         $message = __("Settings saved.", 'rrze-sso');

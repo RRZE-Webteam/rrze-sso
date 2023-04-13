@@ -4,7 +4,7 @@
 Plugin Name:      RRZE SSO
 Plugin URI:       https://github.com/RRZE-Webteam/rrze-sso
 Description:      Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
-Version:          1.5.6
+Version:          1.6.0
 Author:           RRZE-Webteam
 Author URI:       https://blogs.fau.de/webworking/
 License:          GNU General Public License v2
@@ -109,7 +109,15 @@ function activation()
  */
 function deactivation()
 {
-    // Nothing to do here.
+    $optionGroup = Options::getOptionGroup();
+    $optionName = Options::getOptionName();
+    $options = Options::getOptions();
+    unregister_setting($optionGroup, $optionName);
+    if ($options->force_sso) {
+        $options->force_sso = 0;
+        $options = (array) $options;
+        update_site_option($optionName, $options);
+    }
 }
 
 /**
@@ -121,6 +129,19 @@ function plugin()
     static $instance;
     if (null === $instance) {
         $instance = new Plugin(__FILE__);
+    }
+    return $instance;
+}
+
+/**
+ * Instantiate SimpleSAML class.
+ * @return object SimpleSAML
+ */
+function simpleSAML()
+{
+    static $instance;
+    if (null === $instance) {
+        $instance = new SimpleSAML();
     }
     return $instance;
 }
@@ -153,6 +174,6 @@ function loaded()
         });
         return;
     }
-    $main = new Main;
-    $main->onLoaded();
+    $main = new Main();
+    $main->loaded();
 }

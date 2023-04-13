@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 class UsersList
 {
-    public function onLoaded()
+    public function loaded()
     {
         add_filter('manage_users_columns', [$this, 'columns']);
         add_action('manage_users_custom_column', [$this, 'organizationColumn'], 10, 3);

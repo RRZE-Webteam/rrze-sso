@@ -76,7 +76,7 @@ $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] =
 ];
 ```
 
-## Anmeldung
+## Anmeldung eines FAU-SP (Service Provider der FAU)
 
 -   Folgende Info an sso-admins@rrze.fau.de versenden:
 

@@ -128,7 +128,21 @@ class Authenticate
         foreach ($_atts as $key => $value) {
             if (
                 is_array($value)
-                && in_array($key, ['uid', 'mail', 'displayName', 'cn', 'sn', 'givenName', 'o'])
+                && in_array(
+                    $key,
+                    [
+                        'uid',
+                        'subject-id',
+                        'eduPersonUniqueId',
+                        'eduPersonPrincipalName',
+                        'mail',
+                        'displayName',
+                        'cn',
+                        'sn',
+                        'givenName',
+                        'o'
+                    ]
+                )
             ) {
                 $atts[$key] = $value[0];
             } else {
@@ -138,7 +152,10 @@ class Authenticate
 
         $domainScope = '';
         $identityProviders = simpleSAML()->getIdentityProviders();
+
         $userLogin = $atts['uid'] ?? '';
+        $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
+        $userLogin = $userLogin ?: explode('@', $subjectId)[0];
 
         foreach (array_keys($identityProviders) as $key) {
             $key = sanitize_title($key);

@@ -288,6 +288,7 @@ class UsersMenu
                             <th scope="row"><label for="email"><?php _e('Email'); ?> <span class="description"><?php _e('(required)'); ?></span></label></th>
                             <td><input name="email" type="email" id="email" value="<?php echo esc_attr($new_user_email); ?>" /></td>
                         </tr>
+                        <?php if (!is_multisite()): ?>
                         <tr>
                             <th scope="row"><?php _e('Send User Notification'); ?></th>
                             <td>
@@ -295,6 +296,7 @@ class UsersMenu
                                 <label for="send_user_notification"><?php _e('Send the new user an email about their account.'); ?></label>
                             </td>
                         </tr>
+                        <?php endif; ?>
                         <?php if (current_user_can('promote_users')) { ?>
                             <tr class="form-field">
                                 <th scope="row"><label for="role"><?php _e("Role"); ?></label></th>

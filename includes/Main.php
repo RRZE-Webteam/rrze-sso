@@ -65,6 +65,8 @@ class Main
         add_action('retrieve_password', [$this, 'disableFunction']);
         // Fires before the user’s password is reset (die).
         add_action('password_reset', [$this, 'disableFunction']);
+        // Fires before the password reset procedure is validated (die).
+        add_action('validate_password_reset', [$this, 'disableFunction']);
 
         // Filters the display of the password fields (disable).
         add_filter('show_password_fields', '__return_false');

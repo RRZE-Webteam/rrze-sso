@@ -206,7 +206,7 @@ class Authenticate
                 }
             }
             if ($lastName && !get_user_meta($userId, 'last_name', true)) {
-                if (update_user_meta($userId, 'last_name', $firstName) === true) {
+                if (update_user_meta($userId, 'last_name', $lastName) === true) {
                     $updateDisplayName = true;
                 }
             }

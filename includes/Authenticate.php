@@ -199,18 +199,14 @@ class Authenticate
 
         if ($userdata = get_user_by('login', $userLogin)) {
             $userId = $userdata->ID;
-            $updateDisplayName = false;
-            if ($firstName && !get_user_meta($userId, 'first_name', true)) {
-                if (update_user_meta($userId, 'first_name', $firstName) === true) {
-                    $updateDisplayName = true;
-                }
+
+            if ($firstName && $firstName != get_user_meta($userId, 'first_name', true)) {
+                update_user_meta($userId, 'first_name', $firstName);
             }
-            if ($lastName && !get_user_meta($userId, 'last_name', true)) {
-                if (update_user_meta($userId, 'last_name', $lastName) === true) {
-                    $updateDisplayName = true;
-                }
+            if ($lastName && $lastName != get_user_meta($userId, 'last_name', true)) {
+                update_user_meta($userId, 'last_name', $lastName);
             }
-            if ($displayName && $updateDisplayName) {
+            if ($displayName && $displayName != $userdata->display_name) {
                 wp_update_user(
                     [
                         'ID' => $userId,

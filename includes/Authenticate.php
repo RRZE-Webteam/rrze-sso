@@ -126,10 +126,12 @@ class Authenticate
         $atts = [];
 
         foreach ($_atts as $key => $value) {
+            $_keyAry = explode(':', $key);
+            $_key = $_keyAry[array_key_last($_keyAry)];
             if (
                 is_array($value)
                 && in_array(
-                    $key,
+                    $_key,
                     [
                         'uid',
                         'subject-id',
@@ -144,9 +146,9 @@ class Authenticate
                     ]
                 )
             ) {
-                $atts[$key] = $value[0];
+                $atts[$_key] = $value[0];
             } else {
-                $atts[$key] = $value;
+                $atts[$key] = is_array($value) ? $value[0] : $value;
             }
         }
 

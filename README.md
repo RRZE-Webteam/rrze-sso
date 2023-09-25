@@ -12,25 +12,35 @@ Einstellungen › SSO
 -   2. Bitte folgen Sie den Anweisungen zur Installation von SimpleSAMLphp unter diesem Link: https://simplesamlphp.org/docs/stable/simplesamlphp-install
 -   3. Folgenden Attribute in der Datei "/simplesamlphp/config/config.php" ändern/bearbeiten:
 
-<pre>
-'auth.adminpassword' = 'Beliebiges Admin-Password',
-'secretsalt' => 'Beliebige, möglichst einzigartige Phrase',
+```php
 'technicalcontact_name' => 'Name des technischen Ansprechpartners',
 'technicalcontact_email' => 'E-Mail-Adresse des technischen Ansprechpartners',
+```
+...
+```php
+'secretsalt' => 'Beliebige, möglichst einzigartige Phrase',
+'auth.adminpassword' = 'Hash-String', // Führen Sie „bin/pwgen.php“ aus, um einen Hash zu generieren.
+```
+...
+```php
 'authproc.sp' => [
     10 => [
         'class' => 'core:AttributeMap',
         'urn2name',
     ],
+    50 => [
+        'class' => 'core:AttributeMap',
+        'oid2name',
+    ],    
     90 => 'core:LanguageAdaptor',
 ],
-</pre>
+```
 
 -   4. Folgende Element des "default-sp"-Array in der Datei "/simplesamlphp/config/authsources.php" ändern/bearbeiten:
 
-<pre>
+```php
 'idp' = 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'
-</pre>
+```
 
 -   5. Den Inhalt der Datei "/simplesamlphp/metadata/saml20-idp-remote.php" löschen und dann den folgenden Code hinzufügen:
 

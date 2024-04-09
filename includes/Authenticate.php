@@ -103,6 +103,13 @@ class Authenticate
         // The entityID of the IdP the user is authenticated against.
         $samlSpIdp = $this->authSimple->getAuthData('saml:sp:IdP');
 
+        // Get the IdP Metadata.
+        $metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
+        $idpMetadata = $metadata->getMetaData($samlSpIdp, 'saml20-idp-remote');
+        $locale = get_locale();
+        $lang = substr($locale, 0, 2);
+        $idpName = $idpMetadata['name'][$lang] ?? '';
+
         // Retrieve the attributes of the current user.
         // If the user isn't authenticated, an empty array will be returned.
         if (empty($_atts = $this->authSimple->getAttributes())) {
@@ -187,7 +194,7 @@ class Authenticate
         $firstName = $firstName ?: $atts['givenName'] ?? '';
 
         $organizationName = $atts['o'] ?? '';
-        $organizationName = $organizationName ?: $atts['organizationName'] ?? '';
+        $organizationName = $organizationName ?: $atts['organizationName'] ?? $idpName;
 
         $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
         $eduPersonScopedAffiliation = $atts['eduPersonScopedAffiliation'] ?? '';

@@ -108,7 +108,7 @@ class Authenticate
         $idpMetadata = $metadata->getMetaData($samlSpIdp, 'saml20-idp-remote');
         $locale = get_locale();
         $lang = substr($locale, 0, 2);
-        $idpName = $idpMetadata['name'][$lang] ?? '';
+        $idpName = $idpMetadata['name'][$lang] ?? $idpMetadata['name']['en'] ?? '';
 
         // Retrieve the attributes of the current user.
         // If the user isn't authenticated, an empty array will be returned.

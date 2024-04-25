@@ -154,6 +154,18 @@ class Authenticate
                 )
             ) {
                 $atts[$_key] = $value[0];
+	    } elseif (
+                is_array($value)
+                && in_array(
+                    $_key,
+                    [
+                        'eduPersonAffiliation',
+                        'eduPersonScopedAffiliation'
+                    ]
+                )
+            ) {
+                sort($value);
+                $atts[$_key] = implode(', ', $value);
             } else {
                 $atts[$key] = is_array($value) ? $value[0] : $value;
             }

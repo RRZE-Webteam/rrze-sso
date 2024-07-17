@@ -155,7 +155,7 @@ class Authenticate
             ) {
                 $atts[$_key] = $value[0];
             } else {
-                $atts[$key] = is_array($value) ? $value[0] : $value;
+                $atts[$key] = $value;
             }
         }
 

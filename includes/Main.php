@@ -51,10 +51,21 @@ class Main
         $authenticate = new Authenticate($authSimple);
         $authenticate->loaded();
 
+        add_action('init', function () use ($authSimple) {
+            if (
+                is_user_logged_in()
+                && !$authSimple->isAuthenticated()
+            ) {
+                wp_destroy_current_session();
+                wp_clear_auth_cookie();
+                wp_set_current_user(0);
+            }
+        });
+
         $this->registerRedirect();
         $this->userNewPageRedirect();
 
-        if (is_super_admin()) {
+        if (current_user_can('manage_options')) {
             $userList = new UsersList();
             $userList->loaded();
         }

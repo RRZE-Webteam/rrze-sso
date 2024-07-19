@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2023-04-13T15:21:18+00:00\n"
-"PO-Revision-Date: 2023-04-13 17:22+0200\n"
+"POT-Creation-Date: 2024-07-19T13:01:48+00:00\n"
+"PO-Revision-Date: 2024-07-19 15:05+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -15,56 +15,66 @@ msgstr ""
 "_nx:4c,1,2;_x:1,2c\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.4\n"
 "X-Poedit-SearchPath-0: ..\n"
 
 #. Plugin Name of the plugin
+#: rrze-sso.php
 msgid "RRZE SSO"
 msgstr "RRZE SSO"
 
 #. Plugin URI of the plugin
+#: rrze-sso.php
 msgid "https://github.com/RRZE-Webteam/rrze-sso"
 msgstr "https://github.com/RRZE-Webteam/rrze-sso"
 
 #. Description of the plugin
+#: rrze-sso.php
 msgid "Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress."
 msgstr "Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress."
 
 #. Author of the plugin
+#: rrze-sso.php
 msgid "RRZE-Webteam"
 msgstr "RRZE-Webteam"
 
 #. Author URI of the plugin
+#: rrze-sso.php
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/Authenticate.php:110
+#: includes/Authenticate.php:117
 msgid "User attributes could not be retrieved."
 msgstr "Benutzerattribute konnten nicht abgerufen werden."
 
-#: includes/Authenticate.php:173
+#. translators: %s: IdP name.
+#: includes/Authenticate.php:185
+msgid "The IdP &ldquo;%s&rdquo; is not registered on this SP."
+msgstr "Der IdP „%s“ ist bei diesem SP nicht registriert."
+
+#: includes/Authenticate.php:194
 msgid "The username entered is not valid."
 msgstr "Die eingegebene Kennung ist nicht gültig."
 
-#: includes/Authenticate.php:255
+#: includes/Authenticate.php:272
 msgid "The user could not be added."
 msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
-#: includes/Authenticate.php:277
+#: includes/Authenticate.php:294
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
-#: includes/Authenticate.php:326
+#: includes/Authenticate.php:343
 msgid "ERROR:"
 msgstr "Fehler:"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:333
+#: includes/Authenticate.php:350
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
-#: includes/Authenticate.php:339
+#: includes/Authenticate.php:356
 msgid ""
 "However, if no login is possible, please contact the contact person of the "
 "website."
@@ -72,12 +82,12 @@ msgstr ""
 "Sollte dennoch keine Anmeldung möglich sein, dann wenden Sie sich bitte an "
 "den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:348 includes/Authenticate.php:391
+#: includes/Authenticate.php:365 includes/Authenticate.php:408
 msgid "Single Sign-On Log Out"
 msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:365
+#: includes/Authenticate.php:382
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -89,7 +99,7 @@ msgstr ""
 "Zugriff auf das &bdquo;%1$s&ldquo; Dashboard haben, dann wenden Sie sich "
 "bitte an den Ansprechpartner der Website."
 
-#: includes/Authenticate.php:370
+#: includes/Authenticate.php:387
 msgid ""
 "If you reached this screen by accident and meant to visit one of your own "
 "websites, here are some shortcuts to help you find your way."
@@ -98,28 +108,28 @@ msgstr ""
 "Ihrer eigenen Websites besuchen wollten, hier ein paar hoffentlich "
 "hilfreiche Links."
 
-#: includes/Authenticate.php:372
+#: includes/Authenticate.php:389
 msgid "Your Websites"
 msgstr "Ihre Websites"
 
-#: includes/Authenticate.php:378
+#: includes/Authenticate.php:395
 msgid "Visit the Dashboard"
 msgstr "Dashboard besuchen"
 
-#: includes/Authenticate.php:379
+#: includes/Authenticate.php:396
 msgid "View the website"
 msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
-#: includes/Authenticate.php:417
+#: includes/Authenticate.php:434
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
-#: includes/Authenticate.php:426
+#: includes/Authenticate.php:443
 msgid "Email Address:"
 msgstr "E-Mail-Adresse:"
 
-#: includes/Main.php:131
+#: includes/Main.php:144
 msgid "Disabled function."
 msgstr "Gebrauchsunfähige Funktion."
 
@@ -227,11 +237,11 @@ msgid "The domain scope of the identity provider already exists."
 msgstr "Der Domänenbereich des Identity-Providers ist bereits vorhanden."
 
 #. translators: %s: domain name.
-#: includes/Settings.php:331
+#: includes/Settings.php:332
 msgid "%s is not a valid domain name."
 msgstr "%s ist kein gültiger Domänenname."
 
-#: includes/Settings.php:360
+#: includes/Settings.php:361
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 

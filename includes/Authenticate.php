@@ -166,14 +166,26 @@ class Authenticate
         $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
         $userLogin = $userLogin ?: explode('@', $subjectId)[0];
 
+        $found = false;
         foreach (array_keys($identityProviders) as $key) {
             $key = sanitize_title($key);
             $domainScope = $this->options->domain_scope[$key] ?? '';
             $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
             if (sanitize_title($samlSpIdp) == $key) {
+                $found = true;
                 $userLogin = $userLogin . $domainScope;
                 break;
             }
+        }
+
+        if (!$found) {
+            $this->authFailed(
+                sprintf(
+                    /* translators: %s: IdP name. */
+                    __("The IdP &ldquo;%s&rdquo; is not registered on this SP.", 'rrze-sso'),
+                    $samlSpIdp
+                )
+            );
         }
 
         $origUserLogin = $userLogin;
@@ -453,9 +465,10 @@ class Authenticate
 
     /**
      * Log the user out.
+     * @param int $userId
      * @return void
      */
-    public function logout()
+    public function logout($userId)
     {
         // Log the user out. After logging out, the user will be redirected to the home page.
         $this->authSimple->logout(site_url('', 'https'));

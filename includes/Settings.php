@@ -91,7 +91,7 @@ class Settings
      */
     public function networkOptionsPage()
     {
-    ?>
+?>
         <div class="wrap">
             <h1><?php echo esc_html(__('SSO', 'rrze-sso')); ?></h1>
             <form method="post">
@@ -118,7 +118,7 @@ class Settings
                 <?php submit_button(); ?>
             </form>
         </div>
-    <?php
+<?php
     }
 
     /**
@@ -285,7 +285,7 @@ class Settings
         $input['simplesaml_auth_source'] = isset($input['simplesaml_auth_source']) ? esc_attr(trim($input['simplesaml_auth_source'])) : $this->options->simplesaml_auth_source;
         if ($this->options->force_sso) {
             $domainScope = !empty($input['identity_provider_domain']) ? $input['identity_provider_domain'] : '';
-            $domainScope = is_array($domainScope) ? array_filter(array_map([__CLASS__, 'validateDomain'], $domainScope)) : $this->options->domain_scope;
+            $domainScope = is_array($domainScope) ? array_map([__CLASS__, 'validateDomain'], $domainScope) : $this->options->domain_scope;
             $domainScope = !in_array('*', $domainScope) ? $domainScope : $this->options->domain_scope;
             if (count($domainScope) !== count(array_unique($domainScope))) {
                 $domainScope = $this->options->domain_scope;
@@ -320,7 +320,8 @@ class Settings
         if (!$domain) {
             return $domain;
         }
-        if (!preg_match('/(--|\.\.)/', $domain) && preg_match('|^([a-zA-Z0-9-\.])+$|', $domain)) {
+        $pattern = '/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+        if (preg_match($pattern, $domain)) {
             return $domain;
         }
         add_settings_error(

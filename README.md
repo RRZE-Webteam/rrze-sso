@@ -86,25 +86,4 @@ $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] =
 ];
 ```
 
-## Anmeldung eines FAU-SP (Service Provider der FAU)
-
--   Folgende Info an sso-admins@rrze.fau.de versenden:
-
-<pre>
-Webseite: (URL der Webseite)
-Beschreibung: (Kurze Beschreibung der Webseite)
-Metadata-URL: https://webauftritt-url/simplesaml/module.php/saml/sp/metadata.php/default-sp
-Erforderliche Attribute:
-displayname
-givenName
-sn (Surname)
-o (Organization name)
-uid
-mail
-eduPersonPrincipalName
-eduPersonAffiliation
-eduPersonEntitlement
-eduPersonScopedAffiliation
-</pre>
-
 Hinweis: Bitte überprüfen Sie, dass die Metadaten-URL keine Fehlermeldung im Browser auslöst.

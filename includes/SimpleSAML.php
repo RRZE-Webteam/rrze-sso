@@ -54,7 +54,7 @@ class SimpleSAML
         }
         $this->setAuthSimple()
             ->setIdentityProviders();
-        return true; 
+        return true;
     }
 
     /**
@@ -94,40 +94,50 @@ class SimpleSAML
     }
 
     /**
+     * Get an array of available Identity Providers.
+     * @return array array
+     */
+    public function identityProviders()
+    {
+        // Initialize the metadata storage handler
+        $metadataHandler = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
+
+        // Load all available metadata entities
+        $entityList = $metadataHandler->getList();
+
+        // Array to store IdP metadata
+        $idpMetadata = [];
+
+        foreach (array_keys($entityList) as $entityId) {
+            try {
+                // Fetch metadata for the entity from metarefresh cache
+                $metadata = $metadataHandler->getMetaDataConfig($entityId, 'saml20-idp-remote');
+
+                // Store only IdP metadata
+                if ($metadata !== null) {
+                    $idpMetadata[$entityId] = $metadata->toArray();
+                }
+            } catch (\Exception $e) {
+                error_log("Error retrieving metadata for entity $entityId: " . $e->getMessage());
+            }
+        }
+
+        return $idpMetadata;
+    }
+
+    /**
      * Set the available Identity Providers list.
      * @return object This SimpleSAML object.
      */
     protected function setIdentityProviders()
     {
-        if (!method_exists('\SimpleSAML\Configuration', 'getConfig')) {
-            return $this;
-        }
+        $idpMetadata = $this->identityProviders();
 
-        try {
-            // Get the authsources file, which should contain the config.
-            $authsource = \SimpleSAML\Configuration::getConfig('authsources.php');
-        } catch (\Exception $e) {
-            $error = new \WP_Error('simplesaml_configuration_error', $e->getMessage());
-            $this->errorOnLoaded($error);
-            return $this;
-        }
-
-        // Get just the specified authsource config values.
-        $authsource = $authsource->toArray();
-        $idp = $authsource[$this->options->simplesaml_auth_source]['idp'] ?? 'null';
-
-        $saml20IdpRemoteFile = dirname($this->simplesamlInclude, 2) . '/metadata/saml20-idp-remote.php';
-        if (!file_exists($saml20IdpRemoteFile)) {
-            return $this;
-        }
-        // Load $metadata array.
-        require_once($saml20IdpRemoteFile);
-
-        $metadata = $metadata ?? [];
         $locale = get_locale();
         $lang = explode('_', $locale)[0];
+
         $idps = [];
-        foreach ($metadata as $key => $value) {
+        foreach ($idpMetadata as $key => $value) {
             if (isset($value['name'][$lang])) {
                 $name = $value['name'][$lang];
             } elseif (isset($value['name']) && is_string($value['name'])) {
@@ -136,12 +146,6 @@ class SimpleSAML
                 $name = parse_url($key, PHP_URL_HOST);
             }
             $idps[$key] = $name;
-        }
-
-        if ($idp && isset($idps[$idp])) {
-            $idps = [
-                $idp => $idps[$idp]
-            ];
         }
 
         $this->identityProviders = $idps;

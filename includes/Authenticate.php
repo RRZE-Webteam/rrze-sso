@@ -160,11 +160,12 @@ class Authenticate
         $userLogin = $userLogin ?: explode('@', $subjectId)[0];
 
         $found = false;
-        foreach (array_keys($identityProviders) as $idpName) {
-            $idpName = sanitize_title($idpName);
-            $domainScope = $this->options->domain_scope[$idpName] ?? '';
+        foreach ($identityProviders as $idpKey => $idpName) {
+            $idpKey = sanitize_title($idpKey);
+            $idpName = sanitize_text_field($idpName);
+            $domainScope = $this->options->domain_scope[$idpKey] ?? '';
             $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
-            if (sanitize_title($samlSpIdp) == $idpName) {
+            if (sanitize_title($samlSpIdp) == $idpKey) {
                 $found = true;
                 $userLogin = $userLogin . $domainScope;
                 break;

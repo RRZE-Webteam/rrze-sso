@@ -103,13 +103,6 @@ class Authenticate
         // The entityID of the IdP the user is authenticated against.
         $samlSpIdp = $this->authSimple->getAuthData('saml:sp:IdP');
 
-        // Get the IdP Metadata.
-        $metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
-        $idpMetadata = $metadata->getMetaData($samlSpIdp, 'saml20-idp-remote');
-        $locale = get_locale();
-        $lang = substr($locale, 0, 2);
-        $idpName = $idpMetadata['name'][$lang] ?? $idpMetadata['name']['en'] ?? '';
-
         // Retrieve the attributes of the current user.
         // If the user isn't authenticated, an empty array will be returned.
         if (empty($_atts = $this->authSimple->getAttributes())) {
@@ -167,11 +160,11 @@ class Authenticate
         $userLogin = $userLogin ?: explode('@', $subjectId)[0];
 
         $found = false;
-        foreach (array_keys($identityProviders) as $key) {
-            $key = sanitize_title($key);
-            $domainScope = $this->options->domain_scope[$key] ?? '';
+        foreach (array_keys($identityProviders) as $idpName) {
+            $idpName = sanitize_title($idpName);
+            $domainScope = $this->options->domain_scope[$idpName] ?? '';
             $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
-            if (sanitize_title($samlSpIdp) == $key) {
+            if (sanitize_title($samlSpIdp) == $idpName) {
                 $found = true;
                 $userLogin = $userLogin . $domainScope;
                 break;

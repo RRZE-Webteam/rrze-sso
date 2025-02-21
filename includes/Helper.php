@@ -19,6 +19,9 @@ class Helper
         }
 
         if (!$authSimple->isAuthenticated()) {
+            // Save the current session and clean any left overs that could interfere 
+            // with the normal application behaviour.        
+            \SimpleSAML\Session::getSessionFromRequest()->cleanup();
             return new \WP_Error('user_not_authenticated', 'User is not authenticated');
         }
 

@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE SSO
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-sso
-Version:            1.6.12
+Version:            1.6.13
 Description:        Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
 Author:             RRZE-Webteam
 Author URI:         https://blogs.fau.de/webworking/
@@ -23,8 +23,9 @@ const RRZE_PHP_VERSION = '8.2';
 const RRZE_WP_VERSION = '6.7';
 
 /**
- * SPL Autoloader (PSR-4).
- * @param string $class The fully-qualified class name.
+ * SPL Autoloader (PSR-4)
+ * 
+ * @param string $class The fully-qualified class name
  * @return void
  */
 spl_autoload_register(function ($class) {
@@ -44,13 +45,14 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Register plugin hooks.
+// Register plugin hooks
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
 register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
 
 add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
 
-// Load the plugin's text domain for localization.
+// Load the plugin's text domain for localization
+// Since WP 6.7.0, the text domain must be loaded using the 'init' action hook
 add_action('init', fn() => load_plugin_textdomain('rrze-sso', false, dirname(plugin_basename(__FILE__)) . '/languages'));
 
 /**
@@ -62,7 +64,9 @@ function activation()
 }
 
 /**
- * Deactivation callback function.
+ * Deactivation callback function
+ * 
+ * @return void
  */
 function deactivation()
 {
@@ -78,7 +82,8 @@ function deactivation()
 }
 
 /**
- * Instantiate Plugin class.
+ * Instantiate Plugin class
+ * 
  * @return object Plugin
  */
 function plugin()
@@ -91,7 +96,8 @@ function plugin()
 }
 
 /**
- * Instantiate SimpleSAML class.
+ * Instantiate SimpleSAML class
+ * 
  * @return object SimpleSAML
  */
 function simpleSAML()
@@ -104,25 +110,25 @@ function simpleSAML()
 }
 
 /**
- * Check system requirements for the plugin.
+ * Check system requirements for the plugin
  *
  * This method checks if the server environment meets the minimum WordPress and PHP version requirements
  * for the plugin to function properly.
  *
- * @return string An error message string if requirements are not met, or an empty string if requirements are satisfied.
+ * @return object|string An object containing an error message if the requirements are not met
  */
-function systemRequirements(): string
+function systemRequirements()
 {
-    // Get the global WordPress version.
+    // Get the global WordPress version
     global $wp_version;
 
-    // Get the PHP version.
+    // Get the PHP version
     $phpVersion = phpversion();
 
-    // Initialize an error message string.
+    // Initialize an error message string
     $error = '';
 
-    // Check if the WordPress version is compatible with the plugin's requirement.
+    // Check if the WordPress version is compatible with the plugin's requirement
     if (!is_wp_version_compatible(plugin()->getRequiresWP())) {
         $error = sprintf(
             /* translators: 1: Server WordPress version number, 2: Required WordPress version number. */
@@ -131,7 +137,7 @@ function systemRequirements(): string
             plugin()->getRequiresWP()
         );
     } elseif (!is_php_version_compatible(plugin()->getRequiresPHP())) {
-        // Check if the PHP version is compatible with the plugin's requirement.
+        // Check if the PHP version is compatible with the plugin's requirement
         $error = sprintf(
             /* translators: 1: Server PHP version number, 2: Required PHP version number. */
             __('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-sso'),
@@ -140,52 +146,54 @@ function systemRequirements(): string
         );
     }
 
-    // Return the error message string, which will be empty if requirements are satisfied.
-    return $error;
+    // Return an error object if there is an error, or an empty string if there are no errors
+    return $error ? new \WP_Error('rrze-settings', $error) : '';
 }
 
 /**
- * Handle the loading of the plugin.
+ * Handle the loading of the plugin
  *
  * This function is responsible for initializing the plugin, loading text domains for localization,
  * checking system requirements, and displaying error notices if necessary.
+ * 
+ * @return void
  */
 function loaded()
 {
-    // Trigger the 'loaded' method of the main plugin instance.
+    // Trigger the 'loaded' method of the main plugin instance
     plugin()->loaded();
 
-    // Check system requirements and store any error messages.
-    if (systemRequirements()) {
-        // If there is an error, add an action to display an admin notice with the error message.
-        add_action('admin_init', function () {
-            $error = systemRequirements();
-            // Check if the current user has the capability to activate plugins.
+    // Check system requirements.
+    $checkRequirements = systemRequirements();
+    if (is_wp_error($checkRequirements)) {
+        // If there is an error, add an action to display an admin notice with the error message
+        add_action('admin_init', function () use ($checkRequirements) {
+            // Check if the current user has the capability to activate plugins
             if (current_user_can('activate_plugins')) {
-                // Get plugin data to retrieve the plugin's name.
+                // Get plugin data to retrieve the plugin's name
                 $pluginName = plugin()->getName();
 
-                // Determine the admin notice tag based on network-wide activation.
+                // Determine the admin notice tag based on network-wide activation
                 $tag = is_plugin_active_for_network(plugin()->getBaseName()) ? 'network_admin_notices' : 'admin_notices';
 
-                // Add an action to display the admin notice.
-                add_action($tag, function () use ($pluginName, $error) {
+                // Add an action to display the admin notice
+                add_action($tag, function () use ($pluginName, $checkRequirements) {
                     printf(
                         '<div class="notice notice-error"><p>' .
                             /* translators: 1: The plugin name, 2: The error string. */
-                            esc_html__('Plugins: %1$s: %2$s', 'rrze-sso') .
+                            esc_html__('Plugins: %1$s: %2$s', 'rrze-settings') .
                             '</p></div>',
                         $pluginName,
-                        $error
+                        $checkRequirements->get_error_message()
                     );
                 });
             }
         });
 
-        // Return to prevent further initialization if there is an error.
+        // Return to prevent further initialization if there is an error
         return;
     }
 
-    // If there are no errors, create an instance of the 'Main' class and trigger its 'loaded' method.
+    // If there are no errors, create an instance of the 'Main' class and trigger its 'loaded' method
     (new Main)->loaded();
 }

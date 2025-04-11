@@ -4,22 +4,30 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Class Authenticate
+ * 
+ * @package RRZE\SSO
+ */
 class Authenticate
 {
     /**
      * Settings options
+     * 
      * @var object
      */
     protected $options;
 
     /**
      * \SimpleSAML\Auth\Simple
+     * 
      * @var object
      */
     protected $authSimple;
 
     /**
      * Users can register
+     * 
      * @var boolean
      */
     protected $registration;
@@ -27,6 +35,7 @@ class Authenticate
 
     /**
      * Class constructor
+     * 
      * @param object \SimpleSAML\Auth\Simple
      * @return void
      */
@@ -37,30 +46,31 @@ class Authenticate
     }
 
     /**
-     * loaded
+     * Plugin is loaded
+     * 
      * @return void
      */
     public function loaded()
     {
-        // Filters whether a set of user login credentials are valid.
+        // Filters whether a set of user login credentials are valid
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
 
-        // Removed: Authenticates a user, confirming the username and password are valid.
+        // Removed: Authenticates a user, confirming the username and password are valid
         remove_action('authenticate', 'wp_authenticate_username_password', 20, 3);
 
-        // Removed: Authenticates a user using the email and password.
+        // Removed: Authenticates a user using the email and password
         remove_action('authenticate', 'wp_authenticate_email_password', 20, 3);
 
-        // Filters the login URL.
+        // Filters the login URL
         add_filter('login_url', [$this, 'loginUrl'], 10, 2);
 
-        // Fires after a user is logged out.
+        // Fires after a user is logged out
         add_action('wp_logout', [$this, 'logout']);
 
-        // Filters whether the authentication check originated at the same domain.
+        // Filters whether the authentication check originated at the same domain
         add_filter('wp_auth_check_same_domain', '__return_false');
 
-        // Determines if user registration is enabled.
+        // Determines if user registration is enabled
         if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
             $this->registration = false;
         } elseif (!is_multisite() && !get_option('users_can_register')) {
@@ -69,19 +79,20 @@ class Authenticate
             $this->registration = true;
         }
 
-        // Filters user registration enablement.
+        // Filters user registration enablement
         $this->registration = apply_filters('rrze_sso_registration', $this->registration);
-        // Filters user registration enablement (backward compatibility).
+        // Filters user registration enablement (backward compatibility)
         $this->registration = apply_filters('fau_websso_registration', $this->registration);
 
         if (!$this->registration) {
-            // Fires before the Site Sign-up page is loaded.
+            // Fires before the Site Sign-up page is loaded
             add_action('before_signup_header', [$this, 'redirectToSiteUrl']);
         }
     }
 
     /**
-     * Checks if a set of user login credentials is valid.
+     * Checks if a set of user login credentials is valid
+     * 
      * @param mixed $user null|WP_User|WP_Error
      * @param string $userLogin
      * @return object \WP_User
@@ -92,26 +103,22 @@ class Authenticate
             return $user;
         }
 
-        // Make sure that the user is authenticated.
-        // If the user isn't authenticated, this function will start the authentication process.
+        // Make sure that the user is authenticated
+        // If the user isn't authenticated, this function will start the authentication process
         $this->authSimple->requireAuth();
 
-        // Save the current session and clean any left overs that could interfere 
-        // with the normal application behaviour.
+        // Save the current session and clean any left overs that could interfere with the normal application behaviour
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
 
-        // The entityID of the IdP the user is authenticated against.
+        // The entityID of the IdP the user is authenticated against
         $samlSpIdp = $this->authSimple->getAuthData('saml:sp:IdP');
 
-        // Retrieve the attributes of the current user.
-        // If the user isn't authenticated, an empty array will be returned.
+        // Retrieve the attributes of the current user
+        // If the user isn't authenticated, an empty array will be returned
         if (empty($_atts = $this->authSimple->getAttributes())) {
-            $this->authFailed(
-                $this->authFailed(__("User attributes could not be retrieved.", 'rrze-sso'))
-            );
+            $this->authFailed(__("User attributes could not be retrieved.", 'rrze-sso'));
         }
 
-        // Process logging.
         do_action(
             'rrze.log.info',
             [
@@ -152,22 +159,33 @@ class Authenticate
             }
         }
 
-        $domainScope = '';
         $identityProviders = simpleSAML()->getIdentityProviders();
 
         $userLogin = $atts['uid'] ?? '';
         $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
-        $userLogin = $userLogin ?: explode('@', $subjectId)[0];
+
+        if (empty($userLogin) && !empty($subjectId) && is_string($subjectId)) {
+            $parts = explode('@', $subjectId);
+            $userLogin = $parts[0] ?? '';
+        }
+
+        if (empty($userLogin)) {
+            $this->authFailed(__("User login could not be determined from SAML attributes.", 'rrze-sso'));
+        }
 
         $found = false;
+        $domainScope = '';
+
         foreach ($identityProviders as $idpKey => $idpName) {
-            $idpKey = sanitize_title($idpKey);
+            $idpKeySanitized = sanitize_title($idpKey);
             $idpName = sanitize_text_field($idpName);
-            $domainScope = $this->options->domain_scope[$idpKey] ?? '';
-            $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
-            if (sanitize_title($samlSpIdp) == $idpKey) {
+
+            if (sanitize_title($samlSpIdp) === $idpKeySanitized) {
                 $found = true;
-                $userLogin = $userLogin . $domainScope;
+                $domain = $this->options->domain_scope[$idpKeySanitized] ?? '';
+                if (!empty($domain)) {
+                    $domainScope = '@' . $domain;
+                }
                 break;
             }
         }
@@ -181,6 +199,8 @@ class Authenticate
                 )
             );
         }
+
+        $userLogin .= $domainScope;
 
         $origUserLogin = $userLogin;
         $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
@@ -305,7 +325,8 @@ class Authenticate
     }
 
     /**
-     * Check if the user has access to the website dashboard.
+     * Check if the user has access to the website dashboard
+     * 
      * @param int $userId
      * @param mixed $blogs object|array
      * @return boolean
@@ -322,8 +343,8 @@ class Authenticate
     }
 
     /**
-     * Kills WordPress execution and displays an HTML page
-     * with an authentication error message.
+     * Kills WordPress execution and displays an HTML page with an authentication error message
+     * 
      * @param string $message
      * @param boolean $authSimple
      * @return void
@@ -364,8 +385,8 @@ class Authenticate
     }
 
     /**
-     * Kills WordPress execution and displays an HTML page 
-     * with an access denied message.
+     * Kills WordPress execution and displays an HTML page with an access denied message
+     * 
      * @param array $blogs
      * @return void
      */
@@ -406,7 +427,8 @@ class Authenticate
     }
 
     /**
-     * Get a list of website contact users (administrators).
+     * Get a list of website contact users (administrators)
+     * 
      * @return string
      */
     private function getContacts()
@@ -443,7 +465,8 @@ class Authenticate
     }
 
     /**
-     * Set the login URL.
+     * Set the login URL
+     * 
      * @param string $loginUrl
      * @param string $redirect
      * @return string The login URL.
@@ -458,21 +481,23 @@ class Authenticate
     }
 
     /**
-     * Log the user out.
+     * Log the user out
+     * 
      * @param int $userId
      * @return void
      */
     public function logout($userId)
     {
-        // Log the user out. After logging out, the user will be redirected to the home page.
+        // Log the user out. After logging out, the user will be redirected to the home page
         $this->authSimple->logout(site_url('', 'https'));
-        // Save the current session and clean any left overs that could interfere 
-        // with the normal application behaviour.        
+
+        // Save the current session and clean any left overs that could interfere with the normal application behaviour        
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
     }
 
     /**
-     * Redirects to the home page.
+     * Redirects to the home page
+     * 
      * @return void
      */
     public function redirectToSiteUrl()

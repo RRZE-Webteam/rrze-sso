@@ -147,7 +147,7 @@ function systemRequirements()
     }
 
     // Return an error object if there is an error, or an empty string if there are no errors
-    return $error ? new \WP_Error('rrze-settings', $error) : '';
+    return $error ? new \WP_Error('rrze-sso', $error) : '';
 }
 
 /**
@@ -181,7 +181,7 @@ function loaded()
                     printf(
                         '<div class="notice notice-error"><p>' .
                             /* translators: 1: The plugin name, 2: The error string. */
-                            esc_html__('Plugins: %1$s: %2$s', 'rrze-settings') .
+                            esc_html__('Plugins: %1$s: %2$s', 'rrze-sso') .
                             '</p></div>',
                         $pluginName,
                         $checkRequirements->get_error_message()

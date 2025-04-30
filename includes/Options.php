@@ -29,7 +29,8 @@ class Options
             'simplesaml_auth_source' => 'default-sp',
             'force_sso' => 0,
             'domain_scope' => [],
-            'allowed_user_email_domains' => [],
+            'allowed_user_email_domains' => '',
+            'username_regex_pattern' => '',
         ];
 
         return $options;

@@ -194,7 +194,7 @@ class Settings
 
             add_settings_field(
                 'username_regex_pattern',
-                __('Username RegEx Pattern', 'rrze-settings'),
+                __('Username RegEx Pattern', 'rrze-sso'),
                 [$this, 'usernameRegexPattern'],
                 $this->optionGroup,
                 'simplesaml_options_section'

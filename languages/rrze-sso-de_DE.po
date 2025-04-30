@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2025-04-30T14:54:10+00:00\n"
-"PO-Revision-Date: 2025-04-30 16:57+0200\n"
+"POT-Creation-Date: 2025-04-30T15:19:05+00:00\n"
+"PO-Revision-Date: 2025-04-30 17:20+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -185,6 +185,10 @@ msgstr "Domänenbereich des Identity-Providers"
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
+#: includes/Settings.php:197
+msgid "Username RegEx Pattern"
+msgstr "Benutzername-RegEx-Muster"
+
 #: includes/Settings.php:211
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
@@ -272,7 +276,7 @@ msgid "The simpleSAML library could not be loaded."
 msgstr "Die simpleSAML-Bibliothek konnte nicht geladen werden."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:187
+#: includes/SimpleSAML.php:187 rrze-sso.php:184
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 

@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE SSO
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-sso
-Version:            1.6.13
+Version:            1.7.0
 Description:        Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
 Author:             RRZE-Webteam
 Author URI:         https://blogs.fau.de/webworking/

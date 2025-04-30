@@ -141,6 +141,7 @@ class Settings
             [$this, 'sso_settings_section'],
             $this->optionGroup
         );
+
         add_settings_field(
             'force_sso',
             __("SSO Authentication", 'rrze-sso'),
@@ -149,27 +150,30 @@ class Settings
             'sso_options_section'
         );
 
-        add_settings_section(
-            'simplesaml_options_section',
-            false,
-            [$this, 'simpleSAMLSettingsSection'],
-            $this->optionGroup
-        );
-        add_settings_field(
-            'simplesaml_include',
-            __("Autoload Path", 'rrze-sso'),
-            [$this, 'simpleSAMLIncludeField'],
-            $this->optionGroup,
-            'simplesaml_options_section'
-        );
-        add_settings_field(
-            'simplesaml_auth_source',
-            __("Authentication Source", 'rrze-sso'),
-            [$this, 'simpleSAMLAuthSourceField'],
-            $this->optionGroup,
-            'simplesaml_options_section'
-        );
         if ($this->options->force_sso) {
+            add_settings_section(
+                'simplesaml_options_section',
+                false,
+                [$this, 'simpleSAMLSettingsSection'],
+                $this->optionGroup
+            );
+
+            add_settings_field(
+                'simplesaml_include',
+                __("Autoload Path", 'rrze-sso'),
+                [$this, 'simpleSAMLIncludeField'],
+                $this->optionGroup,
+                'simplesaml_options_section'
+            );
+
+            add_settings_field(
+                'simplesaml_auth_source',
+                __("Authentication Source", 'rrze-sso'),
+                [$this, 'simpleSAMLAuthSourceField'],
+                $this->optionGroup,
+                'simplesaml_options_section'
+            );
+
             if (!empty($this->identityProviders)) {
                 add_settings_field(
                     'domain_scope',
@@ -179,10 +183,19 @@ class Settings
                     'simplesaml_options_section'
                 );
             }
+
             add_settings_field(
                 'allowed_user_email_domains',
                 __("Allowed User Email Domains", 'rrze-sso'),
                 [$this, 'allowedUserEmailDomainsField'],
+                $this->optionGroup,
+                'simplesaml_options_section'
+            );
+
+            add_settings_field(
+                'username_regex_pattern',
+                __('Username RegEx Pattern', 'rrze-settings'),
+                [$this, 'usernameRegexPattern'],
                 $this->optionGroup,
                 'simplesaml_options_section'
             );
@@ -266,11 +279,22 @@ class Settings
     public function allowedUserEmailDomainsField()
     {
         $allowedUserEmailDomains = implode(PHP_EOL, (array) $this->options->allowed_user_email_domains);
-        echo '<textarea rows="5" cols="55" id="allowed_user_email_domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
+        echo '<textarea rows="5" cols="55" id="rrze-sso-allowed-user-email-domains" class="regular-text" name="' . $this->optionName . '[allowed_user_email_domains]">' . esc_attr($allowedUserEmailDomains) . '</textarea>';
         echo '<p class="description">' . __('List of allowed domains for user email addresses.', 'rrze-sso') . '</p>';
         echo '<p class="description">' . __('If the field is left empty then all email domains are allowed.', 'rrze-sso') . '</p>';
         echo '<p class="description">' . __('Format: <i>domain.tld</i>', 'rrze-sso') . '</p>';
         echo '<p class="description">' . __('Enter one email domain per line.', 'rrze-sso') . '</p>';
+    }
+
+    /**
+     * Username regex pattern field.
+     * @return void
+     */
+    public function usernameRegexPattern()
+    {
+        $usernameRegexPattern = $this->options->username_regex_pattern;
+        echo '<input type="text" id="rrze-sso-username-regex-pattern" class="regular-text" name="' . $this->optionName . '[username_regex_pattern]" value="' . esc_attr($usernameRegexPattern) . '">';
+        echo '<p class="description">' . __('Regex pattern to allow extra characters in the username.', 'rrze-sso') . '</p>';
     }
 
     /**
@@ -280,44 +304,101 @@ class Settings
      */
     public function optionsValidate($input)
     {
-        $input['force_sso'] = isset($input['force_sso']) && in_array(absint($input['force_sso']), [0, 1]) ? absint($input['force_sso']) : $this->options->force_sso;
-        $input['simplesaml_include'] = !empty($input['simplesaml_include']) ? esc_attr(trim($input['simplesaml_include'])) : $this->options->simplesaml_include;
-        $input['simplesaml_auth_source'] = isset($input['simplesaml_auth_source']) ? esc_attr(trim($input['simplesaml_auth_source'])) : $this->options->simplesaml_auth_source;
-        if ($this->options->force_sso) {
-            $domainScope = !empty($input['identity_provider_domain']) ? $input['identity_provider_domain'] : '';
-            $domainScope = is_array($domainScope) ? array_map([__CLASS__, 'validateDomain'], $domainScope) : $this->options->domain_scope;
-            $domainScope = !in_array('*', $domainScope) ? $domainScope : $this->options->domain_scope;
-            if (count($domainScope) !== count(array_unique($domainScope))) {
-                $domainScope = $this->options->domain_scope;
+        $forceSso = $input['force_sso'] ?? 0;
+        $forceSso = absint($forceSso);
+        $input['force_sso'] = $forceSso ? 1 : 0;
+
+        $simplesamlInclude = $input['simplesaml_include'] ?? $this->options->simplesaml_include;
+        $simplesamlInclude = sanitize_text_field(trim($simplesamlInclude));
+        if ($forceSso && empty($simplesamlInclude)) {
+            add_settings_error(
+                $this->optionName,
+                'simplesaml_include',
+                __('The SimpleSAMLphp autoload file is required.', 'rrze-sso')
+            );
+        }
+        if ($simplesamlInclude && !is_file(WP_CONTENT_DIR . '/' . $simplesamlInclude)) {
+            add_settings_error(
+                $this->optionName,
+                'simplesaml_include',
+                sprintf(
+                    /* translators: %s: path to the SimpleSAMLphp autoload file. */
+                    __('The SimpleSAMLphp autoload file %s does not exist.', 'rrze-sso'),
+                    esc_html($input['simplesaml_include'])
+                )
+            );
+        }
+        $input['simplesaml_include'] = $simplesamlInclude;
+
+        $simplesamlAuthSource = $input['simplesaml_auth_source'] ?? $this->options->simplesaml_auth_source;
+        $simplesamlAuthSource = sanitize_text_field(trim($simplesamlAuthSource));
+        $input['simplesaml_auth_source'] = $simplesamlAuthSource;
+        if ($forceSso && empty($simplesamlAuthSource)) {
+            add_settings_error(
+                $this->optionName,
+                'simplesaml_auth_source',
+                __('The SimpleSAMLphp authentication source is required.', 'rrze-sso')
+            );
+        }
+
+        foreach ($this->identityProviders as $key => $value) {
+            $key = sanitize_title($key);
+            if (isset($input['identity_provider_domain'][$key])) {
+                $domain = $input['identity_provider_domain'][$key];
+                if (!$this->validateDomain($domain)) {
+                    unset($input['identity_provider_domain'][$key]);
+                }
+            }
+        }
+        $domainScope = $input['identity_provider_domain'] ?? $this->options->domain_scope;
+        $domainScope = is_array($domainScope) ? $domainScope : [];
+        $domainScope = array_map(
+            [__CLASS__, 'validateDomain'],
+            $domainScope
+        );
+        $domainScope = array_filter($domainScope);
+        $input['domain_scope'] = array_unique($domainScope);
+
+        $emailDomains = $input['allowed_user_email_domains'] ?? $this->options->allowed_user_email_domains;
+        $emailDomains = is_array($emailDomains) ? $emailDomains : explode(PHP_EOL, $input['allowed_user_email_domains']);
+        $emailDomains = array_map(
+            [__CLASS__, 'validateDomain'],
+            $emailDomains
+        );
+        $emailDomains = array_filter($emailDomains);
+        $input['allowed_user_email_domains'] = array_unique($emailDomains);
+
+        $usernameRegexPattern = $input['username_regex_pattern'] ?? $this->options->username_regex_pattern;
+        if ($usernameRegexPattern) {
+            $usernameRegexPattern = preg_replace('/\s+/', '', $usernameRegexPattern);
+            $usernameRegexPattern = preg_replace('/\\\\+/', '\\', $usernameRegexPattern);
+            if (!$this->isValidRegex($usernameRegexPattern)) {
                 add_settings_error(
                     $this->optionName,
-                    'domain_scope',
-                    __('The domain scope of the identity provider already exists.', 'rrze-sso'),
+                    'username_regex_pattern',
+                    __('The username regex pattern is invalid.', 'rrze-sso'),
                 );
             }
-            $input['domain_scope'] =  $domainScope;
-            $emailDomains = !empty($input['allowed_user_email_domains']) ? $input['allowed_user_email_domains'] : '';
-            $emailDomains = array_filter(array_map([__CLASS__, 'validateDomain'], array_unique(array_filter(explode(PHP_EOL, $emailDomains)))));
-            $input['allowed_user_email_domains'] = !in_array('*', $emailDomains) ? $emailDomains : $this->options->allowed_user_email_domains;
-        } else {
-            $input['domain_scope'] = $this->options->domain_scope;
-            $input['allowed_user_email_domains'] = $this->options->allowed_user_email_domains;
+            $input['username_regex_pattern'] = $usernameRegexPattern;
         }
+
+        // Remove the identity provider domain from the input array
+        // to avoid saving it in the database.
         if (isset($input['identity_provider_domain'])) {
             unset($input['identity_provider_domain']);
         }
+
         return $input;
     }
 
     /**
      * Validate a domain name.
      * @param string $input Entered domain name.
-     * @return mixed
+     * @return string
      */
-    protected function validateDomain($input)
+    protected function validateDomain(string $input): string
     {
-        $domain = trim($input);
-        if (!$domain) {
+        if (!$domain = trim($input)) {
             return $domain;
         }
         $pattern = '/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
@@ -333,7 +414,7 @@ class Settings
                 esc_html($domain)
             )
         );
-        return '*';
+        return '';
     }
 
     /**
@@ -353,6 +434,7 @@ class Settings
 
     /**
      * Settings admin notice.
+     * 
      * @return void
      */
     public function settingsUpdateNotice()
@@ -361,5 +443,28 @@ class Settings
         $message = __("Settings saved.", 'rrze-sso');
 
         printf('<div class="%1s"><p>%2s</p></div>', esc_attr($class), esc_html($message));
+    }
+
+    /**
+     * Checks whether a given PCRE pattern is syntactically valid.
+     *
+     * @param string $pattern  The regex pattern, e.g. '/^[a-z]+$/i'
+     * @return bool            True if the pattern is valid; false otherwise
+     */
+    function isValidRegex(string $pattern): bool
+    {
+        // Temporarily install a no-op error handler to suppress E_WARNING
+        set_error_handler(function () {}, E_WARNING);
+
+        // Try to run preg_match with an empty subject
+        $result = preg_match($pattern, '');
+        // Capture the last PCRE error code
+        $errorCode = preg_last_error();
+
+        // Restore the previous error handler
+        restore_error_handler();
+
+        // Return true only if preg_match didn't return false and no PCRE error was reported
+        return ($result !== false) && ($errorCode === PREG_NO_ERROR);
     }
 }

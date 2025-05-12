@@ -8,30 +8,36 @@ class Settings
 {
     /**
      * Option name.
+     * 
      * @var string
      */
     protected $optionName;
 
     /**
      * Options object.
+     * 
      * @var object
      */
     protected $options;
 
     /**
      * Option group (menu page slug).
+     * 
      * @var string
      */
     protected $optionGroup;
 
     /**
      * Identity providers list.
+     * 
      * @var array
      */
     protected $identityProviders;
 
     /**
      * Class constructor.
+     * 
+     * @return void
      */
     public function __construct()
     {
@@ -42,6 +48,11 @@ class Settings
         $this->identityProviders = simpleSAML()->getIdentityProviders();
     }
 
+    /**
+     * Load after all plugins are loaded.
+     * 
+     * @return void
+     */
     public function loaded()
     {
         if (is_multisite()) {
@@ -55,7 +66,8 @@ class Settings
     }
 
     /**
-     * [networkAdminMenu description]
+     * Network admin menu.
+     * 
      * @return void
      */
     public function networkAdminMenu()
@@ -72,6 +84,7 @@ class Settings
 
     /**
      * Add settings page.
+     * 
      * @return void
      */
     public function adminMenu()
@@ -87,6 +100,7 @@ class Settings
 
     /**
      * Network admin menu.
+     * 
      * @return void
      */
     public function networkOptionsPage()
@@ -105,6 +119,7 @@ class Settings
 
     /**
      * Admin menu.
+     * 
      * @return void
      */
     public function optionsPage()
@@ -123,6 +138,7 @@ class Settings
 
     /**
      * Admin script is being initialized.
+     * 
      * @return void
      */
     public function adminInit()
@@ -204,6 +220,7 @@ class Settings
 
     /**
      * SSO settings section.
+     * 
      * @return void
      */
     public function sso_settings_section()
@@ -215,6 +232,7 @@ class Settings
 
     /**
      * SSO field.
+     * 
      * @return void
      */
     public function ssoField()
@@ -228,6 +246,7 @@ class Settings
 
     /**
      * SAML settings section.
+     * 
      * @return void
      */
     public function simpleSAMLSettingsSection()
@@ -238,6 +257,7 @@ class Settings
 
     /**
      * SAML autoload path field.
+     * 
      * @return void
      */
     public function simpleSAMLIncludeField()
@@ -248,6 +268,7 @@ class Settings
 
     /**
      * Authentication source field.
+     * 
      * @return void
      */
     public function simpleSAMLAuthSourceField()
@@ -257,6 +278,7 @@ class Settings
 
     /**
      * Domain scope field.
+     * 
      * @return void
      */
     public function domainScopeField()
@@ -274,6 +296,7 @@ class Settings
 
     /**
      * Allowed user email domains field.
+     * 
      * @return void
      */
     public function allowedUserEmailDomainsField()
@@ -299,8 +322,9 @@ class Settings
 
     /**
      * Validate settings options.
-     * @param  array $input [description]
-     * @return array        [description]
+     * 
+     * @param  array $input Settings options.
+     * @return array
      */
     public function optionsValidate($input)
     {
@@ -393,6 +417,7 @@ class Settings
 
     /**
      * Validate a domain name.
+     * 
      * @param string $input Entered domain name.
      * @return string
      */
@@ -419,6 +444,7 @@ class Settings
 
     /**
      * Network settings admin notices.
+     * 
      * @return void
      */
     public function settingsUpdate()
@@ -451,7 +477,7 @@ class Settings
      * @param string $pattern  The regex pattern, e.g. '/^[a-z]+$/i'
      * @return bool            True if the pattern is valid; false otherwise
      */
-    function isValidRegex(string $pattern): bool
+    public function isValidRegex(string $pattern): bool
     {
         // Temporarily install a no-op error handler to suppress E_WARNING
         set_error_handler(function () {}, E_WARNING);

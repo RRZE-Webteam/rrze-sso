@@ -3,14 +3,14 @@
 /*
 Plugin Name:        RRZE SSO
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-sso
-Version:            1.6.13
+Version:            1.7.0
 Description:        Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
 Author:             RRZE-Webteam
 Author URI:         https://blogs.fau.de/webworking/
 License:            GNU General Public License Version 3
 License URI:        https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain:        rrze-sso
-Domain Path:        /languages
+Domain Path:        languages
 Requires at least:  6.7
 Requires PHP:       8.2
 */
@@ -147,7 +147,7 @@ function systemRequirements()
     }
 
     // Return an error object if there is an error, or an empty string if there are no errors
-    return $error ? new \WP_Error('rrze-settings', $error) : '';
+    return $error ? new \WP_Error('rrze-sso', $error) : '';
 }
 
 /**
@@ -181,7 +181,7 @@ function loaded()
                     printf(
                         '<div class="notice notice-error"><p>' .
                             /* translators: 1: The plugin name, 2: The error string. */
-                            esc_html__('Plugins: %1$s: %2$s', 'rrze-settings') .
+                            esc_html__('Plugins: %1$s: %2$s', 'rrze-sso') .
                             '</p></div>',
                         $pluginName,
                         $checkRequirements->get_error_message()

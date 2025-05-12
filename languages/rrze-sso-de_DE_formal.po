@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2025-04-11T14:55:14+00:00\n"
-"PO-Revision-Date: 2025-04-11 16:56+0200\n"
+"POT-Creation-Date: 2025-04-30T15:19:05+00:00\n"
+"PO-Revision-Date: 2025-04-30 17:21+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -161,59 +161,63 @@ msgstr "Benutzerkennung"
 msgid "SSO"
 msgstr "SSO"
 
-#: includes/Settings.php:114 includes/Settings.php:210
+#: includes/Settings.php:114 includes/Settings.php:223
 msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
-#: includes/Settings.php:146
+#: includes/Settings.php:147
 msgid "SSO Authentication"
 msgstr "SSO-Authentifizierung"
 
-#: includes/Settings.php:160
+#: includes/Settings.php:163
 msgid "Autoload Path"
 msgstr "Autoload-Pfad"
 
-#: includes/Settings.php:167
+#: includes/Settings.php:171
 msgid "Authentication Source"
 msgstr "Authentifizierungsquelle"
 
-#: includes/Settings.php:176
+#: includes/Settings.php:180
 msgid "Identity Provider Domain Scope"
 msgstr "Domänenbereich des Identity-Providers"
 
-#: includes/Settings.php:184
+#: includes/Settings.php:189
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
-#: includes/Settings.php:198
+#: includes/Settings.php:197
+msgid "Username RegEx Pattern"
+msgstr "Benutzername-RegEx-Muster"
+
+#: includes/Settings.php:211
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
 
-#: includes/Settings.php:199
+#: includes/Settings.php:212
 msgid "General SSO Settings."
 msgstr "Allgemeine SSO-Einstellungen."
 
-#: includes/Settings.php:211
+#: includes/Settings.php:224
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: includes/Settings.php:212
+#: includes/Settings.php:225
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: includes/Settings.php:222
+#: includes/Settings.php:235
 msgid "SimpleSAMLphp"
 msgstr "SimpleSAMLphp"
 
-#: includes/Settings.php:223
+#: includes/Settings.php:236
 msgid "Service Provider Settings."
 msgstr "Einstellungen des Service Providers."
 
-#: includes/Settings.php:233
+#: includes/Settings.php:246
 msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
-#: includes/Settings.php:258
+#: includes/Settings.php:271
 msgid ""
 "(Optional) The domain to add to the user identifier to associate it with the "
 "identity provider."
@@ -221,32 +225,49 @@ msgstr ""
 "(Optional) Die Domäne, die der Benutzerkennung hinzugefügt werden soll, um "
 "sie dem Identity-Provider zuzuordnen."
 
-#: includes/Settings.php:270
+#: includes/Settings.php:283
 msgid "List of allowed domains for user email addresses."
 msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
 
-#: includes/Settings.php:271
+#: includes/Settings.php:284
 msgid "If the field is left empty then all email domains are allowed."
 msgstr "Wenn das Feld leer gelassen wird, sind alle E-Mail-Domänen zulässig."
 
-#: includes/Settings.php:272
+#: includes/Settings.php:285
 msgid "Format: <i>domain.tld</i>"
 msgstr "Format: <i>domain.tld</i>"
 
-#: includes/Settings.php:273
+#: includes/Settings.php:286
 msgid "Enter one email domain per line."
 msgstr "Geben Sie eine E-Mail-Domäne pro Zeile ein."
 
-#: includes/Settings.php:295
-msgid "The domain scope of the identity provider already exists."
-msgstr "Der Domänenbereich des Identity-Providers ist bereits vorhanden."
+#: includes/Settings.php:297
+msgid "Regex pattern to allow extra characters in the username."
+msgstr "Regex-Muster, um zusätzliche Zeichen im Benutzernamen zu erlauben."
+
+#: includes/Settings.php:317
+msgid "The SimpleSAMLphp autoload file is required."
+msgstr "Die SimpleSAMLphp-Autoload-Datei wird benötigt."
+
+#. translators: %s: path to the SimpleSAMLphp autoload file.
+#: includes/Settings.php:326
+msgid "The SimpleSAMLphp autoload file %s does not exist."
+msgstr "Die SimpleSAMLphp-Autoload-Datei %s existiert nicht."
+
+#: includes/Settings.php:340
+msgid "The SimpleSAMLphp authentication source is required."
+msgstr "Die SimpleSAMLphp-Authentifizierungsquelle wird benötigt."
+
+#: includes/Settings.php:379
+msgid "The username regex pattern is invalid."
+msgstr "Das Regex-Muster für den Benutzernamen ist ungültig."
 
 #. translators: %s: domain name.
-#: includes/Settings.php:332
+#: includes/Settings.php:413
 msgid "%s is not a valid domain name."
 msgstr "%s ist kein gültiger Domänenname."
 
-#: includes/Settings.php:361
+#: includes/Settings.php:443
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
@@ -255,15 +276,15 @@ msgid "The simpleSAML library could not be loaded."
 msgstr "Die simpleSAML-Bibliothek konnte nicht geladen werden."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:187
+#: includes/SimpleSAML.php:187 rrze-sso.php:184
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/Users.php:176
+#: includes/Users.php:178
 msgid "<strong>ERROR</strong>: Please enter a username."
 msgstr "<strong>Fehler:</strong> Bitte geben Sie einen Benutzernamen ein."
 
-#: includes/Users.php:180
+#: includes/Users.php:182
 msgid ""
 "<strong>ERROR</strong>: This username is invalid because it uses illegal "
 "characters. Please enter a valid username."
@@ -272,7 +293,7 @@ msgstr ""
 "er ungültige Zeichen enthält. Bitte geben Sie einen gültigen Benutzernamen "
 "an."
 
-#: includes/Users.php:184
+#: includes/Users.php:186
 msgid ""
 "<strong>ERROR</strong>: This username is already registered. Please choose "
 "another one."
@@ -280,15 +301,15 @@ msgstr ""
 "<strong>Fehler:</strong>: Dieser Benutzername ist bereits registriert. Bitte "
 "wähle Sie einen anderen."
 
-#: includes/Users.php:188
+#: includes/Users.php:190
 msgid "<strong>ERROR</strong>: Please enter an email address."
 msgstr "<strong>Fehler:</strong> Bitte eine E-Mail-Adresse eingeben."
 
-#: includes/Users.php:190
+#: includes/Users.php:192
 msgid "<strong>ERROR</strong>: The email address isn't correct."
 msgstr "<strong>Fehler:</strong>: Die E-Mail-Adresse ist ungültig."
 
-#: includes/Users.php:192
+#: includes/Users.php:194
 msgid ""
 "<strong>ERROR</strong>: This email address is already registered, please "
 "choose another one."
@@ -297,7 +318,7 @@ msgstr ""
 "bitte wählen Sie eine andere."
 
 #. translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL.
-#: includes/Users.php:215
+#: includes/Users.php:217
 msgid ""
 "Hi,%5$s%5$sYou've been invited to join '%1$s' at %2$s with the role of %3$s."
 "%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s"
@@ -307,12 +328,12 @@ msgstr ""
 "%5$s %4$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:227
+#: includes/Users.php:229
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
 #. translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL.
-#: includes/Users.php:242 includes/Users.php:271
+#: includes/Users.php:244 includes/Users.php:273
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -321,30 +342,34 @@ msgstr ""
 "sich mittels des folgenden Links an die Website an:%4$s%3$s%4$s"
 
 #. translators: 2: Blog name, 4: EOL.
-#: includes/Users.php:247 includes/Users.php:276
+#: includes/Users.php:249 includes/Users.php:278
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
 #. translators: %s: Blog name.
-#: includes/Users.php:257 includes/Users.php:286
+#: includes/Users.php:259 includes/Users.php:288
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
-#: includes/Users.php:358
+#: includes/Users.php:360
 msgid "Please select an identity provider."
 msgstr "Bitte wählen Sie einen Identity-Provider aus."
 
-#: includes/Users.php:369
+#: includes/Users.php:371
 msgid "Sorry, that identity provider does not exists!"
 msgstr "Dieser Identity-Provider existiert nicht!"
 
+#: includes/Users.php:381
+msgid "Apologies, but that username is not permitted."
+msgstr "Dieser Benutzername ist nicht zulässig."
+
 #. translators: %s: Max length of username.
-#: includes/Users.php:412
+#: includes/Users.php:423
 msgid "Username may not be longer than %s characters."
 msgstr "Der Benutzername darf nicht länger als %s Zeichen sein."
 
 #. translators: %s: List of allowed domains.
-#: includes/Users.php:447
+#: includes/Users.php:458
 msgid "Sorry, that email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
 

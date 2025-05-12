@@ -4,6 +4,8 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+use RRZE\SSO\Options;
+
 class Users
 {
     public static function userNewAction()
@@ -101,7 +103,7 @@ class Users
                     $userIdp = $_REQUEST['user_idp'] ?? '';
                     $username = $_REQUEST['user_login'] ?? '';
                     $username = self::addDomainScope(wp_unslash($username), $userIdp);
-                    $new_user_login = sanitize_user($username);
+                    $new_user_login = self::sanitizeUserName($username);
 
                     wpmu_signup_user($new_user_login, $new_user_email, array('add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST['role']));
 
@@ -136,7 +138,7 @@ class Users
         $username = $_POST['user_login'] ?? '';
         if ($username) {
             $username = self::addDomainScope($username, $userIdp);
-            $user->user_login = sanitize_user($username);
+            $user->user_login = self::sanitizeUserName($username);
         }
 
         if (isset($_POST['role']) && current_user_can('edit_users')) {
@@ -369,11 +371,21 @@ class Users
             $errors->add('user_idp', __('Sorry, that identity provider does not exists!', 'rrze-sso'));
         }
 
-        $orig_username = $user_name;
-        $user_name = preg_replace('/\s+/', '', sanitize_user($user_name, true));
+        $options = Options::getOptions();
 
-        if ($user_name != $orig_username || preg_match('/[^a-z0-9]/', $user_name)) {
-            $errors->add('user_name', __('Usernames can only contain lowercase letters (a-z) and numbers.'));
+        $orig_username = $user_name;
+        $user_name = self::sanitizeUserName($user_name);
+
+        $usernameRegexPattern = $options->username_regex_pattern;
+        if ($usernameRegexPattern) {
+            $user_name_error =  __('Apologies, but that username is not permitted.', 'rrze-sso');
+        } else {
+            $usernameRegexPattern = '/[^a-z0-9]/';
+            $user_name_error = __('Usernames can only contain lowercase letters (a-z) and numbers.');
+        }
+
+        if ($user_name != $orig_username || !preg_match($usernameRegexPattern, $user_name)) {
+            $errors->add('user_name', $user_name_error);
             $user_name = $orig_username;
         }
 
@@ -401,7 +413,6 @@ class Users
             $errors->add('user_name', __('The username must be at least 4 characters.'));
         }
 
-        $options = Options::getOptions();
         $domainScope = $options->domain_scope[$user_idp] ?? '';
         $usernameMaxLen = 60 - ($domainScope ? strlen($domainScope) + 1 : 0);
         if (strlen($user_name) > $usernameMaxLen) {
@@ -415,9 +426,9 @@ class Users
             );
         }
 
-        if (strpos($user_name, '_') !== false) {
-            $errors->add('user_name', __('Usernames may not contain the underscore character.'));
-        }
+        // if (strpos($user_name, '_') !== false) {
+        //     $errors->add('user_name', __('Usernames may not contain the underscore character.'));
+        // }
 
         if (preg_match('/^[0-9]*$/', $user_name)) {
             $errors->add('user_name', __('Sorry, usernames must have letters too!'));
@@ -474,5 +485,24 @@ class Users
         $domainScope = $options->domain_scope[$identityProvider] ?? '';
         $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
         return $username . $domainScope;
+    }
+
+    protected static function sanitizeUserName($username, $strict = false)
+    {
+        $username = wp_strip_all_tags($username);
+        $username = remove_accents($username);
+        // Remove percent-encoded characters.
+        $username = preg_replace('|%([a-fA-F0-9][a-fA-F0-9])|', '', $username);
+        // Remove HTML entities.
+        $username = preg_replace('/&.+?;/', '', $username);
+
+        // If strict, reduce to ASCII for max portability.
+        if ($strict) {
+            $username = preg_replace('|[^a-z0-9 _.\-@]|i', '', $username);
+        }
+
+        $username = trim($username);
+        // Consolidate contiguous whitespace.
+        return preg_replace('|\s+|', ' ', $username);
     }
 }

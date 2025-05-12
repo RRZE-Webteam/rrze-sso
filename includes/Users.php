@@ -103,7 +103,7 @@ class Users
                     $userIdp = $_REQUEST['user_idp'] ?? '';
                     $username = $_REQUEST['user_login'] ?? '';
                     $username = self::addDomainScope(wp_unslash($username), $userIdp);
-                    $new_user_login = sanitize_user($username);
+                    $new_user_login = self::sanitizeUserName($username);
 
                     wpmu_signup_user($new_user_login, $new_user_email, array('add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST['role']));
 
@@ -138,7 +138,7 @@ class Users
         $username = $_POST['user_login'] ?? '';
         if ($username) {
             $username = self::addDomainScope($username, $userIdp);
-            $user->user_login = sanitize_user($username);
+            $user->user_login = self::sanitizeUserName($username);
         }
 
         if (isset($_POST['role']) && current_user_can('edit_users')) {
@@ -374,7 +374,7 @@ class Users
         $options = Options::getOptions();
 
         $orig_username = $user_name;
-        $user_name = sanitize_user($user_name);
+        $user_name = self::sanitizeUserName($user_name);
 
         $usernameRegexPattern = $options->username_regex_pattern;
         if ($usernameRegexPattern) {
@@ -485,5 +485,24 @@ class Users
         $domainScope = $options->domain_scope[$identityProvider] ?? '';
         $domainScope = $domainScope ? '@' . $domainScope : $domainScope;
         return $username . $domainScope;
+    }
+
+    protected static function sanitizeUserName($username, $strict = false)
+    {
+        $username = wp_strip_all_tags($username);
+        $username = remove_accents($username);
+        // Remove percent-encoded characters.
+        $username = preg_replace('|%([a-fA-F0-9][a-fA-F0-9])|', '', $username);
+        // Remove HTML entities.
+        $username = preg_replace('/&.+?;/', '', $username);
+
+        // If strict, reduce to ASCII for max portability.
+        if ($strict) {
+            $username = preg_replace('|[^a-z0-9 _.\-@]|i', '', $username);
+        }
+
+        $username = trim($username);
+        // Consolidate contiguous whitespace.
+        return preg_replace('|\s+|', ' ', $username);
     }
 }

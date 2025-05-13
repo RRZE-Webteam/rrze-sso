@@ -380,11 +380,11 @@ class Users
         if ($usernameRegexPattern) {
             $user_name_error =  __('Apologies, but that username is not permitted.', 'rrze-sso');
         } else {
-            $usernameRegexPattern = '/[^a-z0-9]/';
-            $user_name_error = __('Usernames can only contain lowercase letters (a-z) and numbers.');
+            $usernameRegexPattern = '/^[a-z0-9]+$/i';
+            $user_name_error = __('Invalid username. Usernames may only contain letters and numbers.', 'rrze-sso');
         }
 
-        if ($user_name != $orig_username || !preg_match($usernameRegexPattern, $user_name)) {
+        if ($user_name != $orig_username || !self::isValidUsername($usernameRegexPattern, $user_name)) {
             $errors->add('user_name', $user_name_error);
             $user_name = $orig_username;
         }
@@ -487,7 +487,7 @@ class Users
         return $username . $domainScope;
     }
 
-    protected static function sanitizeUserName($username, $strict = false)
+    public static function sanitizeUserName($username, $strict = false)
     {
         $username = wp_strip_all_tags($username);
         $username = remove_accents($username);
@@ -504,5 +504,18 @@ class Users
         $username = trim($username);
         // Consolidate contiguous whitespace.
         return preg_replace('|\s+|', ' ', $username);
+    }
+
+    /**
+     * Validates that the username against the regex pattern.
+     * and always starts with a letter.
+     *
+     * @param string $pattern The regex pattern to validate against.
+     * @param string $username The username to validate.
+     * @return bool
+     */
+    public static function isValidUsername(string $pattern, string $username): bool
+    {
+        return (bool) preg_match($pattern, $username);
     }
 }

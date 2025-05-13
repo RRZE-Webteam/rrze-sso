@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2025-04-30T15:19:05+00:00\n"
-"PO-Revision-Date: 2025-04-30 17:21+0200\n"
+"POT-Creation-Date: 2025-05-13T09:35:26+00:00\n"
+"PO-Revision-Date: 2025-05-13 11:37+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -156,68 +156,68 @@ msgstr "Wählen Sie einen Identity-Provider aus"
 msgid "User Identifier"
 msgstr "Benutzerkennung"
 
-#: includes/Settings.php:65 includes/Settings.php:66 includes/Settings.php:80
-#: includes/Settings.php:81 includes/Settings.php:96
+#: includes/Settings.php:77 includes/Settings.php:78 includes/Settings.php:93
+#: includes/Settings.php:94 includes/Settings.php:110
 msgid "SSO"
 msgstr "SSO"
 
-#: includes/Settings.php:114 includes/Settings.php:223
+#: includes/Settings.php:129 includes/Settings.php:241
 msgid "SSO Settings"
 msgstr "SSO-Einstellungen"
 
-#: includes/Settings.php:147
+#: includes/Settings.php:163
 msgid "SSO Authentication"
 msgstr "SSO-Authentifizierung"
 
-#: includes/Settings.php:163
+#: includes/Settings.php:179
 msgid "Autoload Path"
 msgstr "Autoload-Pfad"
 
-#: includes/Settings.php:171
+#: includes/Settings.php:187
 msgid "Authentication Source"
 msgstr "Authentifizierungsquelle"
 
-#: includes/Settings.php:180
+#: includes/Settings.php:196
 msgid "Identity Provider Domain Scope"
 msgstr "Domänenbereich des Identity-Providers"
 
-#: includes/Settings.php:189
+#: includes/Settings.php:205
 msgid "Allowed User Email Domains"
 msgstr "Zulässige Benutzer-E-Mail-Domänen"
 
-#: includes/Settings.php:197
+#: includes/Settings.php:213
 msgid "Username RegEx Pattern"
 msgstr "Benutzername-RegEx-Muster"
 
-#: includes/Settings.php:211
+#: includes/Settings.php:228
 msgid "Single Sign-On"
 msgstr "Single Sign-On"
 
-#: includes/Settings.php:212
+#: includes/Settings.php:229
 msgid "General SSO Settings."
 msgstr "Allgemeine SSO-Einstellungen."
 
-#: includes/Settings.php:224
+#: includes/Settings.php:242
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: includes/Settings.php:225
+#: includes/Settings.php:243
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: includes/Settings.php:235
+#: includes/Settings.php:254
 msgid "SimpleSAMLphp"
 msgstr "SimpleSAMLphp"
 
-#: includes/Settings.php:236
+#: includes/Settings.php:255
 msgid "Service Provider Settings."
 msgstr "Einstellungen des Service Providers."
 
-#: includes/Settings.php:246
+#: includes/Settings.php:266
 msgid "Relative path starting from the wp-content directory."
 msgstr "Relative Pfad ausgehend vom wp-content-Verzeichnis."
 
-#: includes/Settings.php:271
+#: includes/Settings.php:293
 msgid ""
 "(Optional) The domain to add to the user identifier to associate it with the "
 "identity provider."
@@ -225,49 +225,49 @@ msgstr ""
 "(Optional) Die Domäne, die der Benutzerkennung hinzugefügt werden soll, um "
 "sie dem Identity-Provider zuzuordnen."
 
-#: includes/Settings.php:283
+#: includes/Settings.php:306
 msgid "List of allowed domains for user email addresses."
 msgstr "Liste der zulässigen Domänen für Benutzer-E-Mail-Adressen."
 
-#: includes/Settings.php:284
+#: includes/Settings.php:307
 msgid "If the field is left empty then all email domains are allowed."
 msgstr "Wenn das Feld leer gelassen wird, sind alle E-Mail-Domänen zulässig."
 
-#: includes/Settings.php:285
+#: includes/Settings.php:308
 msgid "Format: <i>domain.tld</i>"
 msgstr "Format: <i>domain.tld</i>"
 
-#: includes/Settings.php:286
+#: includes/Settings.php:309
 msgid "Enter one email domain per line."
 msgstr "Geben Sie eine E-Mail-Domäne pro Zeile ein."
 
-#: includes/Settings.php:297
+#: includes/Settings.php:320
 msgid "Regex pattern to allow extra characters in the username."
 msgstr "Regex-Muster, um zusätzliche Zeichen im Benutzernamen zu erlauben."
 
-#: includes/Settings.php:317
+#: includes/Settings.php:341
 msgid "The SimpleSAMLphp autoload file is required."
 msgstr "Die SimpleSAMLphp-Autoload-Datei wird benötigt."
 
 #. translators: %s: path to the SimpleSAMLphp autoload file.
-#: includes/Settings.php:326
+#: includes/Settings.php:350
 msgid "The SimpleSAMLphp autoload file %s does not exist."
 msgstr "Die SimpleSAMLphp-Autoload-Datei %s existiert nicht."
 
-#: includes/Settings.php:340
+#: includes/Settings.php:364
 msgid "The SimpleSAMLphp authentication source is required."
 msgstr "Die SimpleSAMLphp-Authentifizierungsquelle wird benötigt."
 
-#: includes/Settings.php:379
+#: includes/Settings.php:403
 msgid "The username regex pattern is invalid."
 msgstr "Das Regex-Muster für den Benutzernamen ist ungültig."
 
 #. translators: %s: domain name.
-#: includes/Settings.php:413
+#: includes/Settings.php:438
 msgid "%s is not a valid domain name."
 msgstr "%s ist kein gültiger Domänenname."
 
-#: includes/Settings.php:443
+#: includes/Settings.php:469
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
@@ -362,6 +362,12 @@ msgstr "Dieser Identity-Provider existiert nicht!"
 #: includes/Users.php:381
 msgid "Apologies, but that username is not permitted."
 msgstr "Dieser Benutzername ist nicht zulässig."
+
+#: includes/Users.php:384
+msgid "Invalid username. Usernames may only contain letters and numbers."
+msgstr ""
+"Ungültiger Benutzername. Der Benutzername darf nur aus Buchstaben und Zahlen "
+"bestehen."
 
 #. translators: %s: Max length of username.
 #: includes/Users.php:423

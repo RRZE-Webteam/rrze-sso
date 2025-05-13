@@ -203,7 +203,7 @@ class Authenticate
         $userLogin .= $domainScope;
 
         $origUserLogin = $userLogin;
-        $userLogin = preg_replace('/\s+/', '', substr(sanitize_user($userLogin), 0, 60));
+        $userLogin = substr(Users::sanitizeUsername($userLogin), 0, 60);
         if ($userLogin != $origUserLogin) {
             $this->authFailed(__("The username entered is not valid.", 'rrze-sso'));
         }

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE SSO\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-sso\n"
-"POT-Creation-Date: 2025-05-13T09:35:26+00:00\n"
-"PO-Revision-Date: 2025-05-13 11:36+0200\n"
+"POT-Creation-Date: 2026-01-16T11:56:40+00:00\n"
+"PO-Revision-Date: 2026-01-16 12:58+0100\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -15,7 +15,7 @@ msgstr ""
 "__;_e;_ex:1,2c;esc_attr__;esc_attr_e;_n:1,2;_nx:4c,1,2;_x:1,2c\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.8\n"
 "X-Poedit-SearchPath-0: ..\n"
 
 #. Plugin Name of the plugin
@@ -54,6 +54,7 @@ msgstr ""
 
 #. translators: %s: IdP name.
 #: includes/Authenticate.php:197
+#, php-format
 msgid "The IdP &ldquo;%s&rdquo; is not registered on this SP."
 msgstr "Der IdP „%s“ ist bei diesem SP nicht registriert."
 
@@ -67,6 +68,7 @@ msgstr "Der Benutzer konnte nicht registriert werden."
 
 #. translators: %s: username.
 #: includes/Authenticate.php:308
+#, php-format
 msgid "The username \"%s\" is not registered on this website."
 msgstr "Der Benutzername „%s“ ist auf dieser Website nicht registriert."
 
@@ -76,6 +78,7 @@ msgstr "Fehler:"
 
 #. translators: %s: name of the website.
 #: includes/Authenticate.php:365
+#, php-format
 msgid "Authentication failed on the &ldquo;%s&rdquo; website."
 msgstr "Die Anmeldung auf der Website &bdquo;%s&ldquo; ist fehlgeschlagen."
 
@@ -93,6 +96,7 @@ msgstr "Single Sign-On Abmeldung"
 
 #. translators: %s: name of the website.
 #: includes/Authenticate.php:397
+#, php-format
 msgid ""
 "You attempted to access the &ldquo;%1$s&rdquo; dashboard, but you do not "
 "currently have privileges on this website. If you believe you should be able "
@@ -127,6 +131,7 @@ msgstr "Webseite anzeigen"
 
 #. translators: %s: name of the website.
 #: includes/Authenticate.php:450
+#, php-format
 msgid "Contact persons for the &ldquo;%s&rdquo; website"
 msgstr "Ansprechpartner und Kontakt für die &bdquo;%s&ldquo; Website"
 
@@ -251,6 +256,7 @@ msgstr "Die SimpleSAMLphp-Autoload-Datei wird benötigt."
 
 #. translators: %s: path to the SimpleSAMLphp autoload file.
 #: includes/Settings.php:350
+#, php-format
 msgid "The SimpleSAMLphp autoload file %s does not exist."
 msgstr "Die SimpleSAMLphp-Autoload-Datei %s existiert nicht."
 
@@ -264,6 +270,7 @@ msgstr "Das Regex-Muster für den Benutzernamen ist ungültig."
 
 #. translators: %s: domain name.
 #: includes/Settings.php:438
+#, php-format
 msgid "%s is not a valid domain name."
 msgstr "%s ist kein gültiger Domänenname."
 
@@ -276,7 +283,8 @@ msgid "The simpleSAML library could not be loaded."
 msgstr "Die simpleSAML-Bibliothek konnte nicht geladen werden."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: includes/SimpleSAML.php:187 rrze-sso.php:184
+#: includes/SimpleSAML.php:187 rrze-sso.php:188
+#, php-format
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
@@ -319,6 +327,7 @@ msgstr ""
 
 #. translators: 1: Blog name, 2: Home URL, 3: User role, 4: Login URL, 2: EOL.
 #: includes/Users.php:217
+#, php-format
 msgid ""
 "Hi,%5$s%5$sYou've been invited to join '%1$s' at %2$s with the role of %3$s."
 "%5$s%5$sPlease sign in using the following link to the website:%5$s%4$s"
@@ -329,11 +338,13 @@ msgstr ""
 
 #. translators: %s: Blog name.
 #: includes/Users.php:229
+#, php-format
 msgid "[%s] You've been invited"
 msgstr "[%s] Sie wurden eingeladen"
 
 #. translators: 1: User name, 2: Blog name, 3: Login URL, 4: EOL.
 #: includes/Users.php:244 includes/Users.php:273
+#, php-format
 msgid ""
 "Hi,%4$s%4$sYour user account %1$s has been created.%4$sPlease sign in using "
 "the following link to the website:%4$s%3$s%4$s"
@@ -343,11 +354,13 @@ msgstr ""
 
 #. translators: 2: Blog name, 4: EOL.
 #: includes/Users.php:249 includes/Users.php:278
+#, php-format
 msgid "%4$sThanks!%4$s%4$s--The Team @ %2$s"
 msgstr "%4$sViel Spaß!%4$s%4$s—Das Team von %2$s"
 
 #. translators: %s: Blog name.
 #: includes/Users.php:259 includes/Users.php:288
+#, php-format
 msgid "[%s] Your user account"
 msgstr "[%s] Ihr Benutzerkonto"
 
@@ -371,11 +384,13 @@ msgstr ""
 
 #. translators: %s: Max length of username.
 #: includes/Users.php:423
+#, php-format
 msgid "Username may not be longer than %s characters."
 msgstr "Der Benutzername darf nicht länger als %s Zeichen sein."
 
 #. translators: %s: List of allowed domains.
 #: includes/Users.php:458
+#, php-format
 msgid "Sorry, that email address domain is not allowed! Allowed domains: %s"
 msgstr "Diese E-Mail-Adresse-Domain ist nicht erlaubt! Erlaubte Domains: %s"
 
@@ -396,18 +411,20 @@ msgid "Add Existing User"
 msgstr "Bestehenden Benutzer hinzufügen"
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-sso.php:135
+#: rrze-sso.php:169
+#, php-format
 msgid ""
-"The server is running WordPress version %1$s. The Plugin requires at least "
+"The server is running WordPress version %1$s. The plugin requires at least "
 "WordPress version %2$s."
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-sso.php:143
+#: rrze-sso.php:176
+#, php-format
 msgid ""
-"The server is running PHP version %1$s. The Plugin requires at least PHP "
+"The server is running PHP version %1$s. The plugin requires at least PHP "
 "version %2$s."
 msgstr ""
 "Auf dem Server läuft PHP Version %1$s. Das Plugin benötigt mindestens PHP "

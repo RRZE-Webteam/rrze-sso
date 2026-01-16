@@ -10,19 +10,19 @@ Einstellungen › SSO
 
 -   1. Letzte version des SimpleSAMLphp herunterladen. Siehe https://simplesamlphp.org/download
 -   2. Bitte folgen Sie den Anweisungen zur Installation von SimpleSAMLphp unter diesem Link: https://simplesamlphp.org/docs/stable/simplesamlphp-install
--   3. Folgenden Attribute in der Datei "/simplesamlphp/config/config.php" ändern/bearbeiten:
+-   3. Folgenden Attribute in der Datei "simplesamlphp/config/config.php" ändern/bearbeiten:
 
 ```php
 'technicalcontact_name' => 'Name des technischen Ansprechpartners',
 'technicalcontact_email' => 'E-Mail-Adresse des technischen Ansprechpartners',
-```
-...
-```php
+
+// ...
+
 'secretsalt' => 'Beliebige, möglichst einzigartige Phrase',
-'auth.adminpassword' => 'Hash-String', // Führen Sie „bin/pwgen.php“ aus, um einen Hash zu generieren.
-```
-...
-```php
+'auth.adminpassword' => 'Hash-String', // Tipp: Führen Sie simplesamlphp/bin/pwgen.php aus, um einen Hash zu generieren.
+
+// ...
+
 'authproc.sp' => [
     10 => [
         'class' => 'core:AttributeMap',
@@ -36,13 +36,13 @@ Einstellungen › SSO
 ],
 ```
 
--   4. Folgende Element des "default-sp"-Array in der Datei "/simplesamlphp/config/authsources.php" ändern/bearbeiten:
+-   4. Folgende Element des "default-sp"-Array in der Datei "simplesamlphp/config/authsources.php" ändern/bearbeiten:
 
 ```php
-'idp' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'
+'idp' => 'https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php',
 ```
 
--   5. Den Inhalt der Datei "/simplesamlphp/metadata/saml20-idp-remote.php" löschen und dann den folgenden Code hinzufügen:
+-   5. Den Inhalt der Datei "simplesamlphp/metadata/saml20-idp-remote.php" löschen und dann den folgenden Code hinzufügen:
 
 ```php
 <?php
@@ -120,13 +120,13 @@ $metadata['https://www.sso.uni-erlangen.de/simplesaml/saml2/idp/metadata.php'] =
             'encryption' => false,
             'signing' => true,
             'type' => 'X509Certificate',
-            'X509Certificate' => 'MIIEFzCCAn+gAwIBAgIUZu6JGUynt+HmkDyTBVufV8brvfIwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAxMXd3d3LnNzby51bmktZXJsYW5nZW4uZGUwHhcNMjIxMDI1MTI0NDIzWhcNMjUxMTE5MTI0NDIzWjAiMSAwHgYDVQQDExd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAKV+3afbJg5B5r94ZuQMPRfFJdmixpAPiRqqif0hoXC4GAAd09txIWp2sMLWOEseiBYfSndBOz5OUHfyxvQ3IKubucP26leZxvyEDBymlaMw6ad2pi5JdCycJegGgkH2rThiNRK9rYLjyO5oUuCNumMBwqN1rCxaTsf6vC97cv5sEAoH551jNSPDYVvbn1/uUNw15GQuvvU43N3N3efiLnbRjUE8Ih/qDYp6v63/nxExINt7xgErgvD82k0gHrBJv7BIOMe7WmTQ2yQYC8FnzvCwHdHnZ8i1vRzPDYFTktxxn6Vsu1YMeNdd2K4Q+LLb/ljdoSxrNMKiwz9ls1Mj059hxlo3Q1g6JAYSZc9Lzqo26iTYLlq/LfF259OENIZX6FeQqDExK8BPLX6OXlneeksTxl9Bohsga3QPtRMRlGF415hmtpunW9LSiF1VewcKwpvjoEcDK+wutI/N7RNRhLNauUPQz16v1gZJDim4/zLB3Nfh19kLfJnlcRVnIkpKQQIDAQABo0UwQzAiBgNVHREEGzAZghd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTAdBgNVHQ4EFgQUPB7olQAUEMwG9ImXfbDXtdLNPeUwDQYJKoZIhvcNAQELBQADggGBAEiIFXch6BzXOeU4S5/YgTQ/dHYpwHAc93YYP6WmlzEambSx+HGu4c6eav9zSrRhIVxwHkPE1nGJzBvtcM0FMML9/5U7keOtAcD7jkcHfnrC5cz9bWEbVpu4pSGVK1OWvC24gqwLn7++W3lx7prwpN7fO1uCSsudT3oOhSjy3oEJvtnBS26pqf/FFBUl6slZ4M3uVGUuf4q0PVXRIjK04oM8AwSO2Bb3tYU4u1lTBJkXJ+nFZGd8BcyYpFkQVY9/8iElY2qDWS6q1hNJ4c/phS7heJlk98MqtBeFw/Jo4juukdfIAtGmRpLg2xN3FzO2eoIzFgwQKrMrwMrTlovL71MEYkX/2NJ+TUCMcwseeAQaa8IgCXWfP7eD/RnS3DNj6su3Zes7W9HIpUJP33Ds3I+h0+QU9OYTnsjhxfOZOUm8BxNLvtBwVxKUmtJkh3zX/8F/exHXRaB2h0jx7iQ8bjpsGGnTE0izn0b/R3YuhH6yzt5nW8FaoHVQC/A7NVOfhg==',
+            'X509Certificate' => 'MIIEFzCCAn+gAwIBAgIUcoi39eQi65FjX12ddxhsqt5Yt2wwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAxMXd3d3LnNzby51bmktZXJsYW5nZW4uZGUwHhcNMjUxMDI4MTAxNzUzWhcNMjkwMTEwMTAxNzUzWjAiMSAwHgYDVQQDExd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAJkUyZHH1WOWJk0bUoPcsX72CzbQ2D4QM0BJVbDL88qKllnl/869Vt+Gtqtxe+j80qb5yhM/oLnPA1yRMVGe2LW6iQp1zYdPC1p0zhvE5ncQH3OLiFqDoPujwDiMj4mB4zjZhOvlUyLDoUsHWmWupfMflY9Ns/K2tel5CJCUvxvlO2d0+YxSuqN6f11kikfIq4RU+6GwDrnUTmepmeJOLqFUDGTkbMOxvBg4X5O8qJ1ISgSg/uSu3OBb+FqjsjNgD6gQ0DDaYSz2pcRpwh/ehV6sdN4RR/InOhzfwZXZ53R2BCPS578Pjzc7vWj3/j+igN6tYE6keVXqA5+oYyRu83v23sgHOFkORWI7znNJVAFz8IvwMqdHDPxj+q1hMBa8RE5bJwztXf4AtF1CqpBUnvFY2MIv+isa06PtPbcTUnEHeu2W9xySc7dBCFuvm6OKwevKqh8C3Zy500KEMtv3EdLhyxQRazupw7JorVmYct4Erk/uobjgqjtMvl0zi3+5xwIDAQABo0UwQzAiBgNVHREEGzAZghd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTAdBgNVHQ4EFgQUfU5+ck8hl5o5Wt+bfuZK+dDSa1YwDQYJKoZIhvcNAQELBQADggGBADP732ctFE22blSD6xuSjsSy7/t8BELWviZmLJ0Yn1UGkrGES7QllIbrtM5KsksHXtPAFYCqwPSSMcM4XngkJSaUnRhPnDyYa54L/lQFhe9jfDjecDCtav7P1skqph62CqKA8uQej3/c699UP3wyKrJNCxSV0MmabkdMY+F77Cl8px4pDrNUXSo1ALzC9enWqLe7zKUfLpIjgMTWZuqgklTW7aLT16tqgFaAIey2Xc6xTxr3GUqQaCx+N15cW2EAZOD4fpikzrn6ckvDvkWxmrwGHhkHx68tD8k7HrTe3GhxCtesDzFyyypuuTlChkX5B6LQ65maRGdVSvJd4IPF4bB/HaW4KLig95vjKrkS2PZjufQ4NzjpEWAVhotyPKuAIGVBN189gGmm/Z0gZtz557K9Dpk1jBgOu6qnsvvBx9FHD/6dpEkRX9fmTgyLmcdMEiaiAke1dG+vVjLC2sTcMV32Ur3cTDIcWzawl3kWy8vF+Fjonghh4xUx3XNZ1g86MA==',
         ],
         [
             'encryption' => true,
             'signing' => false,
             'type' => 'X509Certificate',
-            'X509Certificate' => 'MIIEFzCCAn+gAwIBAgIUZu6JGUynt+HmkDyTBVufV8brvfIwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAxMXd3d3LnNzby51bmktZXJsYW5nZW4uZGUwHhcNMjIxMDI1MTI0NDIzWhcNMjUxMTE5MTI0NDIzWjAiMSAwHgYDVQQDExd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAKV+3afbJg5B5r94ZuQMPRfFJdmixpAPiRqqif0hoXC4GAAd09txIWp2sMLWOEseiBYfSndBOz5OUHfyxvQ3IKubucP26leZxvyEDBymlaMw6ad2pi5JdCycJegGgkH2rThiNRK9rYLjyO5oUuCNumMBwqN1rCxaTsf6vC97cv5sEAoH551jNSPDYVvbn1/uUNw15GQuvvU43N3N3efiLnbRjUE8Ih/qDYp6v63/nxExINt7xgErgvD82k0gHrBJv7BIOMe7WmTQ2yQYC8FnzvCwHdHnZ8i1vRzPDYFTktxxn6Vsu1YMeNdd2K4Q+LLb/ljdoSxrNMKiwz9ls1Mj059hxlo3Q1g6JAYSZc9Lzqo26iTYLlq/LfF259OENIZX6FeQqDExK8BPLX6OXlneeksTxl9Bohsga3QPtRMRlGF415hmtpunW9LSiF1VewcKwpvjoEcDK+wutI/N7RNRhLNauUPQz16v1gZJDim4/zLB3Nfh19kLfJnlcRVnIkpKQQIDAQABo0UwQzAiBgNVHREEGzAZghd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTAdBgNVHQ4EFgQUPB7olQAUEMwG9ImXfbDXtdLNPeUwDQYJKoZIhvcNAQELBQADggGBAEiIFXch6BzXOeU4S5/YgTQ/dHYpwHAc93YYP6WmlzEambSx+HGu4c6eav9zSrRhIVxwHkPE1nGJzBvtcM0FMML9/5U7keOtAcD7jkcHfnrC5cz9bWEbVpu4pSGVK1OWvC24gqwLn7++W3lx7prwpN7fO1uCSsudT3oOhSjy3oEJvtnBS26pqf/FFBUl6slZ4M3uVGUuf4q0PVXRIjK04oM8AwSO2Bb3tYU4u1lTBJkXJ+nFZGd8BcyYpFkQVY9/8iElY2qDWS6q1hNJ4c/phS7heJlk98MqtBeFw/Jo4juukdfIAtGmRpLg2xN3FzO2eoIzFgwQKrMrwMrTlovL71MEYkX/2NJ+TUCMcwseeAQaa8IgCXWfP7eD/RnS3DNj6su3Zes7W9HIpUJP33Ds3I+h0+QU9OYTnsjhxfOZOUm8BxNLvtBwVxKUmtJkh3zX/8F/exHXRaB2h0jx7iQ8bjpsGGnTE0izn0b/R3YuhH6yzt5nW8FaoHVQC/A7NVOfhg==',
+            'X509Certificate' => 'MIIEFzCCAn+gAwIBAgIUcoi39eQi65FjX12ddxhsqt5Yt2wwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAxMXd3d3LnNzby51bmktZXJsYW5nZW4uZGUwHhcNMjUxMDI4MTAxNzUzWhcNMjkwMTEwMTAxNzUzWjAiMSAwHgYDVQQDExd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAJkUyZHH1WOWJk0bUoPcsX72CzbQ2D4QM0BJVbDL88qKllnl/869Vt+Gtqtxe+j80qb5yhM/oLnPA1yRMVGe2LW6iQp1zYdPC1p0zhvE5ncQH3OLiFqDoPujwDiMj4mB4zjZhOvlUyLDoUsHWmWupfMflY9Ns/K2tel5CJCUvxvlO2d0+YxSuqN6f11kikfIq4RU+6GwDrnUTmepmeJOLqFUDGTkbMOxvBg4X5O8qJ1ISgSg/uSu3OBb+FqjsjNgD6gQ0DDaYSz2pcRpwh/ehV6sdN4RR/InOhzfwZXZ53R2BCPS578Pjzc7vWj3/j+igN6tYE6keVXqA5+oYyRu83v23sgHOFkORWI7znNJVAFz8IvwMqdHDPxj+q1hMBa8RE5bJwztXf4AtF1CqpBUnvFY2MIv+isa06PtPbcTUnEHeu2W9xySc7dBCFuvm6OKwevKqh8C3Zy500KEMtv3EdLhyxQRazupw7JorVmYct4Erk/uobjgqjtMvl0zi3+5xwIDAQABo0UwQzAiBgNVHREEGzAZghd3d3cuc3NvLnVuaS1lcmxhbmdlbi5kZTAdBgNVHQ4EFgQUfU5+ck8hl5o5Wt+bfuZK+dDSa1YwDQYJKoZIhvcNAQELBQADggGBADP732ctFE22blSD6xuSjsSy7/t8BELWviZmLJ0Yn1UGkrGES7QllIbrtM5KsksHXtPAFYCqwPSSMcM4XngkJSaUnRhPnDyYa54L/lQFhe9jfDjecDCtav7P1skqph62CqKA8uQej3/c699UP3wyKrJNCxSV0MmabkdMY+F77Cl8px4pDrNUXSo1ALzC9enWqLe7zKUfLpIjgMTWZuqgklTW7aLT16tqgFaAIey2Xc6xTxr3GUqQaCx+N15cW2EAZOD4fpikzrn6ckvDvkWxmrwGHhkHx68tD8k7HrTe3GhxCtesDzFyyypuuTlChkX5B6LQ65maRGdVSvJd4IPF4bB/HaW4KLig95vjKrkS2PZjufQ4NzjpEWAVhotyPKuAIGVBN189gGmm/Z0gZtz557K9Dpk1jBgOu6qnsvvBx9FHD/6dpEkRX9fmTgyLmcdMEiaiAke1dG+vVjLC2sTcMV32Ur3cTDIcWzawl3kWy8vF+Fjonghh4xUx3XNZ1g86MA==',
         ],
     ],
     'scope' => [

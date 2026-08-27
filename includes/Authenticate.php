@@ -5,39 +5,55 @@ namespace RRZE\SSO;
 defined('ABSPATH') || exit;
 
 /**
- * Class Authenticate
- * 
- * @package RRZE\SSO
+ * Integrates SimpleSAMLphp authentication with WordPress user accounts.
+ *
+ * Registers the WordPress authentication hooks, maps SAML attributes to a
+ * WordPress profile, synchronizes existing users, and creates users when
+ * registration is enabled.
  */
 class Authenticate
 {
     /**
-     * Settings options
-     * 
-     * @var object
+     * SAML attributes whose first value is used for the WordPress profile.
+     */
+    private const SINGLE_VALUE_ATTRIBUTES = array(
+        'uid',
+        'subject-id',
+        'eduPersonUniqueId',
+        'eduPersonPrincipalName',
+        'mail',
+        'displayName',
+        'cn',
+        'sn',
+        'givenName',
+        'o',
+    );
+
+    /**
+     * Current plugin settings.
+     *
+     * @var \stdClass
      */
     protected $options;
 
     /**
-     * \SimpleSAML\Auth\Simple
-     * 
-     * @var object
+     * SimpleSAMLphp authentication client.
+     *
+     * @var \SimpleSAML\Auth\Simple
      */
     protected $authSimple;
 
     /**
-     * Users can register
-     * 
-     * @var boolean
+     * Whether new WordPress users may be registered.
+     *
+     * @var bool
      */
-    protected $registration;
-
+    protected $registration = false;
 
     /**
-     * Class constructor
-     * 
-     * @param object \SimpleSAML\Auth\Simple
-     * @return void
+     * Initializes the authenticator with a SimpleSAMLphp client.
+     *
+     * @param \SimpleSAML\Auth\Simple $authSimple SimpleSAMLphp authentication client.
      */
     public function __construct(\SimpleSAML\Auth\Simple $authSimple)
     {
@@ -46,56 +62,54 @@ class Authenticate
     }
 
     /**
-     * Plugin is loaded
-     * 
+     * Registers authentication, login, logout, and registration hooks.
+     *
      * @return void
      */
     public function loaded()
     {
-        // Filters whether a set of user login credentials are valid
         add_filter('authenticate', [$this, 'authenticate'], 10, 2);
-
-        // Removed: Authenticates a user, confirming the username and password are valid
         remove_action('authenticate', 'wp_authenticate_username_password', 20, 3);
-
-        // Removed: Authenticates a user using the email and password
         remove_action('authenticate', 'wp_authenticate_email_password', 20, 3);
-
-        // Filters the login URL
         add_filter('login_url', [$this, 'loginUrl'], 10, 2);
-
-        // Fires after a user is logged out
         add_action('wp_logout', [$this, 'logout']);
-
-        // Filters whether the authentication check originated at the same domain
         add_filter('wp_auth_check_same_domain', '__return_false');
 
-        // Determines if user registration is enabled
-        if (is_multisite() && (!get_site_option('registration') || get_site_option('registration') == 'none')) {
-            $this->registration = false;
-        } elseif (!is_multisite() && !get_option('users_can_register')) {
-            $this->registration = false;
-        } else {
-            $this->registration = true;
-        }
-
-        // Filters user registration enablement
-        $this->registration = apply_filters('rrze_sso_registration', $this->registration);
-        // Filters user registration enablement (backward compatibility)
-        $this->registration = apply_filters('fau_websso_registration', $this->registration);
+        $registration = self::isRegistrationEnabled();
+        $registration = apply_filters('rrze_sso_registration', $registration);
+        $registration = apply_filters('fau_websso_registration', $registration);
+        $this->registration = (bool) $registration;
 
         if (!$this->registration) {
-            // Fires before the Site Sign-up page is loaded
             add_action('before_signup_header', [$this, 'redirectToSiteUrl']);
         }
     }
 
     /**
-     * Checks if a set of user login credentials is valid
-     * 
-     * @param mixed $user null|WP_User|WP_Error
-     * @param string $userLogin
-     * @return object \WP_User
+     * Determines whether WordPress user registration is enabled.
+     *
+     * @return bool Whether registration is enabled.
+     */
+    private static function isRegistrationEnabled(): bool
+    {
+        if (is_multisite()) {
+            $registration = get_site_option('registration');
+
+            return (bool) $registration && 'none' !== $registration;
+        }
+
+        return (bool) get_option('users_can_register');
+    }
+
+    /**
+     * Authenticates a WordPress user through SimpleSAMLphp.
+     *
+     * The `$userLogin` argument remains part of the public callback signature
+     * for compatibility. The authoritative login is derived from SAML data.
+     *
+     * @param mixed  $user      Existing authentication result.
+     * @param string $userLogin Login submitted to WordPress.
+     * @return \WP_User Existing or newly created authenticated user.
      */
     public function authenticate($user, $userLogin)
     {
@@ -103,253 +117,481 @@ class Authenticate
             return $user;
         }
 
-        // Make sure that the user is authenticated
-        // If the user isn't authenticated, this function will start the authentication process
-        $this->authSimple->requireAuth();
+        $this->startSamlAuthentication();
 
-        // Save the current session and clean any left overs that could interfere with the normal application behaviour
-        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+        $identityProviderId = $this->samlIdentityProviderId();
+        $rawAttributes = $this->samlAttributes();
+        $this->logAuthentication($identityProviderId, $rawAttributes);
 
-        // The entityID of the IdP the user is authenticated against
-        $samlSpIdp = $this->authSimple->getAuthData('saml:sp:IdP');
+        $attributes = self::normalizeAttributes($rawAttributes);
+        $identityProvider = $this->resolveIdentityProvider($identityProviderId);
+        $userLogin = $this->resolveUserLogin($attributes, $identityProvider['key']);
+        $profile = $this->buildUserProfile($attributes, $identityProvider['name']);
 
-        // Retrieve the attributes of the current user
-        // If the user isn't authenticated, an empty array will be returned
-        if (empty($_atts = $this->authSimple->getAttributes())) {
-            $this->authFailed(__("User attributes could not be retrieved.", 'rrze-sso'));
-        }
-
-        do_action(
-            'rrze.log.info',
-            [
-                'plugin' => plugin()->getBaseName(),
-                'method' => __METHOD__,
-                'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-                'saml_sp_idp' => $samlSpIdp,
-                'person_attributes' => $_atts
-            ]
+        $this->activatePendingSignup($userLogin);
+        $user = $this->resolveWordPressUser(
+            $userLogin,
+            $profile,
+            $identityProviderId
         );
 
-        $atts = [];
-
-        foreach ($_atts as $key => $value) {
-            $_keyAry = explode(':', $key);
-            $_key = $_keyAry[array_key_last($_keyAry)];
-            if (
-                is_array($value)
-                && in_array(
-                    $_key,
-                    [
-                        'uid',
-                        'subject-id',
-                        'eduPersonUniqueId',
-                        'eduPersonPrincipalName',
-                        'mail',
-                        'displayName',
-                        'cn',
-                        'sn',
-                        'givenName',
-                        'o'
-                    ]
-                )
-            ) {
-                $atts[$_key] = $value[0];
-            } else {
-                $atts[$key] = $value;
-            }
-        }
-
-        $identityProviders = simpleSAML()->getIdentityProviders();
-
-        $userLogin = $atts['uid'] ?? '';
-        $subjectId = $atts['subject-id'] ?? $atts['eduPersonUniqueId'] ?? $atts['eduPersonPrincipalName'] ?? '';
-
-        if (empty($userLogin) && !empty($subjectId) && is_string($subjectId)) {
-            $parts = explode('@', $subjectId);
-            $userLogin = $parts[0] ?? '';
-        }
-
-        if (empty($userLogin)) {
-            $this->authFailed(__("User login could not be determined from SAML attributes.", 'rrze-sso'));
-        }
-
-        $found = false;
-        $domainScope = '';
-
-        foreach ($identityProviders as $idpKey => $idpName) {
-            $idpKeySanitized = sanitize_title($idpKey);
-            $idpName = sanitize_text_field($idpName);
-
-            if (sanitize_title($samlSpIdp) === $idpKeySanitized) {
-                $found = true;
-                $domain = $this->options->domain_scope[$idpKeySanitized] ?? '';
-                if (!empty($domain)) {
-                    $domainScope = '@' . $domain;
-                }
-                break;
-            }
-        }
-
-        if (!$found) {
-            $this->authFailed(
-                sprintf(
-                    /* translators: %s: IdP name. */
-                    __("The IdP &ldquo;%s&rdquo; is not registered on this SP.", 'rrze-sso'),
-                    $samlSpIdp
-                )
-            );
-        }
-
-        $userLogin .= $domainScope;
-
-        $origUserLogin = $userLogin;
-        $userLogin = substr(Users::sanitizeUsername($userLogin), 0, 60);
-        if ($userLogin != $origUserLogin) {
-            $this->authFailed(__("The username entered is not valid.", 'rrze-sso'));
-        }
-
-        $userEmail = $atts['mail'] ?? '';
-        $userEmail = is_email($atts['mail']) ? strtolower($atts['mail']) : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
-
-        $displayName = $atts['displayName'] ?? '';
-
-        $lastName = $atts['sn'] ?? '';
-        $lastName = $lastName ?: $atts['surname'] ?? '';
-
-        $firstName = $atts['gn'] ?? '';
-        $firstName = $firstName ?: $atts['givenName'] ?? '';
-
-        $organizationName = $atts['o'] ?? '';
-        $organizationName = $organizationName ?: $atts['organizationName'] ?? $idpName;
-
-        $eduPersonAffiliation = $atts['eduPersonAffiliation'] ?? '';
-        $eduPersonScopedAffiliation = $atts['eduPersonScopedAffiliation'] ?? '';
-        $eduPersonEntitlement = $atts['eduPersonEntitlement'] ?? '';
-
-        if (is_multisite()) {
-            global $wpdb;
-            $key = $wpdb->get_var($wpdb->prepare("SELECT activation_key FROM {$wpdb->signups} WHERE user_login = %s", $userLogin));
-            Users::activateSignup($key);
-        }
-
-        if ($userdata = get_user_by('login', $userLogin)) {
-            $userId = $userdata->ID;
-
-            if ($firstName && $firstName != get_user_meta($userId, 'first_name', true)) {
-                update_user_meta($userId, 'first_name', $firstName);
-            }
-            if ($lastName && $lastName != get_user_meta($userId, 'last_name', true)) {
-                update_user_meta($userId, 'last_name', $lastName);
-            }
-            if ($displayName && $displayName != $userdata->display_name) {
-                wp_update_user(
-                    [
-                        'ID' => $userId,
-                        'display_name' => $displayName
-                    ]
-                );
-            }
-
-            $user = new \WP_User($userId);
-            update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
-            update_user_meta($userId, 'organization_name', $organizationName);
-            update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
-            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
-            update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
-
-            if ($this->registration && is_multisite()) {
-                if (!is_user_member_of_blog($userId, 1)) {
-                    add_user_to_blog(1, $userId, 'subscriber');
-                }
-            }
-        } elseif ($this->registration) {
-            if (is_multisite()) {
-                switch_to_blog(1);
-            }
-
-            $userId = wp_insert_user(
-                [
-                    'user_pass' => wp_generate_password(12, false),
-                    'user_login' => $userLogin,
-                    'user_email' => $userEmail,
-                    'display_name' => $displayName,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'role' => 'subscriber'
-                ]
-            );
-
-            if (is_wp_error($userId)) {
-                if (is_multisite()) {
-                    restore_current_blog();
-                }
-                $this->authFailed(__("The user could not be added.", 'rrze-sso'));
-            }
-
-            $user = new \WP_User($userId);
-            update_user_meta($userId, 'saml_sp_idp', $samlSpIdp);
-            update_user_meta($userId, 'organization_name', $organizationName);
-            update_user_meta($userId, 'edu_person_affiliation', $eduPersonAffiliation);
-            update_user_meta($userId, 'edu_person_scoped_affiliation', $eduPersonScopedAffiliation);
-            update_user_meta($userId, 'edu_person_entitlement', $eduPersonEntitlement);
-
-            if (is_multisite()) {
-                add_user_to_blog(1, $userId, 'subscriber');
-                restore_current_blog();
-
-                if (!is_user_member_of_blog($userId, get_current_blog_id())) {
-                    add_user_to_blog(get_current_blog_id(), $userId, 'subscriber');
-                }
-            }
-        } else {
-            $this->authFailed(
-                sprintf(
-                    /* translators: %s: username. */
-                    __('The username "%s" is not registered on this website.', 'rrze-sso'),
-                    $userLogin
-                )
-            );
-        }
-
-        if (is_multisite()) {
-            $blogs = get_blogs_of_user($user->ID);
-            if (!$this->hasDashboardAccess($user->ID, $blogs)) {
-                $this->accessDenied($blogs);
-            }
-        }
-
-        $ssoAtts = !empty($_atts) ? $_atts : '';
-        update_user_meta($user->ID, 'sso_attributes', $ssoAtts);
+        $this->ensureDashboardAccess($user);
+        update_user_meta($user->ID, 'sso_attributes', $rawAttributes);
 
         return $user;
     }
 
     /**
-     * Check if the user has access to the website dashboard
-     * 
-     * @param int $userId
-     * @param mixed $blogs object|array
-     * @return boolean
+     * Starts SAML authentication and clears request-session leftovers.
+     *
+     * @return void
      */
-    private function hasDashboardAccess($userId, $blogs)
+    private function startSamlAuthentication(): void
+    {
+        $this->authSimple->requireAuth();
+        \SimpleSAML\Session::getSessionFromRequest()->cleanup();
+    }
+
+    /**
+     * Returns the entity ID of the authenticating identity provider.
+     *
+     * @return string Identity-provider entity ID.
+     */
+    private function samlIdentityProviderId(): string
+    {
+        $identityProviderId = $this->authSimple->getAuthData('saml:sp:IdP');
+
+        return is_scalar($identityProviderId) ? (string) $identityProviderId : '';
+    }
+
+    /**
+     * Retrieves the authenticated user's raw SAML attributes.
+     *
+     * @return array<string, mixed> Raw SAML attributes.
+     */
+    private function samlAttributes(): array
+    {
+        $attributes = $this->authSimple->getAttributes();
+
+        if (!is_array($attributes) || !$attributes) {
+            $this->authFailed(__('User attributes could not be retrieved.', 'rrze-sso'));
+
+            return array();
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Writes the successful SAML response details to the plugin log hook.
+     *
+     * @param string               $identityProviderId Identity-provider entity ID.
+     * @param array<string, mixed> $attributes         Raw SAML attributes.
+     * @return void
+     */
+    private function logAuthentication(string $identityProviderId, array $attributes): void
+    {
+        do_action(
+            'rrze.log.info',
+            array(
+                'plugin' => plugin()->getBaseName(),
+                'method' => __CLASS__ . '::authenticate',
+                'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+                'saml_sp_idp' => $identityProviderId,
+                'person_attributes' => $attributes,
+            )
+        );
+    }
+
+    /**
+     * Normalizes known SAML attributes to their first scalar value.
+     *
+     * Namespaced attribute keys retain only the final segment for attributes
+     * used by the WordPress profile. Other attributes remain unchanged.
+     *
+     * @param array<string, mixed> $attributes Raw SAML attributes.
+     * @return array<string, mixed> Normalized SAML attributes.
+     */
+    private static function normalizeAttributes(array $attributes): array
+    {
+        $normalized = array();
+
+        foreach ($attributes as $key => $value) {
+            $segments = explode(':', $key);
+            $normalizedKey = $segments[array_key_last($segments)];
+
+            if (is_array($value) && in_array($normalizedKey, self::SINGLE_VALUE_ATTRIBUTES, true)) {
+                $normalized[$normalizedKey] = $value[0] ?? '';
+                continue;
+            }
+
+            $normalized[$key] = $value;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Resolves the configured identity provider used for authentication.
+     *
+     * @param string $identityProviderId Identity-provider entity ID.
+     * @return array{key: string, name: string} Sanitized provider key and name.
+     */
+    private function resolveIdentityProvider(string $identityProviderId): array
+    {
+        $providers = simpleSAML()->getIdentityProviders();
+        $providers = is_array($providers) ? $providers : array();
+        $requestedKey = sanitize_title($identityProviderId);
+
+        foreach ($providers as $providerKey => $providerName) {
+            $providerKey = sanitize_title($providerKey);
+            if ($requestedKey !== $providerKey) {
+                continue;
+            }
+
+            return array(
+                'key' => $providerKey,
+                'name' => is_scalar($providerName)
+                    ? sanitize_text_field((string) $providerName)
+                    : '',
+            );
+        }
+
+        $this->authFailed(
+            sprintf(
+                /* translators: %s: IdP name. */
+                __('The IdP &ldquo;%s&rdquo; is not registered on this SP.', 'rrze-sso'),
+                esc_html($identityProviderId)
+            )
+        );
+
+        return array('key' => '', 'name' => '');
+    }
+
+    /**
+     * Builds and validates the WordPress login from SAML attributes.
+     *
+     * @param array<string, mixed> $attributes          Normalized SAML attributes.
+     * @param string               $identityProviderKey Sanitized provider key.
+     * @return string Validated WordPress login.
+     */
+    private function resolveUserLogin(array $attributes, string $identityProviderKey): string
+    {
+        $userLogin = self::firstAttributeValue($attributes, array('uid'));
+
+        if (!$userLogin) {
+            $subjectId = self::firstAttributeValue(
+                $attributes,
+                array('subject-id', 'eduPersonUniqueId', 'eduPersonPrincipalName')
+            );
+            $userLogin = explode('@', $subjectId)[0] ?? '';
+        }
+
+        if (!$userLogin) {
+            $this->authFailed(
+                __('User login could not be determined from SAML attributes.', 'rrze-sso')
+            );
+        }
+
+        $domainScope = $this->options->domain_scope[$identityProviderKey] ?? '';
+        if (is_scalar($domainScope) && $domainScope) {
+            $userLogin .= '@' . $domainScope;
+        }
+
+        $sanitizedLogin = substr(Users::sanitizeUserName($userLogin), 0, 60);
+        if ($sanitizedLogin !== $userLogin) {
+            $this->authFailed(__('The username entered is not valid.', 'rrze-sso'));
+        }
+
+        return $sanitizedLogin;
+    }
+
+    /**
+     * Builds WordPress profile data from normalized SAML attributes.
+     *
+     * @param array<string, mixed> $attributes           Normalized SAML attributes.
+     * @param string               $identityProviderName Display name of the identity provider.
+     * @return array<string, mixed> WordPress profile and SAML metadata values.
+     */
+    private function buildUserProfile(array $attributes, string $identityProviderName): array
+    {
+        $email = self::firstAttributeValue($attributes, array('mail'));
+        $email = is_email($email)
+            ? strtolower($email)
+            : sprintf('dummy.%s@rrze.sso', bin2hex(random_bytes(4)));
+
+        $organizationName = self::firstAttributeValue(
+            $attributes,
+            array('o', 'organizationName')
+        );
+
+        return array(
+            'user_email' => $email,
+            'display_name' => self::firstAttributeValue($attributes, array('displayName')),
+            'first_name' => self::firstAttributeValue($attributes, array('gn', 'givenName')),
+            'last_name' => self::firstAttributeValue($attributes, array('sn', 'surname')),
+            'organization_name' => $organizationName ?: $identityProviderName,
+            'edu_person_affiliation' => $attributes['eduPersonAffiliation'] ?? '',
+            'edu_person_scoped_affiliation' => $attributes['eduPersonScopedAffiliation'] ?? '',
+            'edu_person_entitlement' => $attributes['eduPersonEntitlement'] ?? '',
+        );
+    }
+
+    /**
+     * Returns the first non-empty scalar value among a list of attributes.
+     *
+     * @param array<string, mixed> $attributes Attribute map.
+     * @param array<int, string>   $keys       Attribute keys in priority order.
+     * @return string Attribute value, or an empty string.
+     */
+    private static function firstAttributeValue(array $attributes, array $keys): string
+    {
+        foreach ($keys as $key) {
+            $value = $attributes[$key] ?? '';
+
+            if (is_array($value)) {
+                $value = $value[0] ?? '';
+            }
+
+            if (is_scalar($value) && '' !== (string) $value) {
+                return (string) $value;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Activates a matching pending Multisite signup, when one exists.
+     *
+     * @param string $userLogin WordPress user login.
+     * @return void
+     */
+    private function activatePendingSignup(string $userLogin): void
+    {
+        if (!is_multisite()) {
+            return;
+        }
+
+        global $wpdb;
+
+        $key = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT activation_key FROM {$wpdb->signups} WHERE user_login = %s",
+                $userLogin
+            )
+        );
+
+        Users::activateSignup($key);
+    }
+
+    /**
+     * Resolves an existing WordPress user or creates one when permitted.
+     *
+     * @param string               $userLogin         WordPress user login.
+     * @param array<string, mixed> $profile           Profile and SAML metadata.
+     * @param string               $identityProviderId Identity-provider entity ID.
+     * @return \WP_User Authenticated WordPress user.
+     */
+    private function resolveWordPressUser(
+        string $userLogin,
+        array $profile,
+        string $identityProviderId
+    ): \WP_User {
+        $userData = get_user_by('login', $userLogin);
+
+        if ($userData) {
+            return $this->synchronizeExistingUser($userData, $profile, $identityProviderId);
+        }
+
+        if (!$this->registration) {
+            $this->authFailed(
+                sprintf(
+                    /* translators: %s: username. */
+                    __('The username "%s" is not registered on this website.', 'rrze-sso'),
+                    esc_html($userLogin)
+                )
+            );
+        }
+
+        return $this->createUser($userLogin, $profile, $identityProviderId);
+    }
+
+    /**
+     * Synchronizes profile and SAML metadata for an existing user.
+     *
+     * @param \WP_User            $userData           Existing WordPress user.
+     * @param array<string, mixed> $profile            Profile and SAML metadata.
+     * @param string               $identityProviderId Identity-provider entity ID.
+     * @return \WP_User Synchronized WordPress user.
+     */
+    private function synchronizeExistingUser(
+        \WP_User $userData,
+        array $profile,
+        string $identityProviderId
+    ): \WP_User {
+        $userId = (int) $userData->ID;
+
+        $this->updateNameFields($userData, $profile);
+        $this->updateSamlUserMeta($userId, $identityProviderId, $profile);
+
+        if ($this->registration && is_multisite() && !is_user_member_of_blog($userId, 1)) {
+            add_user_to_blog(1, $userId, 'subscriber');
+        }
+
+        return new \WP_User($userId);
+    }
+
+    /**
+     * Updates mutable WordPress name fields when SAML values have changed.
+     *
+     * @param \WP_User            $userData Existing WordPress user.
+     * @param array<string, mixed> $profile  Profile values.
+     * @return void
+     */
+    private function updateNameFields(\WP_User $userData, array $profile): void
+    {
+        $userId = (int) $userData->ID;
+
+        if ($profile['first_name'] && $profile['first_name'] != get_user_meta($userId, 'first_name', true)) {
+            update_user_meta($userId, 'first_name', $profile['first_name']);
+        }
+
+        if ($profile['last_name'] && $profile['last_name'] != get_user_meta($userId, 'last_name', true)) {
+            update_user_meta($userId, 'last_name', $profile['last_name']);
+        }
+
+        if ($profile['display_name'] && $profile['display_name'] != $userData->display_name) {
+            wp_update_user(
+                array(
+                    'ID' => $userId,
+                    'display_name' => $profile['display_name'],
+                )
+            );
+        }
+    }
+
+    /**
+     * Creates a WordPress user from the resolved SAML profile.
+     *
+     * @param string               $userLogin         WordPress user login.
+     * @param array<string, mixed> $profile           Profile and SAML metadata.
+     * @param string               $identityProviderId Identity-provider entity ID.
+     * @return \WP_User Newly created WordPress user.
+     */
+    private function createUser(
+        string $userLogin,
+        array $profile,
+        string $identityProviderId
+    ): \WP_User {
+        $isMultisite = is_multisite();
+
+        if ($isMultisite) {
+            switch_to_blog(1);
+        }
+
+        $userId = wp_insert_user(
+            array(
+                'user_pass' => wp_generate_password(12, false),
+                'user_login' => $userLogin,
+                'user_email' => $profile['user_email'],
+                'display_name' => $profile['display_name'],
+                'first_name' => $profile['first_name'],
+                'last_name' => $profile['last_name'],
+                'role' => 'subscriber',
+            )
+        );
+
+        if (is_wp_error($userId)) {
+            if ($isMultisite) {
+                restore_current_blog();
+            }
+
+            $this->authFailed(__('The user could not be added.', 'rrze-sso'));
+        }
+
+        $userId = (int) $userId;
+        $user = new \WP_User($userId);
+        $this->updateSamlUserMeta($userId, $identityProviderId, $profile);
+
+        if ($isMultisite) {
+            add_user_to_blog(1, $userId, 'subscriber');
+            restore_current_blog();
+
+            $currentBlogId = get_current_blog_id();
+            if (!is_user_member_of_blog($userId, $currentBlogId)) {
+                add_user_to_blog($currentBlogId, $userId, 'subscriber');
+            }
+        }
+
+        return $user;
+    }
+
+    /**
+     * Persists identity-provider and SAML profile metadata for a user.
+     *
+     * @param int                  $userId             WordPress user ID.
+     * @param string               $identityProviderId Identity-provider entity ID.
+     * @param array<string, mixed> $profile            SAML metadata values.
+     * @return void
+     */
+    private function updateSamlUserMeta(
+        int $userId,
+        string $identityProviderId,
+        array $profile
+    ): void {
+        update_user_meta($userId, 'saml_sp_idp', $identityProviderId);
+        update_user_meta($userId, 'organization_name', $profile['organization_name']);
+        update_user_meta($userId, 'edu_person_affiliation', $profile['edu_person_affiliation']);
+        update_user_meta($userId, 'edu_person_scoped_affiliation', $profile['edu_person_scoped_affiliation']);
+        update_user_meta($userId, 'edu_person_entitlement', $profile['edu_person_entitlement']);
+    }
+
+    /**
+     * Rejects Multisite users who cannot access the current dashboard.
+     *
+     * @param \WP_User $user Authenticated WordPress user.
+     * @return void
+     */
+    private function ensureDashboardAccess(\WP_User $user): void
+    {
+        if (!is_multisite()) {
+            return;
+        }
+
+        $blogs = get_blogs_of_user($user->ID);
+        if (!$this->hasDashboardAccess($user->ID, $blogs)) {
+            $this->accessDenied($blogs);
+        }
+    }
+
+    /**
+     * Determines whether a user can access the current site dashboard.
+     *
+     * @param int                $userId WordPress user ID.
+     * @param array<int, object> $blogs  Sites available to the user.
+     * @return bool Whether dashboard access is allowed.
+     */
+    private function hasDashboardAccess(int $userId, array $blogs): bool
     {
         if (is_super_admin($userId)) {
             return true;
         }
-        if (wp_list_filter($blogs, ['userblog_id' => get_current_blog_id()])) {
-            return true;
-        }
-        return false;
+
+        return (bool) wp_list_filter(
+            $blogs,
+            array('userblog_id' => get_current_blog_id())
+        );
     }
 
     /**
-     * Kills WordPress execution and displays an HTML page with an authentication error message
-     * 
-     * @param string $message
-     * @param boolean $authSimple
+     * Stops execution with an authentication error page.
+     *
+     * @param string $message        Authentication error message.
+     * @param bool   $showLogoutLink Whether to include the SSO logout link.
      * @return void
      */
-    private function authFailed($message, $authSimple = true)
+    private function authFailed(string $message, bool $showLogoutLink = true): void
     {
         $output = '';
 
@@ -373,7 +615,7 @@ class Authenticate
 
         $output .= $this->getContacts();
 
-        if ($authSimple) {
+        if ($showLogoutLink) {
             $output .= sprintf(
                 '<p><a href="%1$s">%2$s</a></p>',
                 wp_logout_url(),
@@ -385,12 +627,12 @@ class Authenticate
     }
 
     /**
-     * Kills WordPress execution and displays an HTML page with an access denied message
-     * 
-     * @param array $blogs
+     * Stops execution with a dashboard access-denied page.
+     *
+     * @param array<int, object> $blogs Sites available to the user.
      * @return void
      */
-    private function accessDenied($blogs)
+    private function accessDenied(array $blogs): void
     {
         $output = '<p>' . sprintf(
             /* translators: %s: name of the website. */
@@ -398,22 +640,7 @@ class Authenticate
             get_bloginfo('name')
         ) . '</p>';
 
-        if (!empty($blogs)) {
-            $output .= '<p>' . __("If you reached this screen by accident and meant to visit one of your own websites, here are some shortcuts to help you find your way.", 'rrze-sso') . '</p>';
-
-            $output .= '<h3>' . __("Your Websites", 'rrze-sso') . '</h3>';
-            $output .= '<table>';
-
-            foreach ($blogs as $blog) {
-                $output .= '<tr>';
-                $output .= "<td>{$blog->blogname}</td>";
-                $output .= '<td><a href="' . esc_url(get_admin_url($blog->userblog_id)) . '">' . __("Visit the Dashboard", 'rrze-sso') . '</a> | ' .
-                    '<a href="' . esc_url(get_home_url($blog->userblog_id)) . '">' . __("View the website", 'rrze-sso') . '</a></td>';
-                $output .= '</tr>';
-            }
-
-            $output .= '</table>';
-        }
+        $output .= $this->dashboardLinks($blogs);
 
         $output .= $this->getContacts();
 
@@ -427,19 +654,47 @@ class Authenticate
     }
 
     /**
-     * Get a list of website contact users (administrators)
-     * 
-     * @return string
+     * Builds shortcuts to dashboards available to the current user.
+     *
+     * @param array<int, object> $blogs Sites available to the user.
+     * @return string Dashboard shortcuts markup, or an empty string.
      */
-    private function getContacts()
+    private function dashboardLinks(array $blogs): string
+    {
+        if (!$blogs) {
+            return '';
+        }
+
+        $output = '<p>' . __('If you reached this screen by accident and meant to visit one of your own websites, here are some shortcuts to help you find your way.', 'rrze-sso') . '</p>';
+        $output .= '<h3>' . __('Your Websites', 'rrze-sso') . '</h3>';
+        $output .= '<table>';
+
+        foreach ($blogs as $blog) {
+            $output .= '<tr>';
+            $output .= "<td>{$blog->blogname}</td>";
+            $output .= '<td><a href="' . esc_url(get_admin_url($blog->userblog_id)) . '">' . __('Visit the Dashboard', 'rrze-sso') . '</a> | ' .
+                '<a href="' . esc_url(get_home_url($blog->userblog_id)) . '">' . __('View the website', 'rrze-sso') . '</a></td>';
+            $output .= '</tr>';
+        }
+
+        return $output . '</table>';
+    }
+
+    /**
+     * Builds a list of site administrators who can be contacted for help.
+     *
+     * @return string Contact list markup, or an empty string.
+     */
+    private function getContacts(): string
     {
         $args = array(
             'role'    => 'administrator',
             'orderby' => 'display_name',
-            'order'   => 'ASC'
+            'order'   => 'ASC',
         );
 
-        if (empty($users = get_users($args))) {
+        $users = get_users($args);
+        if (!$users) {
             return '';
         }
 
@@ -465,11 +720,11 @@ class Authenticate
     }
 
     /**
-     * Set the login URL
-     * 
-     * @param string $loginUrl
-     * @param string $redirect
-     * @return string The login URL.
+     * Replaces the WordPress login URL while retaining its redirect target.
+     *
+     * @param string $loginUrl Existing login URL.
+     * @param string $redirect Requested post-login redirect URL.
+     * @return string SSO-compatible login URL.
      */
     public function loginUrl($loginUrl, $redirect)
     {
@@ -477,27 +732,25 @@ class Authenticate
         if (!empty($redirect)) {
             $loginUrl = add_query_arg('redirect_to', urlencode($redirect), $loginUrl);
         }
+
         return $loginUrl;
     }
 
     /**
-     * Log the user out
-     * 
-     * @param int $userId
+     * Logs the current user out of SimpleSAMLphp and cleans its session.
+     *
+     * @param int $userId WordPress user ID supplied by the logout action.
      * @return void
      */
     public function logout($userId)
     {
-        // Log the user out. After logging out, the user will be redirected to the home page
         $this->authSimple->logout(site_url('', 'https'));
-
-        // Save the current session and clean any left overs that could interfere with the normal application behaviour        
         \SimpleSAML\Session::getSessionFromRequest()->cleanup();
     }
 
     /**
-     * Redirects to the home page
-     * 
+     * Redirects disabled sign-up requests to the HTTPS site home page.
+     *
      * @return void
      */
     public function redirectToSiteUrl()

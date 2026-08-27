@@ -70,43 +70,43 @@ class Main
             $userList->loaded();
         }
 
-        // Fires before the lost password form (die).
         add_action('lost_password', [$this, 'disableFunction']);
-        // Fires before a new password is retrieved (die).
         add_action('retrieve_password', [$this, 'disableFunction']);
-        // Fires before the user’s password is reset (die).
         add_action('password_reset', [$this, 'disableFunction']);
-        // Fires before the password reset procedure is validated (die).
         add_action('validate_password_reset', [$this, 'disableFunction']);
-
-        // Filters the display of the password fields (disable).
         add_filter('show_password_fields', '__return_false');
 
-        // Send a confirmation request email to a user 
-        // when they sign up for a new user account (disable).
+        // Filters whether to bypass the email notification for new user sign-up.
         add_filter('wpmu_signup_user_notification', '__return_false');
-        // Notify a user that their account activation 
-        // has been successful (disable).
+
+        // Notifies a user that their account activation has been successful.
         add_filter('wpmu_welcome_user_notification', '__return_false');
 
-        // Filters whether to show the Add Existing User form 
-        // on the Multisite Users screen (disable).
+        // Filters whether to show the Add Existing User form on the Multisite Users screen.
         add_filter('show_network_site_users_add_existing_form', '__return_false');
-        // Filters whether to show the Add New User form 
-        // on the Multisite Users screen (disable).
+
+        // Filters whether to show the Add New User form on the Multisite Users screen.
         add_filter('show_network_site_users_add_new_form', '__return_false');
 
-        // Custom user registration menu.
+        // Fires before the administration menu loads in the Network Admin.
+        // Rendering the Admin page via: Network Admin > Users > Add new
         add_action('network_admin_menu', [__NAMESPACE__ . '\NetworkUsersMenu', 'userNewPage']);
+
+        // Fires before the administration menu loads in the admin.
+        // Rendering the Admin page via: Dashboard > Useres > Add new on individual sites.
         add_action('admin_menu', [__NAMESPACE__ . '\UsersMenu', 'userNewPage']);
-        // Custom user registration functions.
+
+        // Detect and Distribute User Actions to designated Handlers via the User Class.
         add_action('admin_init', [__NAMESPACE__ . '\Users', 'userNewAction']);
 
         add_filter('is_rrze_sso_active', '__return_true');
-        // Backward compatibility
+        // Required for Backwards Compatibility
         add_filter('is_fau_websso_active', '__return_true');
     }
 
+    /**
+     * Redirects users from the registration page onto the login page.
+     */
     public function registerRedirect()
     {
         if ($this->isLoginPage() && isset($_REQUEST['action']) && $_REQUEST['action'] == 'register') {
@@ -115,6 +115,7 @@ class Main
         }
     }
 
+    //Todo: What?
     protected function userNewPageRedirect()
     {
         if (is_admin() && $this->isUserNewPage()) {
@@ -162,7 +163,7 @@ class Main
         );
 
         wp_enqueue_script(
-            'rrze-sso-setings',
+            'rrze-sso-settings',
             plugins_url('build/admin.js', plugin()->getBasename()),
             ['jquery'],
             plugin()->getVersion()

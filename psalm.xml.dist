@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psalm xmlns="https://getpsalm.org/schema/config"
+       errorLevel="8"
+       ensureOverrideAttribute="false"
+       findUnusedCode="false"
+       phpVersion="8.2"
+       resolveFromConfigFile="true">
+    <projectFiles>
+        <directory name="includes" />
+        <directory name="tests" />
+        <file name="rrze-sso.php" />
+        <ignoreFiles>
+            <directory name="tests/stubs" />
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+    <plugins>
+        <pluginClass class="PsalmWordPress\Plugin" />
+    </plugins>
+    <stubs>
+        <file name="tests/stubs/plugin-functions.php" />
+        <file name="tests/stubs/simplesamlphp.php" />
+    </stubs>
+    <issueHandlers>
+        <PluginIssue name="HookInvalidArgs" errorLevel="suppress" />
+        <PluginIssue name="HookNotFound" errorLevel="suppress" />
+        <MissingFile>
+            <errorLevel type="suppress">
+                <file name="includes/Plugin.php" />
+            </errorLevel>
+        </MissingFile>
+    </issueHandlers>
+</psalm>

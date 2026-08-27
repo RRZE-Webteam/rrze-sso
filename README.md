@@ -5,6 +5,24 @@ Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
 Hinweise zum realistischen lokalen Testbetrieb mit getrenntem IdP und SP stehen
 unter [docs/local-saml-testing.md](docs/local-saml-testing.md).
 
+## Entwicklung und Tests
+
+Die Entwicklungsabhängigkeiten werden mit Composer installiert:
+
+```bash
+composer install
+```
+
+Die Unit-Tests verwenden PHPUnit und Brain Monkey, um WordPress-Funktionen und
+-Hooks isoliert zu testen. Psalm verwendet WordPress- und SimpleSAMLphp-Stubs
+und analysiert den Code gegen PHP 8.2.
+
+```bash
+composer test       # PHPUnit ausführen
+composer analyse    # Psalm ausführen
+composer check      # Beide Prüfungen ausführen
+```
+
 ## WP-Einstellungsmenü
 
 Einstellungen › SSO

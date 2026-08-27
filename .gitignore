@@ -10,6 +10,11 @@
 node_modules/
 package-lock.json
 yarn.lock
+### Composer ###
+/vendor/
+### Testing ###
+/.phpunit.cache/
+/.psalm/
 ### WordPress ###
 *.pot
 ### Tmp ###

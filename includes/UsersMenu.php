@@ -4,8 +4,22 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Customizes the site administration user menu for SSO user management.
+ *
+ * Replaces the WordPress add-user screen with an SSO-aware page and provides
+ * contextual help for site administrators.
+ */
 class UsersMenu
 {
+    /**
+     * Registers the custom add-user submenu page in the site administration.
+     *
+     * Replaces the WordPress core submenu entry while preserving its expected
+     * position in the Users menu.
+     *
+     * @return void
+     */
     public static function userNewPage()
     {
         global $submenu;
@@ -18,7 +32,7 @@ class UsersMenu
             $capability = 'create_users';
         }
 
-        $submenuPage = add_submenu_page(
+        $submenu_page = add_submenu_page(
             'users.php',
             __('Add New', 'rrze-sso'),
             __('Add New', 'rrze-sso'),
@@ -27,7 +41,7 @@ class UsersMenu
             [__CLASS__, 'userNew']
         );
 
-        add_action(sprintf('load-%s', $submenuPage), [__CLASS__, 'userNewHelp']);
+        add_action(sprintf('load-%s', $submenu_page), [__CLASS__, 'userNewHelp']);
 
         if (isset($submenu['users.php'])) {
             foreach ($submenu['users.php'] as $key => $value) {
@@ -41,6 +55,11 @@ class UsersMenu
         }
     }
 
+    /**
+     * Adds contextual help to the custom site administration add-user screen.
+     *
+     * @return void
+     */
     public static function userNewHelp()
     {
         $help = '<p>' . __('To add a new user to your site, fill in the form on this screen and click the Add New User button at the bottom.') . '</p>';
@@ -85,16 +104,19 @@ class UsersMenu
         );
     }
 
+    /**
+     * Prepares and renders the SSO-aware site administration add-user page.
+     *
+     * @return void
+     */
     public static function userNew()
     {
-        // Used in the HTML title tag.
-        $title = __('Add New User');
-        $parent_file = 'users.php';
-
-        $do_both = false;
-        if (is_multisite() && current_user_can('promote_users') && current_user_can('create_users')) {
-            $do_both = true;
-        }
+        $is_multisite = is_multisite();
+        $can_create_users = current_user_can('create_users');
+        $can_promote_users = current_user_can('promote_users');
+        $can_manage_network_users = current_user_can('manage_network_users');
+        $is_super_admin = is_super_admin();
+        $do_both = $is_multisite && $can_promote_users && $can_create_users;
 
         wp_enqueue_script('wp-ajax-response');
         wp_enqueue_script('user-profile');
@@ -107,17 +129,19 @@ class UsersMenu
          * @param bool $enable Whether to enable auto-complete for non-super admins. Default false.
          */
         if (
-            is_multisite() && current_user_can('promote_users') && !wp_is_large_network('users')
-            && (current_user_can('manage_network_users') || apply_filters('autocomplete_users_for_site_admins', false))
+            $is_multisite && $can_promote_users && !wp_is_large_network('users')
+            && ($can_manage_network_users || apply_filters('autocomplete_users_for_site_admins', false))
         ) {
             wp_enqueue_script('user-suggest');
         }
 
+        $messages = array();
+        $add_user_errors = '';
+
         if (isset($_GET['update'])) {
-            $messages = array();
-            if (is_multisite()) {
+            if ($is_multisite) {
                 $edit_link = '';
-                if ((isset($_GET['user_id']))) {
+                if (isset($_GET['user_id'])) {
                     $user_id_new = absint($_GET['user_id']);
                     if ($user_id_new) {
                         $edit_link = esc_url(add_query_arg('wp_http_referer', urlencode(wp_unslash($_SERVER['REQUEST_URI'])), get_edit_user_link($user_id_new)));
@@ -161,178 +185,29 @@ class UsersMenu
                     $messages[] = __('User added.');
                 }
             }
-        } ?>
-        <div class="wrap">
-            <h2 id="add-new-user">
-                <?php
-                if (current_user_can('create_users')) {
-                    _e("Add New User", 'rrze-sso');
-                } elseif (current_user_can('promote_users')) {
-                    _e("Add Existing User", 'rrze-sso');
-                }
-                ?>
-            </h2>
+        }
 
-            <?php if (isset($errors) && is_wp_error($errors)) : ?>
-                <div class="error">
-                    <ul>
-                        <?php
-                        foreach ($errors->get_error_messages() as $err) {
-                            echo "<li>$err</li>\n";
-                        } ?>
-                    </ul>
-                </div>
-            <?php endif;
+        if (isset($_GET['error'])) {
+            $add_user_errors = @unserialize(base64_decode($_GET['error']));
+        }
 
-            if (!empty($messages)) {
-                foreach ($messages as $msg) {
-                    echo '<div id="message" class="updated"><p>' . $msg . '</p></div>';
-                }
-            }
+        $creating = isset($_POST['createuser']);
+        $new_user_idp = $creating && isset($_POST['user_idp']) ? wp_unslash($_POST['user_idp']) : '';
+        $new_user_login = $creating && isset($_POST['user_login']) ? wp_unslash($_POST['user_login']) : '';
+        $new_user_email = $creating && isset($_POST['email']) ? wp_unslash($_POST['email']) : '';
+        $new_user_role = $creating && isset($_POST['role']) ? wp_unslash($_POST['role']) : '';
+        $new_user_send_notification = !$creating || isset($_POST['send_user_notification']);
+        $new_user_ignore_pass = $creating && isset($_POST['noconfirmation']) ? wp_unslash($_POST['noconfirmation']) : '';
 
-            $add_user_errors = '';
-            if (isset($_GET['error'])) {
-                $add_user_errors = @unserialize(base64_decode($_GET['error']));
-            }
+        if (!$new_user_role) {
+            $new_user_role = get_option('default_role');
+        }
 
-            if (is_wp_error($add_user_errors)) : ?>
+        $identity_providers = $can_create_users ? simpleSAML()->getIdentityProviders() : array();
+        $form_action = admin_url('users.php?page=usernew');
+        $existing_user_label = $can_manage_network_users ? __('Email or Username') : __('Email');
+        $existing_user_input_type = $can_manage_network_users ? 'text' : 'email';
 
-                <div class="error">
-                    <?php
-                    foreach ($add_user_errors->get_error_messages() as $message) {
-                        echo "<p>$message</p>";
-                    } ?>
-                </div>
-            <?php endif; ?>
-            <div id="ajax-response"></div>
-
-            <?php
-            if (is_multisite() && current_user_can('promote_users')) {
-                if ($do_both) {
-                    echo '<h2 id="add-existing-user">' . __('Add Existing User') . '</h2>';
-                }
-                if (!current_user_can('manage_network_users')) {
-                    echo '<p>' . __('Enter the email address of an existing user on this network to invite them to this site. That person will be sent an email asking them to confirm the invite.') . '</p>';
-                    $label = __('Email');
-                    $type  = 'email';
-                } else {
-                    echo '<p>' . __('Enter the email address or username of an existing user on this network to invite them to this site. That person will be sent an email asking them to confirm the invite.') . '</p>';
-                    $label = __('Email or Username');
-                    $type  = 'text';
-                } ?>
-                <form action="<?php echo esc_url(admin_url('users.php?page=usernew')); ?>" method="post" name="adduser" id="adduser" class="validate" novalidate="novalidate">
-                    <input type="hidden" name="action" value="_admin_add-user" />
-                    <?php wp_nonce_field('add-user', '_wpnonce_add-user') ?>
-
-                    <table class="form-table">
-                        <tr class="form-field form-required">
-                            <th scope="row"><label for="adduser-email"><?php echo $label; ?></label></th>
-                            <td><input name="email" type="<?php echo $type; ?>" id="adduser-email" class="wp-suggest-user" value="" /></td>
-                        </tr>
-                        <tr class="form-field">
-                            <th scope="row"><label for="adduser-role"><?php _e('Role'); ?></label></th>
-                            <td><select name="role" id="adduser-role">
-                                    <?php wp_dropdown_roles(get_option('default_role')); ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <?php if (is_super_admin()) {
-                        ?>
-                            <tr>
-                                <th scope="row"><label for="adduser-noconfirmation"><?php _e('Skip Confirmation Email') ?></label></th>
-                                <td><label for="adduser-noconfirmation"><input type="checkbox" name="noconfirmation" id="adduser-noconfirmation" value="1" /> <?php _e('Add the user without sending an email that requires their confirmation.'); ?></label></td>
-                            </tr>
-                        <?php
-                        } ?>
-                    </table>
-                    <?php submit_button(__('Add Existing User'), 'primary', 'adduser', true, array('id' => 'addusersub')); ?>
-                </form>
-            <?php
-            } // is_multisite()
-
-            if (current_user_can('create_users')) {
-                if ($do_both) {
-                    echo '<h3 id="create-new-user">' . __('Add New User') . '</h3>';
-                } ?>
-                <p><?php _e('Create a brand new user and add them to this site.'); ?></p>
-                <form action="<?php echo esc_url(admin_url('users.php?page=usernew')); ?>" method="post" name="createuser" id="createuser" class="validate" novalidate="novalidate">
-                    <input type="hidden" name="action" value="_admin_create-user" />
-                    <?php wp_nonce_field('create-user', '_wpnonce_create-user'); ?>
-                    <?php
-                    $creating = isset($_POST['createuser']);
-                    $new_user_idp = $creating && isset($_POST['user_idp']) ? wp_unslash($_POST['user_idp']) : '';
-                    $new_user_login = $creating && isset($_POST['user_login']) ? wp_unslash($_POST['user_login']) : '';
-                    $new_user_email = $creating && isset($_POST['email']) ? wp_unslash($_POST['email']) : '';
-                    $new_user_role = $creating && isset($_POST['role']) ? wp_unslash($_POST['role']) : '';
-                    $new_user_send_notification = $creating && !isset($_POST['send_user_notification']) ? false : true;
-                    $new_user_ignore_pass = $creating && isset($_POST['noconfirmation']) ? wp_unslash($_POST['noconfirmation']) : '';
-                    ?>
-                    <table class="form-table">
-                        <tr class="form-field form-required">
-                            <th scope="row"><label for="user_idp"><?php _e('Identity Provider', 'rrze-sso'); ?> <span class="description"><?php _e("(required)"); ?></span></label></th>
-                            <td><?php
-                                echo '<select id="user_idp" name="user_idp">';
-                                echo '<option  value="">&mdash; ' . __('Select an Identity Provider', 'rrze-sso') . ' &mdash;</option>';
-                                foreach (simpleSAML()->getIdentityProviders() as $key => $value) {
-                                    $key = sanitize_title($key);
-                                    echo '<option  value="' . $key . '" ' . selected($new_user_idp, $key, false) . '>' . $value . '</option>';
-                                }
-                                echo '</select>';
-                                ?></td>
-                        </tr>
-                        <tr class="form-field form-required">
-                            <th scope="row"><label for="user_login"><?php _e('User Identifier', 'rrze-sso'); ?> <span class="description"><?php _e('(required)'); ?></span></label></th>
-                            <td><input name="user_login" type="text" id="user_login" value="<?php echo esc_attr($new_user_login); ?>" aria-required="true" /></td>
-                        </tr>
-                        <tr class="form-field form-required">
-                            <th scope="row"><label for="email"><?php _e('Email'); ?> <span class="description"><?php _e('(required)'); ?></span></label></th>
-                            <td><input name="email" type="email" id="email" value="<?php echo esc_attr($new_user_email); ?>" /></td>
-                        </tr>
-                        <?php if (!is_multisite()): ?>
-                        <tr>
-                            <th scope="row"><?php _e('Send User Notification'); ?></th>
-                            <td>
-                                <input type="checkbox" name="send_user_notification" id="send_user_notification" value="1" <?php checked($new_user_send_notification); ?> />
-                                <label for="send_user_notification"><?php _e('Send the new user an email about their account.'); ?></label>
-                            </td>
-                        </tr>
-                        <?php endif; ?>
-                        <?php if (current_user_can('promote_users')) { ?>
-                            <tr class="form-field">
-                                <th scope="row"><label for="role"><?php _e("Role"); ?></label></th>
-                                <td><select name="role" id="role">
-                                        <?php
-                                        if (!$new_user_role) {
-                                            $new_user_role = !empty($current_role) ? $current_role : get_option('default_role');
-                                        }
-                                        wp_dropdown_roles($new_user_role); ?>
-                                    </select>
-                                </td>
-                            </tr>
-                        <?php } // current_user_can('promote_users') 
-                        ?>
-                        <?php if (is_multisite() && is_super_admin()) {
-                        ?>
-                            <tr>
-                                <th scope="row"><label for="noconfirmation"><?php _e('Skip Confirmation Email') ?></label></th>
-                                <td>
-                                    <label for="noconfirmation">
-                                        <input type="checkbox" name="noconfirmation" id="noconfirmation" value="1" <?php checked($new_user_ignore_pass); ?> />
-                                        <?php _e('Add the user without sending an email that requires their confirmation.'); ?>
-                                    </label>
-                                </td>
-                            </tr>
-                        <?php
-                        } ?>
-                    </table>
-
-                    <?php submit_button(__('Add New User'), 'primary', 'createuser', true, array('id' => 'createusersub')); ?>
-
-                </form>
-            <?php
-            } // current_user_can('create_users')
-            ?>
-        </div>
-<?php
+        require dirname(__DIR__) . '/templates/users/user-new.php';
     }
 }

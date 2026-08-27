@@ -4,8 +4,22 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Customizes the Network Admin user menu for SSO user creation.
+ *
+ * Replaces the WordPress add-user screen with an SSO-aware form and provides
+ * contextual help for network administrators.
+ */
 class NetworkUsersMenu
 {
+    /**
+     * Registers the custom add-user submenu page in the Network Admin.
+     *
+     * Replaces the WordPress core submenu entry while preserving its expected
+     * position in the Users menu.
+     *
+     * @return void
+     */
     public static function userNewPage()
     {
         global $submenu;
@@ -35,6 +49,11 @@ class NetworkUsersMenu
         }
     }
 
+    /**
+     * Adds contextual help to the custom Network Admin add-user screen.
+     *
+     * @return void
+     */
     public static function userNewHelp()
     {
         get_current_screen()->add_help_tab(
@@ -54,6 +73,11 @@ class NetworkUsersMenu
         );
     }
 
+    /**
+     * Prepares and renders the SSO-aware Network Admin add-user form.
+     *
+     * @return void
+     */
     public static function userNew()
     {
         $messages = array();

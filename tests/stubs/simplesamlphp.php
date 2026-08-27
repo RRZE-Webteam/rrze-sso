@@ -3,7 +3,7 @@
 namespace SimpleSAML\Auth;
 
 /**
- * Static-analysis stub for the externally installed SimpleSAMLphp client.
+ * Test and static-analysis stub for the externally installed SimpleSAMLphp client.
  */
 class Simple
 {
@@ -43,17 +43,46 @@ class Simple
 namespace SimpleSAML;
 
 /**
- * Static-analysis stub for a SimpleSAMLphp session.
+ * Test and static-analysis stub for a SimpleSAMLphp session.
  */
 class Session
 {
+    /**
+     * Shared request session used by unit tests.
+     *
+     * @var self|null
+     */
+    private static $session;
+
+    /**
+     * Number of times the session has been cleaned.
+     *
+     * @var int
+     */
+    public $cleanupCalls = 0;
+
     public static function getSessionFromRequest(): self
     {
-        return new self();
+        if (!self::$session) {
+            self::$session = new self();
+        }
+
+        return self::$session;
+    }
+
+    /**
+     * Replaces the shared session between unit tests.
+     *
+     * @return void
+     */
+    public static function reset(): void
+    {
+        self::$session = new self();
     }
 
     public function cleanup(): void
     {
+        $this->cleanupCalls++;
     }
 }
 

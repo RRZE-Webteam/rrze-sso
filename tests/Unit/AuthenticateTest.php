@@ -1,0 +1,406 @@
+<?php
+
+namespace RRZE\SSO\Tests\Unit;
+
+use Brain\Monkey\Filters;
+use Brain\Monkey\Functions;
+use Mockery;
+use PHPUnit\Framework\Attributes\CoversClass;
+use RRZE\SSO\Authenticate;
+use RRZE\SSO\Plugin;
+use RRZE\SSO\SimpleSAML as SimpleSamlService;
+use RRZE\SSO\Tests\TestCase;
+use RuntimeException;
+use SimpleSAML\Auth\Simple as AuthClient;
+use SimpleSAML\Session;
+use WP_Error;
+use WP_User;
+
+/**
+ * Tests the WordPress-facing authentication workflow in isolation.
+ */
+#[CoversClass(Authenticate::class)]
+class AuthenticateTest extends TestCase
+{
+    /**
+     * Plugin options returned to the authenticator.
+     *
+     * @var array<string, mixed>
+     */
+    private $options = array();
+
+    /**
+     * User metadata written during a test.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private $updatedMeta = array();
+
+    /**
+     * WordPress user rows updated during a test.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private $updatedUsers = array();
+
+    /**
+     * Provides the WordPress behavior shared by the authentication tests.
+     *
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->options = array(
+            'domain_scope' => array('idp-key' => 'example.org'),
+        );
+        $this->updatedMeta = array();
+        $this->updatedUsers = array();
+        Session::reset();
+
+        Functions\when('is_multisite')->justReturn(false);
+        Functions\when('get_option')->alias(
+            function (string $name) {
+                if ('rrze_sso' === $name) {
+                    return $this->options;
+                }
+
+                return false;
+            }
+        );
+        Functions\when('wp_parse_args')->alias(
+            static fn($args, $defaults): array => array_merge((array) $defaults, (array) $args)
+        );
+        Functions\when('__')->returnArg();
+        Functions\when('sanitize_title')->alias(
+            static fn(string $value): string => strtolower(trim($value))
+        );
+        Functions\when('sanitize_text_field')->alias(
+            static fn(string $value): string => trim(strip_tags($value))
+        );
+        Functions\when('wp_strip_all_tags')->alias(
+            static fn(string $value): string => strip_tags($value)
+        );
+        Functions\when('remove_accents')->returnArg();
+        Functions\when('is_email')->alias(
+            static fn(string $email) => filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : false
+        );
+        Functions\when('is_wp_error')->alias(
+            static fn($value): bool => $value instanceof WP_Error
+        );
+        Functions\when('update_user_meta')->alias(
+            function (int $userId, string $key, $value): bool {
+                $this->updatedMeta[$userId][$key] = $value;
+
+                return true;
+            }
+        );
+        Functions\when('wp_update_user')->alias(
+            function (array $data): int {
+                $this->updatedUsers[] = $data;
+
+                return (int) $data['ID'];
+            }
+        );
+    }
+
+    /**
+     * Ensures an authentication result produced earlier in the filter chain is preserved.
+     *
+     * @return void
+     */
+    public function testAuthenticateReturnsAnExistingAuthenticationResult(): void
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $client->shouldNotReceive('requireAuth');
+        $authenticator = new Authenticate($client);
+        $authenticatedUser = new WP_User(7);
+
+        $result = $authenticator->authenticate($authenticatedUser, 'ignored');
+
+        self::assertSame($authenticatedUser, $result);
+        self::assertSame(0, Session::getSessionFromRequest()->cleanupCalls);
+    }
+
+    /**
+     * Ensures SAML values synchronize an existing WordPress account.
+     *
+     * @return void
+     */
+    public function testAuthenticateSynchronizesAnExistingUser(): void
+    {
+        $rawAttributes = array(
+            'urn:oid:uid' => array('alice'),
+            'mail' => array('ALICE@example.org'),
+            'displayName' => array('Alice Example'),
+            'givenName' => array('Alice'),
+            'sn' => array('Example'),
+            'o' => array('Example University'),
+            'eduPersonAffiliation' => array('member', 'staff'),
+            'eduPersonScopedAffiliation' => array('staff@example.org'),
+            'eduPersonEntitlement' => array('urn:example:entitlement'),
+        );
+        $authenticator = $this->authenticator($rawAttributes);
+        $user = new WP_User(7);
+        $user->display_name = 'Old Name';
+
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('login', 'alice@example.org')
+            ->andReturn($user);
+        Functions\when('get_user_meta')->alias(
+            static fn(int $userId, string $key): string => array(
+                'first_name' => 'Old First Name',
+                'last_name' => 'Old Last Name',
+            )[$key] ?? ''
+        );
+
+        $result = $authenticator->authenticate(null, 'submitted-login');
+
+        self::assertSame(7, $result->ID);
+        self::assertSame('Alice', $this->updatedMeta[7]['first_name']);
+        self::assertSame('Example', $this->updatedMeta[7]['last_name']);
+        self::assertSame('idp-key', $this->updatedMeta[7]['saml_sp_idp']);
+        self::assertSame('Example University', $this->updatedMeta[7]['organization_name']);
+        self::assertSame(array('member', 'staff'), $this->updatedMeta[7]['edu_person_affiliation']);
+        self::assertSame($rawAttributes, $this->updatedMeta[7]['sso_attributes']);
+        self::assertSame(
+            array(array('ID' => 7, 'display_name' => 'Alice Example')),
+            $this->updatedUsers
+        );
+        self::assertSame(1, Session::getSessionFromRequest()->cleanupCalls);
+    }
+
+    /**
+     * Ensures registration builds a WordPress user from SAML attributes.
+     *
+     * @return void
+     */
+    public function testAuthenticateCreatesAUserWhenRegistrationIsEnabled(): void
+    {
+        $rawAttributes = array(
+            'subject-id' => array('new.user@identity.example'),
+            'displayName' => array('New User'),
+            'givenName' => array('New'),
+            'sn' => array('User'),
+        );
+        $authenticator = $this->authenticator($rawAttributes);
+        $authenticator->setRegistration(true);
+        $insertedUser = array();
+
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('login', 'new.user@example.org')
+            ->andReturn(false);
+        Functions\when('wp_generate_password')->justReturn('generated-password');
+        Functions\when('wp_insert_user')->alias(
+            function (array $data) use (&$insertedUser): int {
+                $insertedUser = $data;
+
+                return 11;
+            }
+        );
+
+        $result = $authenticator->authenticate(null, '');
+
+        self::assertSame(11, $result->ID);
+        self::assertSame('generated-password', $insertedUser['user_pass']);
+        self::assertSame('new.user@example.org', $insertedUser['user_login']);
+        self::assertMatchesRegularExpression(
+            '/^dummy\.[a-f0-9]{8}@rrze\.sso$/',
+            $insertedUser['user_email']
+        );
+        self::assertSame('New User', $insertedUser['display_name']);
+        self::assertSame('subscriber', $insertedUser['role']);
+        self::assertSame('Example Identity Provider', $this->updatedMeta[11]['organization_name']);
+        self::assertSame($rawAttributes, $this->updatedMeta[11]['sso_attributes']);
+    }
+
+    /**
+     * Ensures an unknown user is denied when automatic registration is disabled.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsAnUnknownUserWhenRegistrationIsDisabled(): void
+    {
+        $authenticator = $this->authenticator(
+            array(
+                'uid' => array('unknown'),
+                'mail' => array('unknown@example.org'),
+            )
+        );
+
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('login', 'unknown@example.org')
+            ->andReturn(false);
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('unknown@example.org');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
+     * Ensures the current and legacy registration filters remain supported.
+     *
+     * @return void
+     */
+    public function testLoadedRetainsBothRegistrationFilters(): void
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $authenticator = new TestableAuthenticate($client);
+
+        Filters\expectApplied('rrze_sso_registration')
+            ->once()
+            ->with(false)
+            ->andReturn(true);
+        Filters\expectApplied('fau_websso_registration')
+            ->once()
+            ->with(true)
+            ->andReturn(true);
+
+        $authenticator->loaded();
+
+        self::assertTrue($authenticator->registrationEnabled());
+    }
+
+    /**
+     * Ensures login redirects are retained by the generated SSO login URL.
+     *
+     * @return void
+     */
+    public function testLoginUrlRetainsTheRedirectTarget(): void
+    {
+        $authenticator = new Authenticate(Mockery::mock(AuthClient::class));
+        $redirect = 'https://example.org/private/?page=1';
+
+        Functions\expect('site_url')
+            ->once()
+            ->with('wp-login.php', 'login')
+            ->andReturn('https://example.org/wp-login.php');
+        Functions\expect('add_query_arg')
+            ->once()
+            ->with(
+                'redirect_to',
+                urlencode($redirect),
+                'https://example.org/wp-login.php'
+            )
+            ->andReturn('https://example.org/wp-login.php?redirect_to=encoded');
+
+        self::assertSame(
+            'https://example.org/wp-login.php?redirect_to=encoded',
+            $authenticator->loginUrl('https://old.example/login', $redirect)
+        );
+    }
+
+    /**
+     * Ensures WordPress logout also terminates and cleans the SAML session.
+     *
+     * @return void
+     */
+    public function testLogoutTerminatesTheSamlSession(): void
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $client->shouldReceive('logout')
+            ->once()
+            ->with('https://example.org');
+        $authenticator = new Authenticate($client);
+
+        Functions\expect('site_url')
+            ->once()
+            ->with('', 'https')
+            ->andReturn('https://example.org');
+
+        $authenticator->logout(7);
+
+        self::assertSame(1, Session::getSessionFromRequest()->cleanupCalls);
+    }
+
+    /**
+     * Creates an authenticator backed by a successful SAML response.
+     *
+     * @param array<string, mixed> $attributes SAML attributes to return.
+     * @return TestableAuthenticate Configured authenticator.
+     */
+    private function authenticator(array $attributes): TestableAuthenticate
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $client->shouldReceive('requireAuth')->once();
+        $client->shouldReceive('getAuthData')
+            ->once()
+            ->with('saml:sp:IdP')
+            ->andReturn('idp-key');
+        $client->shouldReceive('getAttributes')
+            ->once()
+            ->andReturn($attributes);
+
+        $plugin = Mockery::mock(Plugin::class);
+        $plugin->shouldReceive('getBaseName')
+            ->once()
+            ->andReturn('rrze-sso/rrze-sso.php');
+        $simpleSaml = Mockery::mock(SimpleSamlService::class);
+        $simpleSaml->shouldReceive('getIdentityProviders')
+            ->once()
+            ->andReturn(array('idp-key' => 'Example Identity Provider'));
+
+        Functions\when('RRZE\SSO\plugin')->justReturn($plugin);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($simpleSaml);
+
+        return new TestableAuthenticate($client);
+    }
+
+    /**
+     * Makes the authentication error page observable without stopping PHPUnit.
+     *
+     * @return void
+     */
+    private function stubAuthenticationFailurePage(): void
+    {
+        Functions\when('esc_html')->returnArg();
+        Functions\when('get_bloginfo')->justReturn('Example Website');
+        Functions\when('get_users')->justReturn(array());
+        Functions\when('wp_logout_url')->justReturn('https://example.org/logout');
+        Functions\when('wp_die')->alias(
+            static function ($message): void {
+                throw new AuthenticationTerminated((string) $message);
+            }
+        );
+    }
+}
+
+/**
+ * Exposes mutable registration state without changing the production API.
+ */
+class TestableAuthenticate extends Authenticate
+{
+    /**
+     * Enables or disables user registration for a test.
+     *
+     * @param bool $registration Whether registration is enabled.
+     * @return void
+     */
+    public function setRegistration(bool $registration): void
+    {
+        $this->registration = $registration;
+    }
+
+    /**
+     * Reports registration state after hook registration.
+     *
+     * @return bool Whether registration is enabled.
+     */
+    public function registrationEnabled(): bool
+    {
+        return $this->registration;
+    }
+}
+
+/**
+ * Exception used to replace WordPress's terminating wp_die() call.
+ */
+class AuthenticationTerminated extends RuntimeException
+{
+}

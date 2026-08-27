@@ -2,6 +2,9 @@
 
 Single-Sign-On (SSO) SAML-Integrations-Plugin für WordPress.
 
+Hinweise zum realistischen lokalen Testbetrieb mit getrenntem IdP und SP stehen
+unter [docs/local-saml-testing.md](docs/local-saml-testing.md).
+
 ## WP-Einstellungsmenü
 
 Einstellungen › SSO

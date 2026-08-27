@@ -4,40 +4,45 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Registers, renders, and validates the plugin settings.
+ *
+ * Supports both single-site and multisite installations. In multisite, the
+ * settings are stored as network options and submitted through the Network
+ * Admin settings page.
+ */
 class Settings
 {
     /**
-     * Option name.
-     * 
+     * Name used to store the plugin options.
+     *
      * @var string
      */
     protected $optionName;
 
     /**
-     * Options object.
-     * 
-     * @var object
+     * Current plugin options.
+     *
+     * @var \stdClass
      */
     protected $options;
 
     /**
-     * Option group (menu page slug).
-     * 
+     * Settings API option group and admin page slug.
+     *
      * @var string
      */
     protected $optionGroup;
 
     /**
-     * Identity providers list.
-     * 
-     * @var array
+     * Available identity providers, keyed by provider identifier.
+     *
+     * @var array<string, string>
      */
     protected $identityProviders;
 
     /**
-     * Class constructor.
-     * 
-     * @return void
+     * Initializes the settings identifiers, values, and identity providers.
      */
     public function __construct()
     {
@@ -49,8 +54,8 @@ class Settings
     }
 
     /**
-     * Load after all plugins are loaded.
-     * 
+     * Registers the hooks needed for the current WordPress installation type.
+     *
      * @return void
      */
     public function loaded()
@@ -66,8 +71,8 @@ class Settings
     }
 
     /**
-     * Network admin menu.
-     * 
+     * Adds the SSO settings page to the Network Admin settings menu.
+     *
      * @return void
      */
     public function networkAdminMenu()
@@ -83,8 +88,8 @@ class Settings
     }
 
     /**
-     * Add settings page.
-     * 
+     * Adds the SSO settings page to the single-site settings menu.
+     *
      * @return void
      */
     public function adminMenu()
@@ -99,46 +104,36 @@ class Settings
     }
 
     /**
-     * Network admin menu.
-     * 
+     * Prepares and renders the Network Admin settings page.
+     *
      * @return void
      */
     public function networkOptionsPage()
     {
-?>
-        <div class="wrap">
-            <h1><?php echo esc_html(__('SSO', 'rrze-sso')); ?></h1>
-            <form method="post">
-                <?php do_settings_sections($this->optionGroup); ?>
-                <?php settings_fields($this->optionGroup); ?>
-                <?php submit_button(); ?>
-            </form>
-        </div>
-    <?php
+        $page_title = __('SSO', 'rrze-sso');
+        $form_action = '';
+        $option_group = $this->optionGroup;
+
+        require dirname(__DIR__) . '/templates/settings/options.php';
     }
 
     /**
-     * Admin menu.
-     * 
+     * Prepares and renders the single-site settings page.
+     *
      * @return void
      */
     public function optionsPage()
     {
-    ?>
-        <div class="wrap">
-            <h1><?php echo esc_html(__("SSO Settings", 'rrze-sso')); ?></h1>
-            <form method="post" action="options.php">
-                <?php do_settings_sections($this->optionGroup); ?>
-                <?php settings_fields($this->optionGroup); ?>
-                <?php submit_button(); ?>
-            </form>
-        </div>
-<?php
+        $page_title = __('SSO Settings', 'rrze-sso');
+        $form_action = 'options.php';
+        $option_group = $this->optionGroup;
+
+        require dirname(__DIR__) . '/templates/settings/options.php';
     }
 
     /**
-     * Admin script is being initialized.
-     * 
+     * Registers the settings, sections, and fields with the Settings API.
+     *
      * @return void
      */
     public function adminInit()
@@ -219,8 +214,8 @@ class Settings
     }
 
     /**
-     * SSO settings section.
-     * 
+     * Renders the introductory content for the general SSO section.
+     *
      * @return void
      */
     public function sso_settings_section()
@@ -231,8 +226,8 @@ class Settings
     }
 
     /**
-     * SSO field.
-     * 
+     * Renders the control used to enable or disable forced SSO.
+     *
      * @return void
      */
     public function ssoField()
@@ -245,8 +240,8 @@ class Settings
     }
 
     /**
-     * SAML settings section.
-     * 
+     * Renders the introductory content for the SimpleSAMLphp section.
+     *
      * @return void
      */
     public function simpleSAMLSettingsSection()
@@ -256,8 +251,8 @@ class Settings
     }
 
     /**
-     * SAML autoload path field.
-     * 
+     * Renders the SimpleSAMLphp autoload path field.
+     *
      * @return void
      */
     public function simpleSAMLIncludeField()
@@ -267,8 +262,8 @@ class Settings
     }
 
     /**
-     * Authentication source field.
-     * 
+     * Renders the SimpleSAMLphp authentication source field.
+     *
      * @return void
      */
     public function simpleSAMLAuthSourceField()
@@ -277,8 +272,8 @@ class Settings
     }
 
     /**
-     * Domain scope field.
-     * 
+     * Renders a domain scope field for each available identity provider.
+     *
      * @return void
      */
     public function domainScopeField()
@@ -295,8 +290,8 @@ class Settings
     }
 
     /**
-     * Allowed user email domains field.
-     * 
+     * Renders the list of allowed user email domains.
+     *
      * @return void
      */
     public function allowedUserEmailDomainsField()
@@ -310,7 +305,8 @@ class Settings
     }
 
     /**
-     * Username regex pattern field.
+     * Renders the optional username regular expression field.
+     *
      * @return void
      */
     public function usernameRegexPattern()
@@ -321,10 +317,13 @@ class Settings
     }
 
     /**
-     * Validate settings options.
-     * 
-     * @param  array $input Settings options.
-     * @return array
+     * Sanitizes and validates submitted plugin settings.
+     *
+     * Adds Settings API errors for invalid required values, domains, and
+     * regular expressions.
+     *
+     * @param array<string, mixed> $input Submitted settings values.
+     * @return array<string, mixed> Sanitized settings values.
      */
     public function optionsValidate($input)
     {
@@ -416,10 +415,10 @@ class Settings
     }
 
     /**
-     * Validate a domain name.
-     * 
-     * @param string $input Entered domain name.
-     * @return string
+     * Validates and normalizes a domain name.
+     *
+     * @param string $input Submitted domain name.
+     * @return string The trimmed domain, or an empty string when invalid.
      */
     protected function validateDomain(string $input): string
     {
@@ -443,8 +442,8 @@ class Settings
     }
 
     /**
-     * Network settings admin notices.
-     * 
+     * Processes and persists a submitted Network Admin settings form.
+     *
      * @return void
      */
     public function settingsUpdate()
@@ -459,8 +458,8 @@ class Settings
     }
 
     /**
-     * Settings admin notice.
-     * 
+     * Renders the notice shown after network settings are saved.
+     *
      * @return void
      */
     public function settingsUpdateNotice()
@@ -472,10 +471,10 @@ class Settings
     }
 
     /**
-     * Checks whether a given PCRE pattern is syntactically valid.
+     * Determines whether a PCRE pattern is syntactically valid.
      *
-     * @param string $pattern  The regex pattern, e.g. '/^[a-z]+$/i'
-     * @return bool            True if the pattern is valid; false otherwise
+     * @param string $pattern Regular expression pattern, including delimiters.
+     * @return bool Whether the pattern is valid.
      */
     public function isValidRegex(string $pattern): bool
     {

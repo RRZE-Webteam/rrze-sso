@@ -44,7 +44,7 @@ defined('ABSPATH') || exit;
     <?php if (is_wp_error($add_user_errors)) : ?>
         <div class="error">
             <?php foreach ($add_user_errors->get_error_messages() as $message) : ?>
-                <p><?php echo esc_html($message); ?></p>
+                <p><?php echo wp_kses_post($message); ?></p>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

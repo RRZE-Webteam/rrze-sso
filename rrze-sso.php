@@ -42,18 +42,9 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Register activation hook for the plugin
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
-
-// Register deactivation hook for the plugin
 register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
 
-/**
- * Add an action hook for the 'plugins_loaded' hook.
- *
- * This hook is triggered after all active plugins have been loaded, allowing the plugin to perform
- * initialization tasks.
- */
 add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
 
 /**
@@ -141,10 +132,7 @@ function loadTextdomain()
  */
 function loaded()
 {
-    // Trigger the 'loaded' method of the main plugin instance.
     plugin()->loaded();
-
-    // Load the plugin's text domain for localization
     loadTextdomain();
 
     // Check system requirements.
@@ -197,8 +185,6 @@ function loaded()
         // If the system requirements are not met, the plugin initialization will not proceed.
         return;
     }
-
-    // If system requirements are met, proceed to initialize the main plugin instance.
-    // This will load the main functionality of the plugin.
+    
     (new Main)->loaded();
 }

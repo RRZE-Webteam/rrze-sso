@@ -112,7 +112,7 @@ class Main
         add_action('network_admin_menu', [__NAMESPACE__ . '\NetworkUsersMenu', 'userNewPage']);
 
         // Fires before the administration menu loads in the admin.
-        // Rendering the Admin page via: Dashboard > Useres > Add new on individual sites.
+        // Rendering the Admin page via: Dashboard > Users > Add new on individual sites.
         add_action('admin_menu', [__NAMESPACE__ . '\UsersMenu', 'userNewPage']);
 
         // Detect and Distribute User Actions to designated Handlers via the User Class.

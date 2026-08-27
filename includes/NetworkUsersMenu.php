@@ -56,65 +56,22 @@ class NetworkUsersMenu
 
     public static function userNew()
     {
+        $messages = array();
+
         if (isset($_GET['update'])) {
-            $messages = array();
             if ('added' == $_GET['update']) {
                 $messages[] = __('User added.');
             }
         }
 
-        // Used in the HTML title tag.
-        $title = __('Add New User');
-        $parent_file = 'users.php'; ?>
-        <div class="wrap">
-            <h2 id="add-new-user"><?php _e('Add New User') ?></h2>
-            <?php
-            if (!empty($messages)) {
-                foreach ($messages as $msg) {
-                    printf('<div id="message" class="updated"><p>%s</p></div>', $msg);
-                }
-            }
+        $add_user_errors = '';
+        if (isset($_GET['error'])) {
+            $add_user_errors = @unserialize(base64_decode($_GET['error']));
+        }
 
-            $add_user_errors = '';
-            if (isset($_GET['error'])) {
-                $add_user_errors = @unserialize(base64_decode($_GET['error']));
-            }
+        $identity_providers = simpleSAML()->getIdentityProviders();
+        $form_action = network_admin_url('users.php?page=usernew');
 
-            if (is_wp_error($add_user_errors)) : ?>
-                <div class="error">
-                    <?php
-                    foreach ($add_user_errors->get_error_messages() as $message) {
-                        echo "<p>$message</p>";
-                    } ?>
-                </div>
-            <?php endif; ?>
-            <form action="<?php echo esc_url(network_admin_url('users.php?page=usernew')); ?>" id="adduser" method="post" novalidate="novalidate">
-                <input type="hidden" name="action" value="_network_add-user" />
-                <?php wp_nonce_field('add-user', '_wpnonce_add-user'); ?>
-                <table class="form-table" role="presentation">
-                    <tr class="form-field form-required">
-                        <th scope="row"><?php _e("Identity Provider", 'rrze-sso') ?></th>
-                        <td><?php
-                            echo '<select name="user[idp]">';
-                            echo '<option  value="">&mdash; ' . __('Select an Identity Provider', 'rrze-sso') . ' &mdash;</option>';
-                            foreach (simpleSAML()->getIdentityProviders() as $key => $value) {
-                                echo '<option  value="' . sanitize_title($key) . '">' . $value . '</option>';
-                            }
-                            echo '</select>';
-                            ?></td>
-                    </tr>
-                    <tr class="form-field form-required">
-                        <th scope="row"><label for="username"><?php _e('User Identifier', 'rrze-sso'); ?></label></th>
-                        <td><input type="text" class="regular-text" name="user[username]" id="username" autocapitalize="none" autocorrect="off" maxlength="60" /></td>
-                    </tr>
-                    <tr class="form-field form-required">
-                        <th scope="row"><label for="email"><?php _e('Email'); ?></label></th>
-                        <td><input type="email" class="regular-text" name="user[email]" id="email" /></td>
-                    </tr>
-                </table>
-                <?php submit_button(__('Add User'), 'primary', 'add-user'); ?>
-            </form>
-        </div>
-<?php
+        require dirname(__DIR__) . '/templates/network-users/user-new.php';
     }
 }

@@ -4,22 +4,32 @@ namespace RRZE\SSO;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Coordinates plugin initialization and registers the main WordPress hooks.
+ *
+ * Loads settings for every request and enables the authentication, user
+ * management, and password-related integrations when forced SSO is active.
+ */
 class Main
 {
     /**
-     * Option name.
+     * Name of the plugin option stored by WordPress.
+     *
      * @var string
      */
     protected $optionName;
 
     /**
-     * Settings options.
+     * Current plugin settings.
+     *
      * @var object
      */
     protected $options;
 
     /**
-     * Class constructor.
+     * Initializes the option name and current plugin settings.
+     *
+     * @return void
      */
     public function __construct()
     {
@@ -27,6 +37,15 @@ class Main
         $this->options = Options::getOptions();
     }
 
+    /**
+     * Initializes plugin services and registers SSO-related hooks.
+     *
+     * Settings remain available when forced SSO is disabled. Authentication,
+     * custom user management, and password restrictions are registered only
+     * when SimpleSAMLphp is loaded and forced SSO remains active.
+     *
+     * @return void
+     */
     public function loaded()
     {
         if ($this->options->force_sso) {
@@ -105,7 +124,9 @@ class Main
     }
 
     /**
-     * Redirects users from the registration page onto the login page.
+     * Redirects registration requests to the login page.
+     *
+     * @return void
      */
     public function registerRedirect()
     {
@@ -115,7 +136,11 @@ class Main
         }
     }
 
-    //Todo: What?
+    /**
+     * Redirects the WordPress add-user screen to the custom plugin screen.
+     *
+     * @return void
+     */
     protected function userNewPageRedirect()
     {
         if (is_admin() && $this->isUserNewPage()) {
@@ -124,6 +149,11 @@ class Main
         }
     }
 
+    /**
+     * Determines whether the current administration page is the core add-user screen.
+     *
+     * @return bool Whether the current page is user-new.php.
+     */
     protected function isUserNewPage()
     {
         if (isset($GLOBALS['pagenow'])) {
@@ -132,6 +162,11 @@ class Main
         return false;
     }
 
+    /**
+     * Determines whether the current request targets the WordPress login page.
+     *
+     * @return bool Whether the current page is wp-login.php.
+     */
     protected function isLoginPage()
     {
         if (isset($GLOBALS['pagenow'])) {
@@ -140,6 +175,11 @@ class Main
         return false;
     }
 
+    /**
+     * Stops execution for password-management features disabled by forced SSO.
+     *
+     * @return void
+     */
     public function disableFunction()
     {
         $output = __("Disabled function.", 'rrze-sso');
@@ -147,7 +187,10 @@ class Main
     }
 
     /**
-     * Register admin styles & scripts.
+     * Enqueues assets for the SSO settings screen.
+     *
+     * @param string $hook Current administration page hook suffix.
+     * @return void
      */
     public function adminEnqueueScripts($hook)
     {

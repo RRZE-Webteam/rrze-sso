@@ -97,6 +97,17 @@ class UserSignupValidatorTest extends TestCase
         self::assertSame('12', $result['user_name']);
     }
 
+    public function testValidateRejectsAnEmptyUsername(): void
+    {
+        $result = UserSignupValidator::validate('idp-one', '', 'alice@example.org');
+
+        self::assertContains('user_name', $result['errors']->get_error_codes());
+        self::assertStringContainsString(
+            'Please enter a username.',
+            implode(' ', $result['errors']->get_error_messages('user_name'))
+        );
+    }
+
     public function testValidateReportsUnknownProviderCustomPatternAndDomainRestrictions(): void
     {
         $this->options['username_regex_pattern'] = '/^[a-z]+$/';

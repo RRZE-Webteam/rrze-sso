@@ -239,4 +239,76 @@ class SettingsTest extends TestCase
 
         self::assertStringContainsString('Settings saved.', $output);
     }
+
+    public function testAdminInitStopsAfterGeneralSettingsWhenSsoIsDisabled(): void
+    {
+        $fieldIds = array();
+        Functions\when('register_setting')->justReturn(null);
+        Functions\when('add_settings_section')->justReturn(null);
+        Functions\when('add_settings_field')->alias(
+            function (string $id) use (&$fieldIds): void {
+                $fieldIds[] = $id;
+            }
+        );
+
+        (new Settings())->adminInit();
+
+        self::assertSame(array('force_sso'), $fieldIds);
+    }
+
+    public function testRequiredSimpleSamlValuesAndMissingFileAreReported(): void
+    {
+        defined('WP_CONTENT_DIR') || define('WP_CONTENT_DIR', ABSPATH);
+        $settings = new Settings();
+
+        $settings->optionsValidate(array(
+            'force_sso' => 1,
+            'simplesaml_include' => '',
+            'simplesaml_auth_source' => '',
+            'identity_provider_domain' => array(),
+            'allowed_user_email_domains' => array(),
+            'username_regex_pattern' => '',
+        ));
+        $settings->optionsValidate(array(
+            'force_sso' => 1,
+            'simplesaml_include' => '/definitely-missing.php',
+            'simplesaml_auth_source' => 'test-sp',
+            'identity_provider_domain' => array(),
+            'allowed_user_email_domains' => array(),
+            'username_regex_pattern' => '',
+        ));
+
+        $codes = array_column($this->settingsErrors, 1);
+        self::assertContains('simplesaml_include', $codes);
+        self::assertContains('simplesaml_auth_source', $codes);
+        self::assertGreaterThanOrEqual(3, count($this->settingsErrors));
+    }
+
+    public function testNonScalarAndEmptyValidationValuesAreIgnored(): void
+    {
+        $result = (new Settings())->optionsValidate(array(
+            'force_sso' => 0,
+            'simplesaml_include' => '',
+            'simplesaml_auth_source' => '',
+            'identity_provider_domain' => array('empty' => '', 'nested' => array('invalid')),
+            'allowed_user_email_domains' => array(array('invalid')),
+            'username_regex_pattern' => array('invalid'),
+        ));
+
+        self::assertSame(array(), $result['domain_scope']);
+        self::assertSame(array(), $result['allowed_user_email_domains']);
+        self::assertSame('', $result['username_regex_pattern']);
+    }
+
+    public function testSettingsUpdateRequiresSubmittedDataAndCapability(): void
+    {
+        $_POST['rrze_sso'] = array('force_sso' => 1);
+        Functions\when('current_user_can')->justReturn(false);
+        Functions\expect('update_site_option')->never();
+
+        (new Settings())->settingsUpdate();
+
+        unset($_POST['rrze_sso']);
+        self::assertTrue(true);
+    }
 }

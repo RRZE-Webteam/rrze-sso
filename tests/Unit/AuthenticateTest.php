@@ -244,6 +244,144 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures authentication stops when the identity provider returns no attributes.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsAnEmptySamlResponse(): void
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $client->shouldReceive('requireAuth')->once();
+        $client->shouldReceive('getAuthData')
+            ->once()
+            ->with('saml:sp:IdP')
+            ->andReturn('idp-key');
+        $client->shouldReceive('getAttributes')
+            ->once()
+            ->andReturn(array());
+        $authenticator = new Authenticate($client);
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('User attributes could not be retrieved.');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
+     * Ensures responses from unconfigured identity providers are rejected.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsAnUnknownIdentityProvider(): void
+    {
+        $client = Mockery::mock(AuthClient::class);
+        $client->shouldReceive('requireAuth')->once();
+        $client->shouldReceive('getAuthData')
+            ->once()
+            ->with('saml:sp:IdP')
+            ->andReturn('unknown-idp');
+        $client->shouldReceive('getAttributes')
+            ->once()
+            ->andReturn(array('uid' => array('alice')));
+
+        $plugin = Mockery::mock(Plugin::class);
+        $plugin->shouldReceive('getBaseName')
+            ->once()
+            ->andReturn('rrze-sso/rrze-sso.php');
+        $simpleSaml = Mockery::mock(SimpleSamlService::class);
+        $simpleSaml->shouldReceive('getIdentityProviders')
+            ->once()
+            ->andReturn(array('idp-key' => 'Example Identity Provider'));
+        Functions\when('RRZE\SSO\plugin')->justReturn($plugin);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($simpleSaml);
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('unknown-idp');
+
+        (new Authenticate($client))->authenticate(null, '');
+    }
+
+    /**
+     * Ensures a login identifier is required in the SAML response.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsAttributesWithoutAUserLogin(): void
+    {
+        $authenticator = $this->authenticator(
+            array('mail' => array('alice@example.org'))
+        );
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('User login could not be determined');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
+     * Ensures Multisite registration creates memberships for the network and current site.
+     *
+     * @return void
+     */
+    public function testAuthenticateCreatesAMultisiteUserWithDashboardAccess(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(
+            array(
+                'uid' => array('new.user'),
+                'mail' => array('new.user@example.org'),
+            )
+        );
+        $authenticator->setRegistration(true);
+        $memberships = array();
+
+        Functions\when('get_user_by')->justReturn(false);
+        Functions\when('wp_generate_password')->justReturn('generated-password');
+        Functions\when('wp_insert_user')->justReturn(23);
+        Functions\when('switch_to_blog')->justReturn(true);
+        Functions\when('restore_current_blog')->justReturn(true);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\when('is_user_member_of_blog')->justReturn(false);
+        Functions\when('add_user_to_blog')->alias(
+            static function (int $blogId, int $userId, string $role) use (&$memberships): bool {
+                $memberships[] = array($blogId, $userId, $role);
+
+                return true;
+            }
+        );
+        Functions\when('get_blogs_of_user')->justReturn(array());
+        Functions\when('is_super_admin')->justReturn(true);
+
+        try {
+            $result = $authenticator->authenticate(null, '');
+
+            self::assertSame(23, $result->ID);
+            self::assertSame(
+                array(
+                    array(1, 23, 'subscriber'),
+                    array(3, 23, 'subscriber'),
+                ),
+                $memberships
+            );
+            self::assertSame('idp-key', $this->updatedMeta[23]['saml_sp_idp']);
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
+    /**
      * Ensures the current and legacy registration filters remain supported.
      *
      * @return void
@@ -317,6 +455,31 @@ class AuthenticateTest extends TestCase
         $authenticator->logout(7);
 
         self::assertSame(1, Session::getSessionFromRequest()->cleanupCalls);
+    }
+
+    /**
+     * Ensures disabled registration sends signup requests back to the site.
+     *
+     * @return void
+     */
+    public function testRedirectToSiteUrlUsesTheHttpsHomePage(): void
+    {
+        $authenticator = new Authenticate(Mockery::mock(AuthClient::class));
+
+        Functions\expect('site_url')
+            ->once()
+            ->with('', 'https')
+            ->andReturn('https://example.org');
+        Functions\when('wp_redirect')->alias(
+            static function (string $url): void {
+                throw new AuthenticationTerminated($url);
+            }
+        );
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('https://example.org');
+
+        $authenticator->redirectToSiteUrl();
     }
 
     public function testMultisiteUserWithoutCurrentDashboardAccessGetsHelpfulLinks(): void

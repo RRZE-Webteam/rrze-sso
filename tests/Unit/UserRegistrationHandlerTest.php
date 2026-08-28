@@ -237,9 +237,159 @@ class UserRegistrationHandlerTest extends TestCase
 
         UserRegistrationHandler::handle();
     }
+
+    public function testNetworkValidationErrorsAreSerializedIntoRedirect(): void
+    {
+        $_REQUEST['action'] = '_network_add-user';
+        $_POST['user'] = array(
+            'idp' => '',
+            'username' => '12',
+            'email' => 'invalid-email',
+        );
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Validation errors did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('update=addusererrors', $exception->getMessage());
+            self::assertStringContainsString('&error=', $exception->getMessage());
+        }
+    }
+
+    public function testNetworkCreationFailureRedirectsWithError(): void
+    {
+        $_REQUEST['action'] = '_network_add-user';
+        $_POST['user'] = array(
+            'idp' => 'idp-one',
+            'username' => 'alice',
+            'email' => 'alice@example.org',
+        );
+        Functions\when('wpmu_create_user')->justReturn(false);
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Failed user creation did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('page=usernew', $exception->getMessage());
+            self::assertStringContainsString('error=', $exception->getMessage());
+        }
+    }
+
+    public function testExistingSiteMemberIsNotAddedAgain(): void
+    {
+        $_REQUEST = array(
+            'action' => '_admin_add-user',
+            'email' => 'existing@example.org',
+        );
+        $user = (object) array('ID' => 23, 'user_login' => 'existing@example.org');
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_blogs_of_user')->justReturn(array(3 => (object) array()));
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\expect('add_existing_user_to_blog')->never();
+
+        $this->expectException(RegistrationRedirected::class);
+        $this->expectExceptionMessage('users.php?page=usernew&update=addexisting');
+
+        UserRegistrationHandler::handle();
+    }
+
+    public function testSuperAdminCanSkipExistingUserConfirmation(): void
+    {
+        $_REQUEST = array(
+            'action' => '_admin_add-user',
+            'email' => 'existing@example.org',
+            'role' => 'editor',
+        );
+        $_POST['noconfirmation'] = '1';
+        $user = (object) array('ID' => 23, 'user_login' => 'existing@example.org');
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_blogs_of_user')->justReturn(array());
+        Functions\when('is_super_admin')->justReturn(true);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\when('add_existing_user_to_blog')->justReturn(true);
+        Functions\expect('wp_mail')->never();
+
+        $this->expectException(RegistrationRedirected::class);
+        $this->expectExceptionMessage('users.php?page=usernew&update=addnoconfirmation');
+
+        UserRegistrationHandler::handle();
+    }
+
+    public function testSingleSiteValidationFailureRedirectsWithError(): void
+    {
+        $_REQUEST['action'] = '_admin_create-user';
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Single-site validation errors did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('page=usernew', $exception->getMessage());
+            self::assertStringContainsString('error=', $exception->getMessage());
+        }
+    }
+
+    public function testSingleSiteCreationReturnsToCustomPageWithoutListCapability(): void
+    {
+        $_REQUEST['action'] = '_admin_create-user';
+        $_POST = array(
+            'user_idp' => 'idp-one',
+            'user_login' => 'alice',
+            'email' => 'alice@example.org',
+        );
+        Functions\when('current_user_can')->alias(
+            static fn(string $capability): bool => 'list_users' !== $capability
+        );
+
+        $this->expectException(RegistrationRedirected::class);
+        $this->expectExceptionMessage('users.php?page=usernew&update=add');
+
+        UserRegistrationHandler::handle();
+    }
+
+    public function testMultisiteActivationErrorIsSerializedIntoRedirect(): void
+    {
+        $this->multisite = true;
+        $_REQUEST = array(
+            'action' => '_admin_create-user',
+            'user_idp' => 'idp-one',
+            'user_login' => 'alice',
+            'email' => 'alice@example.org',
+            'role' => 'author',
+        );
+        Functions\when('wpmu_signup_user')->justReturn(null);
+        Functions\when('wpmu_activate_signup')->justReturn(new WP_Error('activation_failed', 'Failed'));
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Activation failure did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('error=', $exception->getMessage());
+        }
+    }
+
+    public function testMissingCapabilityStopsRegistrationRequest(): void
+    {
+        $_REQUEST['action'] = '_admin_create-user';
+        Functions\when('current_user_can')->justReturn(false);
+        Functions\when('wp_die')->alias(
+            static function (string $message): void {
+                throw new RegistrationPermissionDenied($message);
+            }
+        );
+
+        $this->expectException(RegistrationPermissionDenied::class);
+        $this->expectExceptionMessage('not allowed');
+
+        UserRegistrationHandler::handle();
+    }
 }
 
 class RegistrationRedirected extends RuntimeException
+{
+}
+
+class RegistrationPermissionDenied extends RuntimeException
 {
 }
 

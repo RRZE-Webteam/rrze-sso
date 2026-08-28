@@ -130,6 +130,65 @@ class UsersMenuTest extends TestCase
         self::assertStringContainsString('_admin_add-user', $output);
         self::assertStringContainsString('_admin_create-user', $output);
     }
+
+    public function testUserNewRendersEveryCoreStatusAndSerializedError(): void
+    {
+        $previousGet = $_GET;
+        $previousPost = $_POST;
+        $multisite = true;
+        $_POST = array();
+        Functions\when('is_multisite')->alias(static function () use (&$multisite): bool {
+            return $multisite;
+        });
+        Functions\when('current_user_can')->justReturn(false);
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('wp_enqueue_script')->justReturn(null);
+        Functions\when('__')->returnArg();
+        Functions\when('wp_kses_post')->returnArg();
+        Functions\when('is_wp_error')->alias(static fn($value): bool => $value instanceof WP_Error);
+        Functions\when('get_option')->justReturn('subscriber');
+        Functions\when('admin_url')->returnArg();
+
+        $statuses = array(
+            'newuserconfirmation',
+            'add',
+            'addexisting',
+            'could_not_add',
+            'created_could_not_add',
+            'does_not_exist',
+            'enter_email',
+        );
+        $combinedOutput = '';
+        foreach ($statuses as $status) {
+            $_GET = array('update' => $status);
+            ob_start();
+            UsersMenu::userNew();
+            $combinedOutput .= (string) ob_get_clean();
+        }
+
+        $multisite = false;
+        $_GET = array('update' => 'add');
+        ob_start();
+        UsersMenu::userNew();
+        $combinedOutput .= (string) ob_get_clean();
+
+        $_GET = array(
+            'error' => base64_encode(serialize(new WP_Error('custom', 'Serialized error'))),
+        );
+        ob_start();
+        UsersMenu::userNew();
+        $combinedOutput .= (string) ob_get_clean();
+
+        $_GET = $previousGet;
+        $_POST = $previousPost;
+
+        self::assertStringContainsString('Invitation email sent to new user.', $combinedOutput);
+        self::assertStringContainsString('already a member', $combinedOutput);
+        self::assertStringContainsString('could not be added', $combinedOutput);
+        self::assertStringContainsString('does not exist', $combinedOutput);
+        self::assertStringContainsString('Serialized error', $combinedOutput);
+        self::assertStringContainsString('User added.', $combinedOutput);
+    }
 }
 
 class UsersMenuScreen

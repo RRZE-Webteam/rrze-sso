@@ -61,6 +61,34 @@ in einen zuvor gesicherten Snapshot.
 6. Erzwungenes SSO, Rückleitung, Logout und erneute Anmeldung prüfen.
 7. Danach jedes Diagnoseprofil einzeln testen und Ergebnis protokollieren.
 
+## Automatisierte PHPUnit-Integrationstests
+
+Bei laufendem MAMP prüft die getrennte Integrationssuite die gespeicherten
+WordPress-Optionen, den realen SimpleSAMLphp-Client, IdP-/SP-Metadaten, die
+Diagnoseprofile sowie einen echten AuthnRequest. Das Profil `student` wird
+serverseitig beim lokalen IdP angemeldet und die resultierende signierte
+SAMLResponse wird bis unmittelbar vor dem WordPress-ACS validiert:
+
+```bash
+composer test:integration
+```
+
+Die lokalen Standardpfade werden aus der Plugin-Position abgeleitet. Abweichende
+Installationen können sie ohne Repository-Änderungen überschreiben:
+
+```bash
+RRZE_SSO_WP_ROOT=/path/to/wordpress \
+RRZE_SSO_SAML_ROOT=/path/to/simplesaml \
+RRZE_SSO_SP_CONFIG=/path/to/local-sp/config \
+RRZE_SSO_IDP_CONFIG=/path/to/local-idp \
+RRZE_SSO_WP_URL=https://wordpress.example.test \
+RRZE_SSO_IDP_URL=https://idp.example.test \
+composer test:integration
+```
+
+Die Suite verändert weder Benutzer noch Optionen. Sie ist nicht Teil von
+`composer check`, weil Datenbank, Webserver, IdP und SP erreichbar sein müssen.
+
 Browser-Tests sollten zusätzlich in einem privaten Fenster erfolgen. Zwischen
 zwei Identitäten sind sowohl IdP- als auch SP-Sitzung zu beenden; andernfalls
 kann eine alte SSO-Sitzung das Ergebnis verfälschen.

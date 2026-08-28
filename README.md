@@ -19,9 +19,15 @@ und analysiert den Code gegen PHP 8.2.
 
 ```bash
 composer test       # PHPUnit ausführen
+composer test:integration # Lokale WordPress-/SimpleSAMLphp-Integration prüfen
 composer analyse    # Psalm ausführen
 composer check      # Beide Prüfungen ausführen
 ```
+
+Die Integrationssuite ist bewusst nicht Teil von `composer check`. Sie benötigt
+die laufende lokale MAMP-Umgebung aus
+[`docs/local-saml-testing.md`](docs/local-saml-testing.md), bootet das echte
+WordPress-Multisite und verwendet den realen `default-sp` anstelle der Unit-Test-Stubs.
 
 ## WP-Einstellungsmenü
 

@@ -319,6 +319,70 @@ class AuthenticateTest extends TestCase
         self::assertSame(1, Session::getSessionFromRequest()->cleanupCalls);
     }
 
+    public function testMultisiteUserWithoutCurrentDashboardAccessGetsHelpfulLinks(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(array(
+            'uid' => array('alice'),
+            'mail' => array('alice@example.org'),
+            'displayName' => array('Alice Example'),
+        ));
+        $user = new WP_User(7);
+        $user->display_name = 'Alice Example';
+        $blogs = array(
+            (object) array(
+                'userblog_id' => 2,
+                'blogname' => 'Alice Research',
+            ),
+        );
+        $administrator = (object) array(
+            'display_name' => 'Site Admin',
+            'user_email' => 'admin@example.org',
+        );
+
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_user_meta')->justReturn('');
+        Functions\when('get_blogs_of_user')->justReturn($blogs);
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\when('wp_list_filter')->justReturn(array());
+        Functions\when('get_bloginfo')->justReturn('Restricted Site');
+        Functions\when('get_admin_url')->alias(static fn(int $id): string => "https://example.org/site-{$id}/wp-admin/");
+        Functions\when('get_home_url')->alias(static fn(int $id): string => "https://example.org/site-{$id}/");
+        Functions\when('esc_url')->returnArg();
+        Functions\when('get_users')->justReturn(array($administrator));
+        Functions\when('make_clickable')->alias(
+            static fn(string $email): string => '<a href="mailto:' . $email . '">' . $email . '</a>'
+        );
+        Functions\when('wp_logout_url')->justReturn('https://example.org/logout');
+        Functions\when('wp_die')->alias(
+            static function ($message): void {
+                throw new AuthenticationTerminated((string) $message);
+            }
+        );
+
+        try {
+            $authenticator->authenticate(null, '');
+            self::fail('Dashboard access denial did not terminate authentication.');
+        } catch (AuthenticationTerminated $exception) {
+            self::assertStringContainsString('Alice Research', $exception->getMessage());
+            self::assertStringContainsString('Site Admin', $exception->getMessage());
+            self::assertStringContainsString('admin@example.org', $exception->getMessage());
+            self::assertStringContainsString('Visit the Dashboard', $exception->getMessage());
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
     /**
      * Creates an authenticator backed by a successful SAML response.
      *
@@ -403,4 +467,20 @@ class TestableAuthenticate extends Authenticate
  */
 class AuthenticationTerminated extends RuntimeException
 {
+}
+
+class AuthenticateWpdb
+{
+    /** @var string */
+    public $signups = 'wp_signups';
+
+    public function prepare(string $query, ...$arguments): string
+    {
+        return $query . '|' . implode('|', $arguments);
+    }
+
+    public function get_var(string $query)
+    {
+        return null;
+    }
 }

@@ -9,6 +9,7 @@ use RRZE\SSO\Helper;
 use RRZE\SSO\SimpleSAML as SimpleSamlService;
 use RRZE\SSO\Tests\TestCase;
 use SimpleSAML\Auth\Simple as AuthClient;
+use SimpleSAML\Session;
 use WP_Error;
 
 #[CoversClass(Helper::class)]
@@ -25,6 +26,7 @@ class HelperTest extends TestCase
             'force_sso' => 1,
             'domain_scope' => array('idp-key' => 'example.org'),
         );
+        Session::reset();
         Functions\when('is_multisite')->justReturn(false);
         Functions\when('get_option')->alias(fn(): array => $this->options);
         Functions\when('wp_parse_args')->alias(
@@ -65,6 +67,43 @@ class HelperTest extends TestCase
 
         self::assertInstanceOf(WP_Error::class, $result);
         self::assertSame('sso_is_not_activated', $result->get_error_code());
+    }
+
+    public function testGetCurrentUserSamlAttributesReportsMissingClient(): void
+    {
+        $service = Mockery::mock(SimpleSamlService::class);
+        $service->shouldReceive('getAuthSimple')->once()->andReturn(null);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+
+        $result = Helper::getCurrentUserSamlAtts();
+
+        self::assertInstanceOf(WP_Error::class, $result);
+        self::assertSame('unable_to_instantiate_simplesaml_auth', $result->get_error_code());
+    }
+
+    public function testGetCurrentUserSamlAttributesReportsUnauthenticatedSession(): void
+    {
+        $client = new HelperAuthClient(false, 'idp-key', array());
+        $service = Mockery::mock(SimpleSamlService::class);
+        $service->shouldReceive('getAuthSimple')->once()->andReturn($client);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+
+        $result = Helper::getCurrentUserSamlAtts();
+
+        self::assertSame('user_not_authenticated', $result->get_error_code());
+        self::assertSame(1, Session::getSessionFromRequest()->cleanupCalls);
+    }
+
+    public function testGetCurrentUserSamlAttributesReportsEmptyAttributes(): void
+    {
+        $client = new HelperAuthClient(true, 'idp-key', array());
+        $service = Mockery::mock(SimpleSamlService::class);
+        $service->shouldReceive('getAuthSimple')->once()->andReturn($client);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+
+        $result = Helper::getCurrentUserSamlAtts();
+
+        self::assertSame('unable_to_retrieve_user_attributes', $result->get_error_code());
     }
 }
 

@@ -38,9 +38,11 @@ class PluginTest extends TestCase
         self::assertSame('/srv/wp-content/plugins/rrze-sso/templates/', $plugin->getPath('/templates/'));
         self::assertSame('https://example.org/wp-content/plugins/rrze-sso/assets/', $plugin->getUrl('assets'));
         self::assertSame('rrze-sso', $plugin->getSlug());
+        self::assertSame('RRZE SSO', $plugin->getData()['Name']);
         self::assertSame('RRZE SSO', $plugin->getName());
         self::assertSame('2.0.0', $plugin->getVersion());
         self::assertSame('6.4', $plugin->getRequiresWP());
         self::assertSame('8.2', $plugin->getRequiresPHP());
+        self::assertNull($plugin->undefinedMethod('argument'));
     }
 }

@@ -84,4 +84,28 @@ class UserNotificationsTest extends TestCase
 
         UserNotifications::sendNewUserAccount(404);
     }
+
+    public function testMissingExistingUserDoesNotSendInvitation(): void
+    {
+        Functions\when('get_userdata')->justReturn(false);
+        Functions\expect('wp_mail')->never();
+
+        UserNotifications::sendExistingUserInvitation(404, 'subscriber');
+    }
+
+    public function testSignupInvitationUsesSubmittedAccountDetails(): void
+    {
+        $mailTo = '';
+        Functions\when('wp_set_password')->justReturn(null);
+        Functions\when('wp_mail')->alias(
+            function (string $to) use (&$mailTo): bool {
+                $mailTo = $to;
+                return true;
+            }
+        );
+
+        UserNotifications::sendSignupInvitation(12, 'signup@example.org', 'signup@example.org');
+
+        self::assertSame('signup@example.org', $mailTo);
+    }
 }

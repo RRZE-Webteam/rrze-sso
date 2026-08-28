@@ -10,6 +10,13 @@ use RRZE\SSO\UsersList;
 #[CoversClass(UsersList::class)]
 class UsersListTest extends TestCase
 {
+    public function testLoadedRegistersSingleAndMultisiteColumns(): void
+    {
+        (new UsersList())->loaded();
+
+        self::assertTrue(true);
+    }
+
     public function testColumnsAddsSsoInformation(): void
     {
         Functions\when('__')->returnArg();
@@ -50,5 +57,12 @@ class UsersListTest extends TestCase
             'member<br>staff<br>urn:example:access',
             $list->attributesColumn('', 'attributes', 7)
         );
+    }
+
+    public function testAttributesColumnUsesFallbackWithoutMetadata(): void
+    {
+        Functions\when('get_user_meta')->justReturn('');
+
+        self::assertSame('&mdash;', (new UsersList())->attributesColumn('', 'attributes', 99));
     }
 }

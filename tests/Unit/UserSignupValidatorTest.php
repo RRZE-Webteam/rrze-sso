@@ -96,6 +96,41 @@ class UserSignupValidatorTest extends TestCase
         self::assertContains('user_email', $result['errors']->get_error_codes());
         self::assertSame('12', $result['user_name']);
     }
+
+    public function testValidateReportsUnknownProviderCustomPatternAndDomainRestrictions(): void
+    {
+        $this->options['username_regex_pattern'] = '/^[a-z]+$/';
+        $this->options['allowed_user_email_domains'] = array('allowed.example');
+        Functions\when('get_site_option')->alias(
+            static fn(string $name) => 'limited_email_domains' === $name
+                ? array('limited.example')
+                : false
+        );
+        Functions\when('add_site_option')->justReturn(true);
+        Functions\when('is_email_address_unsafe')->justReturn(true);
+        $username = str_repeat('a', 61) . '1';
+
+        $result = UserSignupValidator::validate('unknown-idp', $username, 'user@blocked.example');
+
+        self::assertContains('user_idp', $result['errors']->get_error_codes());
+        self::assertGreaterThanOrEqual(2, count($result['errors']->get_error_messages('user_name')));
+        self::assertGreaterThanOrEqual(3, count($result['errors']->get_error_messages('user_email')));
+    }
+
+    public function testValidateRejectsIllegalNameAndDuplicateAccountData(): void
+    {
+        Functions\when('username_exists')->justReturn(7);
+        Functions\when('email_exists')->justReturn(7);
+
+        $result = UserSignupValidator::validate('idp-one', 'admin', 'admin@example.org');
+
+        self::assertContains('user_name', $result['errors']->get_error_codes());
+        self::assertContains('user_email', $result['errors']->get_error_codes());
+        self::assertStringContainsString(
+            'not allowed',
+            implode(' ', $result['errors']->get_error_messages('user_name'))
+        );
+    }
 }
 
 class UserSignupValidatorWpdb

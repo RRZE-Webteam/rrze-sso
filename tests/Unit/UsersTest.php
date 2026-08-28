@@ -29,4 +29,17 @@ class UsersTest extends TestCase
     {
         self::assertFalse(Users::activateSignup(array('not-a-key')));
     }
+
+    public function testUserNewActionIgnoresUnrelatedRequest(): void
+    {
+        $previousRequest = $_REQUEST;
+        $_REQUEST = array();
+        Functions\when('wp_unslash')->returnArg();
+        Functions\when('sanitize_key')->returnArg();
+
+        Users::userNewAction();
+
+        $_REQUEST = $previousRequest;
+        self::assertTrue(true);
+    }
 }

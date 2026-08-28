@@ -64,4 +64,18 @@ class UsernameTest extends TestCase
         self::assertTrue(Username::matchesPattern('alice42', '/^[a-z0-9]+$/'));
         self::assertFalse(Username::matchesPattern('alice-42', '/^[a-z0-9]+$/'));
     }
+
+    public function testAddDomainScopeUsesProviderConfiguration(): void
+    {
+        Functions\when('is_multisite')->justReturn(false);
+        Functions\when('get_option')->justReturn(array(
+            'domain_scope' => array('idp-one' => 'example.org'),
+        ));
+        Functions\when('wp_parse_args')->alias(
+            static fn($args, $defaults): array => array_merge((array) $defaults, (array) $args)
+        );
+
+        self::assertSame('alice@example.org', Username::addDomainScope('alice', 'idp-one'));
+        self::assertSame('alice', Username::addDomainScope('alice', 'unknown'));
+    }
 }

@@ -6,6 +6,7 @@ use Brain\Monkey\Functions;
 use PHPUnit\Framework\Attributes\CoversClass;
 use RRZE\SSO\SignupActivator;
 use RRZE\SSO\Tests\TestCase;
+use WP_Error;
 
 #[CoversClass(SignupActivator::class)]
 class SignupActivatorTest extends TestCase
@@ -93,6 +94,65 @@ class SignupActivatorTest extends TestCase
 
         self::assertFalse(SignupActivator::activate('existing-key'));
         self::assertSame(array('activation_key' => 'existing-key'), $this->wpdb->lastUpdate['where']);
+    }
+
+    public function testActivateReturnsFalseWhenUserCannotBeCreated(): void
+    {
+        $this->wpdb->row = $this->siteSignup();
+        Functions\when('username_exists')->justReturn(false);
+        Functions\when('wpmu_create_user')->justReturn(false);
+
+        self::assertFalse(SignupActivator::activate('failed-user-key'));
+        self::assertSame(array(), $this->wpdb->lastUpdate);
+    }
+
+    public function testActivateCreatesSiteAndSendsWelcomeNotification(): void
+    {
+        $this->wpdb->row = $this->siteSignup();
+        Functions\when('username_exists')->justReturn(29);
+        Functions\when('is_wp_error')->alias(static fn($value): bool => $value instanceof WP_Error);
+        Functions\expect('wpmu_create_blog')
+            ->once()
+            ->with(
+                'site.example.org',
+                '/research/',
+                'Research Site',
+                29,
+                array('lang_id' => 1),
+                1
+            )
+            ->andReturn(44);
+        Functions\expect('wpmu_welcome_notification')
+            ->once()
+            ->with(44, 29, 'temporary-pass', 'Research Site', array('lang_id' => 1));
+
+        self::assertTrue(SignupActivator::activate('site-key'));
+        self::assertSame(array('activation_key' => 'site-key'), $this->wpdb->lastUpdate['where']);
+    }
+
+    public function testTakenSiteIsMarkedActiveWithoutWelcomeNotification(): void
+    {
+        $this->wpdb->row = $this->siteSignup();
+        Functions\when('username_exists')->justReturn(29);
+        Functions\when('is_wp_error')->alias(static fn($value): bool => $value instanceof WP_Error);
+        Functions\when('wpmu_create_blog')->justReturn(new WP_Error('blog_taken', 'Already exists'));
+        Functions\expect('wpmu_welcome_notification')->never();
+
+        self::assertFalse(SignupActivator::activate('taken-key'));
+        self::assertSame(array('activation_key' => 'taken-key'), $this->wpdb->lastUpdate['where']);
+    }
+
+    private function siteSignup(): object
+    {
+        return (object) array(
+            'active' => 0,
+            'meta' => array('lang_id' => 1),
+            'user_login' => 'owner@example.org',
+            'user_email' => 'owner@example.org',
+            'domain' => 'site.example.org',
+            'path' => '/research/',
+            'title' => 'Research Site',
+        );
     }
 }
 

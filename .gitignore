@@ -15,6 +15,7 @@ yarn.lock
 ### Testing ###
 /.phpunit.cache/
 /.psalm/
+/build/coverage/
 ### WordPress ###
 *.pot
 ### Tmp ###

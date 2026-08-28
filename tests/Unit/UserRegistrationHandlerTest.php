@@ -5,6 +5,7 @@ namespace RRZE\SSO\Tests\Unit;
 use Brain\Monkey\Functions;
 use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RRZE\SSO\SimpleSAML;
 use RRZE\SSO\Tests\TestCase;
 use RRZE\SSO\UserRegistrationHandler;
@@ -150,6 +151,34 @@ class UserRegistrationHandlerTest extends TestCase
         UserRegistrationHandler::handle();
     }
 
+    public function testExistingUserActionFallsBackToEmailLookup(): void
+    {
+        $_REQUEST = array(
+            'action' => '_admin_add-user',
+            'email' => 'existing@example.org',
+        );
+        $user = (object) array(
+            'ID' => 23,
+            'user_login' => 'existing@example.org',
+        );
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('login', 'existing@example.org')
+            ->andReturn(false);
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('email', 'existing@example.org')
+            ->andReturn($user);
+        Functions\when('get_blogs_of_user')->justReturn(array(3 => (object) array()));
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('get_current_blog_id')->justReturn(3);
+
+        $this->expectException(RegistrationRedirected::class);
+        $this->expectExceptionMessage('users.php?page=usernew&update=addexisting');
+
+        UserRegistrationHandler::handle();
+    }
+
     public function testNetworkActionCreatesUserAndSendsAccountNotification(): void
     {
         $_REQUEST['action'] = '_network_add-user';
@@ -250,6 +279,24 @@ class UserRegistrationHandlerTest extends TestCase
         try {
             UserRegistrationHandler::handle();
             self::fail('Validation errors did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('update=addusererrors', $exception->getMessage());
+            self::assertStringContainsString('&error=', $exception->getMessage());
+        }
+    }
+
+    public function testNetworkCreationTreatsNestedUserValuesAsEmpty(): void
+    {
+        $_REQUEST['action'] = '_network_add-user';
+        $_POST['user'] = array(
+            'idp' => array('idp-one'),
+            'username' => array('alice'),
+            'email' => array('alice@example.org'),
+        );
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Nested form values did not trigger validation errors.');
         } catch (RegistrationRedirected $exception) {
             self::assertStringContainsString('update=addusererrors', $exception->getMessage());
             self::assertStringContainsString('&error=', $exception->getMessage());
@@ -420,9 +467,10 @@ class UserRegistrationHandlerTest extends TestCase
         UserRegistrationHandler::handle();
     }
 
-    public function testMissingCapabilityStopsRegistrationRequest(): void
+    #[DataProvider('unauthorizedActionsProvider')]
+    public function testActionsRequireTheirExpectedCapability(array $request, string $message): void
     {
-        $_REQUEST['action'] = '_admin_create-user';
+        $_REQUEST = $request;
         Functions\when('current_user_can')->justReturn(false);
         Functions\when('wp_die')->alias(
             static function (string $message): void {
@@ -431,9 +479,30 @@ class UserRegistrationHandlerTest extends TestCase
         );
 
         $this->expectException(RegistrationPermissionDenied::class);
-        $this->expectExceptionMessage('not allowed');
+        $this->expectExceptionMessage($message);
 
         UserRegistrationHandler::handle();
+    }
+
+    /**
+     * @return array<string, array{0: array<string, string>, 1: string}>
+     */
+    public static function unauthorizedActionsProvider(): array
+    {
+        return array(
+            'network creation' => array(
+                array('action' => '_network_add-user'),
+                'add users to this network',
+            ),
+            'existing user addition' => array(
+                array('action' => '_admin_add-user', 'email' => 'existing@example.org'),
+                'add users to this site',
+            ),
+            'site creation' => array(
+                array('action' => '_admin_create-user'),
+                'create users',
+            ),
+        );
     }
 }
 

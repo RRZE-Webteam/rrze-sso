@@ -481,6 +481,26 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures malformed provider collections are treated as empty.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsANonArrayProviderCollection(): void
+    {
+        $authenticator = $this->authenticator(
+            array('uid' => array('alice')),
+            'idp-key',
+            null
+        );
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('idp-key');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
      * Ensures malformed optional provider settings do not alter a valid login.
      *
      * @return void
@@ -873,6 +893,7 @@ class AuthenticateTest extends TestCase
             fn(string $name) => 'rrze_sso' === $name ? $this->options : false
         );
         $authenticator = $this->authenticator(array('uid' => array('alice')));
+        $authenticator->setRegistration(true);
         $user = new WP_User(7);
         $blogs = array((object) array('userblog_id' => 3));
 
@@ -882,6 +903,8 @@ class AuthenticateTest extends TestCase
         Functions\when('is_super_admin')->justReturn(false);
         Functions\when('get_current_blog_id')->justReturn(3);
         Functions\when('wp_list_filter')->justReturn($blogs);
+        Functions\when('is_user_member_of_blog')->justReturn(true);
+        Functions\expect('add_user_to_blog')->never();
         Functions\expect('wp_die')->never();
 
         try {
@@ -906,13 +929,13 @@ class AuthenticateTest extends TestCase
      *
      * @param array<string, mixed> $attributes         SAML attributes to return.
      * @param mixed                $identityProviderId Identity-provider data to return.
-     * @param array<string, mixed> $providers          Configured identity providers.
+     * @param mixed                $providers          Configured identity providers.
      * @return TestableAuthenticate Configured authenticator.
      */
     private function authenticator(
         array $attributes,
         $identityProviderId = 'idp-key',
-        array $providers = array('idp-key' => 'Example Identity Provider')
+        $providers = array('idp-key' => 'Example Identity Provider')
     ): TestableAuthenticate {
         $client = Mockery::mock(AuthClient::class);
         $client->shouldReceive('requireAuth')->once();

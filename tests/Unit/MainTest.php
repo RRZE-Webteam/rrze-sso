@@ -114,6 +114,22 @@ class MainTest extends TestCase
         self::assertTrue(true);
     }
 
+    public function testLoadedOnlyRegistersSettingsWhenForcedSsoIsDisabled(): void
+    {
+        $service = Mockery::mock(SimpleSAML::class);
+        $service->shouldReceive('getIdentityProviders')->once()->andReturn(array());
+        $service->shouldNotReceive('loaded');
+        $service->shouldNotReceive('getAuthSimple');
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+        Functions\expect('add_filter')
+            ->never()
+            ->with('is_rrze_sso_active', '__return_true');
+
+        (new TestableMain())->loaded();
+
+        self::assertTrue(true);
+    }
+
     public function testLoadedRegistersForcedSsoIntegrations(): void
     {
         $this->options['force_sso'] = 1;
@@ -176,6 +192,23 @@ class MainTest extends TestCase
         }
 
         unset($GLOBALS['pagenow'], $_REQUEST['action']);
+    }
+
+    public function testUnrelatedLoginAndAdminRequestsAreNotRedirected(): void
+    {
+        Functions\when('is_admin')->justReturn(false);
+        Functions\expect('wp_redirect')->never();
+        $main = new TestableMain();
+
+        $GLOBALS['pagenow'] = 'wp-login.php';
+        $_REQUEST['action'] = 'login';
+        $main->registerRedirect();
+
+        $GLOBALS['pagenow'] = 'user-new.php';
+        $main->redirectUserNewForTest();
+
+        unset($GLOBALS['pagenow'], $_REQUEST['action']);
+        self::assertTrue(true);
     }
 }
 

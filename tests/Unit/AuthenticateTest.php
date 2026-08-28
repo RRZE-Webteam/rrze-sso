@@ -435,6 +435,113 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures enabled Multisite registration does not install the signup redirect.
+     *
+     * @return void
+     */
+    public function testLoadedAllowsSignupWhenMultisiteRegistrationIsEnabled(): void
+    {
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            function (string $name) {
+                return 'rrze_sso' === $name ? $this->options : 'all';
+            }
+        );
+        Functions\when('apply_filters')->alias(static fn(string $hook, $value) => $value);
+        Functions\expect('add_action')
+            ->never()
+            ->with(
+                'before_signup_header',
+                Mockery::type('array')
+            );
+        $authenticator = new TestableAuthenticate(Mockery::mock(AuthClient::class));
+
+        $authenticator->loaded();
+
+        self::assertTrue($authenticator->registrationEnabled());
+    }
+
+    /**
+     * Ensures malformed identity-provider data cannot be treated as an entity ID.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsANonScalarIdentityProviderId(): void
+    {
+        $authenticator = $this->authenticator(
+            array('uid' => array('alice')),
+            array('unexpected-idp')
+        );
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('is not registered on this SP');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
+     * Ensures malformed optional provider settings do not alter a valid login.
+     *
+     * @return void
+     */
+    public function testAuthenticateIgnoresNonScalarProviderNameAndDomainScope(): void
+    {
+        $this->options['domain_scope']['idp-key'] = array('invalid');
+        $authenticator = $this->authenticator(
+            array('uid' => array('alice')),
+            'idp-key',
+            array('idp-key' => array('invalid'))
+        );
+        $user = new WP_User(7);
+
+        Functions\expect('get_user_by')
+            ->once()
+            ->with('login', 'alice')
+            ->andReturn($user);
+        Functions\when('get_user_meta')->justReturn('');
+
+        $result = $authenticator->authenticate(null, '');
+
+        self::assertSame(7, $result->ID);
+        self::assertSame('', $this->updatedMeta[7]['organization_name']);
+    }
+
+    /**
+     * Ensures matching profile values are not needlessly rewritten.
+     *
+     * @return void
+     */
+    public function testAuthenticateLeavesUnchangedNameFieldsAlone(): void
+    {
+        $authenticator = $this->authenticator(
+            array(
+                'uid' => array('alice'),
+                'displayName' => array('Alice Example'),
+                'givenName' => array('Alice'),
+                'sn' => array('Example'),
+            )
+        );
+        $user = new WP_User(7);
+        $user->display_name = 'Alice Example';
+
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_user_meta')->alias(
+            static fn(int $userId, string $key): string => array(
+                'first_name' => 'Alice',
+                'last_name' => 'Example',
+            )[$key] ?? ''
+        );
+
+        $result = $authenticator->authenticate(null, '');
+
+        self::assertSame(7, $result->ID);
+        self::assertSame(array(), $this->updatedUsers);
+        self::assertArrayNotHasKey('first_name', $this->updatedMeta[7]);
+        self::assertArrayNotHasKey('last_name', $this->updatedMeta[7]);
+    }
+
+    /**
      * Ensures usernames changed by normalization are rejected.
      *
      * @return void
@@ -621,6 +728,26 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures an empty redirect target produces the plain SSO login URL.
+     *
+     * @return void
+     */
+    public function testLoginUrlWithoutRedirectUsesThePlainLoginUrl(): void
+    {
+        $authenticator = new Authenticate(Mockery::mock(AuthClient::class));
+        Functions\expect('site_url')
+            ->once()
+            ->with('wp-login.php', 'login')
+            ->andReturn('https://example.org/wp-login.php');
+        Functions\expect('add_query_arg')->never();
+
+        self::assertSame(
+            'https://example.org/wp-login.php',
+            $authenticator->loginUrl('https://old.example/login', '')
+        );
+    }
+
+    /**
      * Ensures WordPress logout also terminates and cleans the SAML session.
      *
      * @return void
@@ -733,19 +860,66 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures ordinary Multisite users retain access to a dashboard they belong to.
+     *
+     * @return void
+     */
+    public function testMultisiteUserCanAccessTheCurrentDashboard(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(array('uid' => array('alice')));
+        $user = new WP_User(7);
+        $blogs = array((object) array('userblog_id' => 3));
+
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_user_meta')->justReturn('');
+        Functions\when('get_blogs_of_user')->justReturn($blogs);
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\when('wp_list_filter')->justReturn($blogs);
+        Functions\expect('wp_die')->never();
+
+        try {
+            $result = $authenticator->authenticate(null, '');
+
+            self::assertSame(7, $result->ID);
+            self::assertSame(
+                array('uid' => array('alice')),
+                $this->updatedMeta[7]['sso_attributes']
+            );
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
+    /**
      * Creates an authenticator backed by a successful SAML response.
      *
-     * @param array<string, mixed> $attributes SAML attributes to return.
+     * @param array<string, mixed> $attributes         SAML attributes to return.
+     * @param mixed                $identityProviderId Identity-provider data to return.
+     * @param array<string, mixed> $providers          Configured identity providers.
      * @return TestableAuthenticate Configured authenticator.
      */
-    private function authenticator(array $attributes): TestableAuthenticate
-    {
+    private function authenticator(
+        array $attributes,
+        $identityProviderId = 'idp-key',
+        array $providers = array('idp-key' => 'Example Identity Provider')
+    ): TestableAuthenticate {
         $client = Mockery::mock(AuthClient::class);
         $client->shouldReceive('requireAuth')->once();
         $client->shouldReceive('getAuthData')
             ->once()
             ->with('saml:sp:IdP')
-            ->andReturn('idp-key');
+            ->andReturn($identityProviderId);
         $client->shouldReceive('getAttributes')
             ->once()
             ->andReturn($attributes);
@@ -757,7 +931,7 @@ class AuthenticateTest extends TestCase
         $simpleSaml = Mockery::mock(SimpleSamlService::class);
         $simpleSaml->shouldReceive('getIdentityProviders')
             ->once()
-            ->andReturn(array('idp-key' => 'Example Identity Provider'));
+            ->andReturn($providers);
 
         Functions\when('RRZE\SSO\plugin')->justReturn($plugin);
         Functions\when('RRZE\SSO\simpleSAML')->justReturn($simpleSaml);

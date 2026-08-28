@@ -5,6 +5,8 @@ namespace RRZE\SSO\Tests\Unit;
 use Brain\Monkey\Functions;
 use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use RRZE\SSO\Plugin;
 use RRZE\SSO\SimpleSAML;
 use RRZE\SSO\Tests\TestCase;
@@ -95,6 +97,32 @@ class SimpleSAMLTest extends TestCase
         );
     }
 
+    public function testIdentityProvidersSkipsMetadataThatCannotBeRead(): void
+    {
+        $previousErrorLog = ini_get('error_log');
+        $errorLog = tempnam(sys_get_temp_dir(), 'rrze-sso-metadata-');
+        MetaDataStorageHandler::$entityList = array(
+            'https://broken-idp.example.org' => true,
+        );
+        MetaDataStorageHandler::$metadataExceptions = array(
+            'https://broken-idp.example.org' => new \RuntimeException('Broken metadata'),
+        );
+        ini_set('error_log', (string) $errorLog);
+
+        try {
+            self::assertSame(array(), (new SimpleSAML())->identityProviders());
+            self::assertStringContainsString(
+                'Broken metadata',
+                (string) file_get_contents((string) $errorLog)
+            );
+        } finally {
+            ini_set('error_log', (string) $previousErrorLog);
+            if (false !== $errorLog) {
+                unlink($errorLog);
+            }
+        }
+    }
+
     public function testAuthenticationClientFailureIsReported(): void
     {
         AuthClient::$constructorException = new \RuntimeException('Invalid authentication source');
@@ -139,6 +167,18 @@ class SimpleSAMLTest extends TestCase
         (new SimpleSAML())->undefinedMethod('argument');
 
         self::assertTrue(true);
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testUndefinedMethodThrowsInDebugMode(): void
+    {
+        define('WP_DEBUG', true);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('undefinedMethod');
+
+        (new SimpleSAML())->undefinedMethod('argument');
     }
 }
 

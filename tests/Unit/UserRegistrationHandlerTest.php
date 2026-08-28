@@ -256,6 +256,21 @@ class UserRegistrationHandlerTest extends TestCase
         }
     }
 
+    public function testNetworkCreationRejectsMissingUserData(): void
+    {
+        $_REQUEST['action'] = '_network_add-user';
+        Functions\when('wp_die')->alias(
+            static function (string $message): void {
+                throw new RegistrationPermissionDenied($message);
+            }
+        );
+
+        $this->expectException(RegistrationPermissionDenied::class);
+        $this->expectExceptionMessage('empty user');
+
+        UserRegistrationHandler::handle();
+    }
+
     public function testNetworkCreationFailureRedirectsWithError(): void
     {
         $_REQUEST['action'] = '_network_add-user';
@@ -366,6 +381,43 @@ class UserRegistrationHandlerTest extends TestCase
         } catch (RegistrationRedirected $exception) {
             self::assertStringContainsString('error=', $exception->getMessage());
         }
+    }
+
+    public function testMultisiteValidationFailureRedirectsWithError(): void
+    {
+        $this->multisite = true;
+        $_REQUEST['action'] = '_admin_create-user';
+
+        try {
+            UserRegistrationHandler::handle();
+            self::fail('Multisite validation errors did not redirect.');
+        } catch (RegistrationRedirected $exception) {
+            self::assertStringContainsString('page=usernew', $exception->getMessage());
+            self::assertStringContainsString('error=', $exception->getMessage());
+        }
+    }
+
+    public function testSuperAdminCanSkipMultisiteSignupConfirmation(): void
+    {
+        $this->multisite = true;
+        $_REQUEST = array(
+            'action' => '_admin_create-user',
+            'user_idp' => 'idp-one',
+            'user_login' => 'alice',
+            'email' => 'alice@example.org',
+            'role' => 'author',
+        );
+        $_POST['noconfirmation'] = '1';
+        $this->wpdb->activationKey = 'activation-key';
+        Functions\when('wpmu_signup_user')->justReturn(null);
+        Functions\when('wpmu_activate_signup')->justReturn(array('user_id' => 31));
+        Functions\when('is_super_admin')->justReturn(true);
+        Functions\expect('wp_mail')->never();
+
+        $this->expectException(RegistrationRedirected::class);
+        $this->expectExceptionMessage('users.php?page=usernew&update=addnoconfirmation');
+
+        UserRegistrationHandler::handle();
     }
 
     public function testMissingCapabilityStopsRegistrationRequest(): void

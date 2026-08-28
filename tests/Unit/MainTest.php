@@ -124,9 +124,23 @@ class MainTest extends TestCase
         $service->shouldReceive('getAuthSimple')->once()->andReturn($client);
         Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
         Functions\when('apply_filters')->alias(static fn(string $hook, $value) => $value);
-        Functions\when('current_user_can')->justReturn(false);
+        Functions\when('current_user_can')->justReturn(true);
         Functions\when('is_admin')->justReturn(false);
         unset($GLOBALS['pagenow']);
+
+        (new TestableMain())->loaded();
+
+        self::assertTrue(true);
+    }
+
+    public function testLoadedStopsWhenAuthenticationClientIsUnavailable(): void
+    {
+        $this->options['force_sso'] = 1;
+        $service = Mockery::mock(SimpleSAML::class);
+        $service->shouldReceive('loaded')->once()->andReturn(true);
+        $service->shouldReceive('getIdentityProviders')->once()->andReturn(array());
+        $service->shouldReceive('getAuthSimple')->once()->andReturn(null);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
 
         (new TestableMain())->loaded();
 

@@ -4,6 +4,8 @@ namespace RRZE\SSO\Tests\Unit;
 
 use Brain\Monkey\Functions;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use ReflectionClass;
 use RRZE\SSO\Plugin;
 use RRZE\SSO\Tests\TestCase;
@@ -11,6 +13,13 @@ use RRZE\SSO\Tests\TestCase;
 #[CoversClass(Plugin::class)]
 class PluginTest extends TestCase
 {
+    public function testConstructorRetainsThePluginFile(): void
+    {
+        $plugin = new Plugin('/srv/wp-content/plugins/rrze-sso/rrze-sso.php');
+
+        self::assertSame('/srv/wp-content/plugins/rrze-sso/rrze-sso.php', $plugin->getFile());
+    }
+
     public function testLoadedPopulatesPathsUrlsAndMetadata(): void
     {
         $reflection = new ReflectionClass(Plugin::class);
@@ -44,5 +53,19 @@ class PluginTest extends TestCase
         self::assertSame('6.4', $plugin->getRequiresWP());
         self::assertSame('8.2', $plugin->getRequiresPHP());
         self::assertNull($plugin->undefinedMethod('argument'));
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testUndefinedMethodThrowsInDebugMode(): void
+    {
+        define('WP_DEBUG', true);
+        $reflection = new ReflectionClass(Plugin::class);
+        $plugin = $reflection->newInstanceWithoutConstructor();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('undefinedMethod');
+
+        $plugin->undefinedMethod('argument');
     }
 }

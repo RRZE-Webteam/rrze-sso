@@ -132,6 +132,9 @@ class MetaDataStorageHandler
     /** @var array<string, Configuration|null> */
     public static $metadata = array();
 
+    /** @var array<string, \Exception> */
+    public static $metadataExceptions = array();
+
     public static function getMetadataHandler(): self
     {
         return new self();
@@ -147,6 +150,10 @@ class MetaDataStorageHandler
 
     public function getMetaDataConfig(string $entityId, string $set): ?Configuration
     {
+        if (isset(self::$metadataExceptions[$entityId])) {
+            throw self::$metadataExceptions[$entityId];
+        }
+
         return self::$metadata[$entityId] ?? null;
     }
 
@@ -154,5 +161,6 @@ class MetaDataStorageHandler
     {
         self::$entityList = array();
         self::$metadata = array();
+        self::$metadataExceptions = array();
     }
 }

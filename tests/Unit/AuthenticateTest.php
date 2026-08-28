@@ -406,6 +406,192 @@ class AuthenticateTest extends TestCase
     }
 
     /**
+     * Ensures disabled Multisite registration installs the signup redirect.
+     *
+     * @return void
+     */
+    public function testLoadedRedirectsSignupWhenMultisiteRegistrationIsDisabled(): void
+    {
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            function (string $name) {
+                return 'rrze_sso' === $name ? $this->options : 'none';
+            }
+        );
+        Functions\when('apply_filters')->alias(static fn(string $hook, $value) => $value);
+        Functions\expect('add_action')
+            ->once()
+            ->with(
+                'before_signup_header',
+                Mockery::on(
+                    static fn(array $callback): bool => 'redirectToSiteUrl' === $callback[1]
+                )
+            );
+        $authenticator = new TestableAuthenticate(Mockery::mock(AuthClient::class));
+
+        $authenticator->loaded();
+
+        self::assertFalse($authenticator->registrationEnabled());
+    }
+
+    /**
+     * Ensures usernames changed by normalization are rejected.
+     *
+     * @return void
+     */
+    public function testAuthenticateRejectsAUsernameThatRequiresSanitizing(): void
+    {
+        $authenticator = $this->authenticator(
+            array('uid' => array('<b>alice</b>'))
+        );
+        $this->stubAuthenticationFailurePage();
+
+        $this->expectException(AuthenticationTerminated::class);
+        $this->expectExceptionMessage('username entered is not valid');
+
+        $authenticator->authenticate(null, '');
+    }
+
+    /**
+     * Ensures an existing Multisite user is added to the primary site during registration.
+     *
+     * @return void
+     */
+    public function testAuthenticateAddsAnExistingMultisiteUserToThePrimarySite(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(
+            array(
+                'uid' => array('alice'),
+                'mail' => array('alice@example.org'),
+                'organizationName' => array('Array Organization'),
+            )
+        );
+        $authenticator->setRegistration(true);
+        $user = new WP_User(7);
+        $memberships = array();
+
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_user_meta')->justReturn('');
+        Functions\when('is_user_member_of_blog')->justReturn(false);
+        Functions\when('add_user_to_blog')->alias(
+            static function (int $blogId, int $userId, string $role) use (&$memberships): bool {
+                $memberships[] = array($blogId, $userId, $role);
+
+                return true;
+            }
+        );
+        Functions\when('get_blogs_of_user')->justReturn(array());
+        Functions\when('is_super_admin')->justReturn(true);
+
+        try {
+            $result = $authenticator->authenticate(null, '');
+
+            self::assertSame(7, $result->ID);
+            self::assertSame(array(array(1, 7, 'subscriber')), $memberships);
+            self::assertSame('Array Organization', $this->updatedMeta[7]['organization_name']);
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
+    /**
+     * Ensures a failed Multisite insertion restores the original site before reporting the error.
+     *
+     * @return void
+     */
+    public function testAuthenticateRestoresTheSiteAfterMultisiteUserCreationFails(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(
+            array('uid' => array('new.user'))
+        );
+        $authenticator->setRegistration(true);
+        $restored = false;
+
+        Functions\when('get_user_by')->justReturn(false);
+        Functions\when('wp_generate_password')->justReturn('generated-password');
+        Functions\when('wp_insert_user')->justReturn(new WP_Error('insert_failed', 'Failed'));
+        Functions\when('switch_to_blog')->justReturn(true);
+        Functions\when('restore_current_blog')->alias(
+            static function () use (&$restored): bool {
+                $restored = true;
+
+                return true;
+            }
+        );
+        $this->stubAuthenticationFailurePage();
+
+        try {
+            $authenticator->authenticate(null, '');
+            self::fail('Failed user creation did not terminate authentication.');
+        } catch (AuthenticationTerminated $exception) {
+            self::assertStringContainsString('user could not be added', $exception->getMessage());
+            self::assertTrue($restored);
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
+    /**
+     * Ensures access denial handles users without any available dashboards.
+     *
+     * @return void
+     */
+    public function testMultisiteAccessDenialHandlesAnEmptySiteList(): void
+    {
+        $previousWpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new AuthenticateWpdb();
+        Functions\when('is_multisite')->justReturn(true);
+        Functions\when('get_site_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
+        $authenticator = $this->authenticator(
+            array('uid' => array('alice'))
+        );
+        $user = new WP_User(7);
+
+        Functions\when('get_user_by')->justReturn($user);
+        Functions\when('get_user_meta')->justReturn('');
+        Functions\when('get_blogs_of_user')->justReturn(array());
+        Functions\when('is_super_admin')->justReturn(false);
+        Functions\when('get_current_blog_id')->justReturn(3);
+        Functions\when('wp_list_filter')->justReturn(array());
+        $this->stubAuthenticationFailurePage();
+
+        try {
+            $authenticator->authenticate(null, '');
+            self::fail('Dashboard access denial did not terminate authentication.');
+        } catch (AuthenticationTerminated $exception) {
+            self::assertStringNotContainsString('Your Websites', $exception->getMessage());
+        } finally {
+            if (null === $previousWpdb) {
+                unset($GLOBALS['wpdb']);
+            } else {
+                $GLOBALS['wpdb'] = $previousWpdb;
+            }
+        }
+    }
+
+    /**
      * Ensures login redirects are retained by the generated SSO login URL.
      *
      * @return void

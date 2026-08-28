@@ -7,8 +7,14 @@ namespace SimpleSAML\Auth;
  */
 class Simple
 {
+    /** @var \Throwable|null */
+    public static $constructorException;
+
     public function __construct(string $authSource)
     {
+        if (self::$constructorException) {
+            throw self::$constructorException;
+        }
     }
 
     public function requireAuth(): void
@@ -91,12 +97,23 @@ class Session
  */
 class Configuration
 {
+    /** @var array<string, mixed> */
+    private $values;
+
+    /**
+     * @param array<string, mixed> $values Configuration values.
+     */
+    public function __construct(array $values = array())
+    {
+        $this->values = $values;
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array();
+        return $this->values;
     }
 }
 
@@ -109,6 +126,12 @@ use SimpleSAML\Configuration;
  */
 class MetaDataStorageHandler
 {
+    /** @var array<string, mixed> */
+    public static $entityList = array();
+
+    /** @var array<string, Configuration|null> */
+    public static $metadata = array();
+
     public static function getMetadataHandler(): self
     {
         return new self();
@@ -119,11 +142,17 @@ class MetaDataStorageHandler
      */
     public function getList(): array
     {
-        return array();
+        return self::$entityList;
     }
 
     public function getMetaDataConfig(string $entityId, string $set): ?Configuration
     {
-        return null;
+        return self::$metadata[$entityId] ?? null;
+    }
+
+    public static function reset(): void
+    {
+        self::$entityList = array();
+        self::$metadata = array();
     }
 }

@@ -7,18 +7,26 @@ use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use RRZE\SSO\Main;
 use RRZE\SSO\Plugin;
+use RRZE\SSO\SimpleSAML;
 use RRZE\SSO\Tests\TestCase;
 use RuntimeException;
+use SimpleSAML\Auth\Simple as AuthClient;
 
 #[CoversClass(Main::class)]
 class MainTest extends TestCase
 {
+    /** @var array<string, mixed> */
+    private $options = array('force_sso' => 0);
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->options = array('force_sso' => 0);
         Functions\when('is_multisite')->justReturn(false);
-        Functions\when('get_option')->justReturn(array('force_sso' => 0));
+        Functions\when('get_option')->alias(
+            fn(string $name) => 'rrze_sso' === $name ? $this->options : false
+        );
         Functions\when('wp_parse_args')->alias(
             static fn($args, $defaults): array => array_merge((array) $defaults, (array) $args)
         );
@@ -86,6 +94,75 @@ class MainTest extends TestCase
 
         (new TestableMain())->disableFunction();
     }
+
+    public function testLoadedDisablesForcedSsoWhenLibraryCannotLoad(): void
+    {
+        $this->options['force_sso'] = 1;
+        $service = Mockery::mock(SimpleSAML::class);
+        $service->shouldReceive('loaded')->once()->andReturn(false);
+        $service->shouldReceive('getIdentityProviders')->once()->andReturn(array());
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+        Functions\expect('update_option')
+            ->once()
+            ->withArgs(
+                static fn(string $name, array $options): bool => 'rrze_sso' === $name
+                    && 0 === $options['force_sso']
+            );
+
+        (new TestableMain())->loaded();
+
+        self::assertTrue(true);
+    }
+
+    public function testLoadedRegistersForcedSsoIntegrations(): void
+    {
+        $this->options['force_sso'] = 1;
+        $client = new AuthClient('test-sp');
+        $service = Mockery::mock(SimpleSAML::class);
+        $service->shouldReceive('loaded')->once()->andReturn(true);
+        $service->shouldReceive('getIdentityProviders')->once()->andReturn(array());
+        $service->shouldReceive('getAuthSimple')->once()->andReturn($client);
+        Functions\when('RRZE\SSO\simpleSAML')->justReturn($service);
+        Functions\when('apply_filters')->alias(static fn(string $hook, $value) => $value);
+        Functions\when('current_user_can')->justReturn(false);
+        Functions\when('is_admin')->justReturn(false);
+        unset($GLOBALS['pagenow']);
+
+        (new TestableMain())->loaded();
+
+        self::assertTrue(true);
+    }
+
+    public function testRegistrationAndUserPageRequestsAreRedirected(): void
+    {
+        Functions\when('site_url')->justReturn('https://example.org/wp-login.php');
+        Functions\when('is_admin')->justReturn(true);
+        Functions\when('wp_redirect')->alias(
+            static function (string $url): void {
+                throw new MainRequestTerminated($url);
+            }
+        );
+        $main = new TestableMain();
+
+        $GLOBALS['pagenow'] = 'wp-login.php';
+        $_REQUEST['action'] = 'register';
+        try {
+            $main->registerRedirect();
+            self::fail('Registration redirect did not terminate the request.');
+        } catch (MainRequestTerminated $exception) {
+            self::assertSame('https://example.org/wp-login.php', $exception->getMessage());
+        }
+
+        $GLOBALS['pagenow'] = 'user-new.php';
+        try {
+            $main->redirectUserNewForTest();
+            self::fail('User page redirect did not terminate the request.');
+        } catch (MainRequestTerminated $exception) {
+            self::assertSame('users.php?page=usernew', $exception->getMessage());
+        }
+
+        unset($GLOBALS['pagenow'], $_REQUEST['action']);
+    }
 }
 
 class TestableMain extends Main
@@ -98,6 +175,11 @@ class TestableMain extends Main
     public function isUserNewPageForTest(): bool
     {
         return $this->isUserNewPage();
+    }
+
+    public function redirectUserNewForTest(): void
+    {
+        $this->userNewPageRedirect();
     }
 }
 
